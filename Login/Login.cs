@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Net.Mail;
 using RAGE;
 using RAGE.Elements;
+using System.Threading;
 
 namespace Client.Login
 {
@@ -14,18 +15,24 @@ namespace Client.Login
         public Login() {
             Events.Add("ShowLoginForm", ShowLoginForm);
             Events.Add("ShowRegisterForm", ShowRegisterForm);
+            Events.Add("LoadIPL", LoadIPL);
             LoginCEF = new RAGE.Ui.HtmlWindow("package://frontend/login.html");
             RegisterCEF = new RAGE.Ui.HtmlWindow("package://frontend/register.html");
             LoginCEF.Active = false;
             RegisterCEF.Active = false;
-            RAGE.Game.Streaming.RequestIpl("V_Michael");
-            RAGE.Game.Streaming.RequestIpl("V_Michael_Garage");
+            RAGE.Game.Streaming.RequestIpl("V_Michael_Scuba");
             Key.Bind(Keys.VK_M, true, () =>
             {
                 Binds.ToggleCursor();
                 return 1;
             });
             
+        }
+        public void LoadIPL(object[] args)
+        {
+            string name = Convert.ToString(args[0]);
+            RAGE.Game.Streaming.RequestIpl(name);
+            RAGE.Chat.Output(RAGE.Game.Streaming.IsIplActive(name).ToString());
         }
 
         public void SendLoginInfoToServer(object[] args)

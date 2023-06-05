@@ -12,6 +12,24 @@ namespace Client
             RAGE.Ui.Cursor.Visible = flag;
         }
 
+        public static void toggleRecording()
+        {
+            if (!RAGE.Game.Recording.IsRecording())
+            {
+                RAGE.Game.Recording.Start(1);
+            }
+            else
+            {
+                RAGE.Game.Recording.StopAndSaveClip();
+            }
+        }
+
+        public static void startRockstarEditor()
+        {
+            RAGE.Game.Rendering.ResetEditorValues();
+            RAGE.Game.Rendering.ActivateRockstarEditor();
+        }
+
         public static void ToggleCursor()
         {
             RAGE.Ui.Cursor.Visible = !RAGE.Ui.Cursor.Visible;
