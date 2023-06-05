@@ -19,7 +19,7 @@ namespace Client
                 Binds.startRockstarEditor();
                 return 1;
             });
-
+            
         }
 
     }
