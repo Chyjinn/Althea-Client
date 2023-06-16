@@ -12,15 +12,10 @@ namespace Client.Admin
         {
             Events.Add("client:Fly", ToggleFly);
             Events.OnEntityStreamIn += OnEntityStreamIn;
-            Events.OnEntityStreamOut += OnEntityStreamOut;
             Events.AddDataHandler("frozen", PlayerFrozen);
             Events.AddDataHandler("invisible", PlayerInvisible);
         }
 
-        private void OnEntityStreamOut(RAGE.Elements.Entity entity)
-        {
-            Chat.Output("StreamOUT " + entity.Position.ToString());
-        }
 
         private void PlayerInvisible(RAGE.Elements.Entity entity, object arg, object oldArg)
         {
@@ -30,13 +25,10 @@ namespace Client.Admin
 
                 if ((bool)arg == true)
                 {
-                    Chat.Output("Alpha 0");
                     p.SetAlpha(0, true);
-
                 }
                 else
                 {
-                    Chat.Output("Alpha 255");
                     p.SetAlpha(255, true);
                 }
             }
@@ -48,23 +40,19 @@ namespace Client.Admin
             {
                 RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
                 bool state = (bool)arg;
-                Chat.Output("Frozen changed: " + state.ToString());
                 p.FreezePosition(state);
             }
         }
 
         public void OnEntityStreamIn(RAGE.Elements.Entity entity)
         {
-            Chat.Output("StreamIN " + entity.Position.ToString());
             if (entity.Type == RAGE.Elements.Type.Player)
             {
                 RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
                 bool state = (bool)p.GetSharedData("frozen");
-                Chat.Output("StreamIn frozen: " + state.ToString());
                 p.FreezePosition(state);
 
                 bool invisible = (bool)p.GetSharedData("invisible");
-                Chat.Output("StreamIn invisible: " + state.ToString());
                 if (invisible)
                 {
                     p.SetAlpha(0, true);
@@ -121,7 +109,7 @@ namespace Client.Admin
         {
             RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
             bool flag = (bool)p.GetSharedData("flying");
-
+            //RAGE.Discord.Update("abbbb", "bcaaca");
             if (flag)
             {
                 Player.SetPlayerInvincible(true);

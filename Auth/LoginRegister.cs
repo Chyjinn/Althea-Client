@@ -14,7 +14,7 @@ namespace Client.Login
         RAGE.Ui.HtmlWindow LoginCEF;
         RAGE.Ui.HtmlWindow RegisterCEF;
         public LoginRegister() {
-            Events.OnPlayerReady += ProcessLoginScreen;
+            //Events.OnPlayerReady += ProcessLoginScreen;
 
             Events.Add("ShowLoginForm", ShowLoginForm);
             Events.Add("ShowRegisterForm", ShowRegisterForm);
@@ -33,6 +33,7 @@ namespace Client.Login
         public void ProcessLoginScreen()
         {
             CreateAuthForms();
+            
         }
 
         public void CreateAuthForms()
@@ -94,11 +95,7 @@ namespace Client.Login
 
         public void RegisterAttempt(object[] args)
         {
-            string username = (string)args[0];
-            string email = (string)args[1];
-            string password1 = (string)args[1];
-            string password2 = (string)args[1];
-            Events.CallRemote("server:RegisterAttempt", username, email, password1, password2);
+            Events.CallRemote("server:RegisterAttempt", (string)args[0], (string)args[1], (string)args[2], (string)args[3]);
         }
 
         public void LoadIPL(object[] args)
