@@ -18,6 +18,9 @@ namespace Client
         DateTime nextUpdate = DateTime.Now;
 
         float speed = 0.4f;
+        float slowSpeed = 0.2f;
+        float normalSpeed = 0.4f;
+        float fastSpeed = 1.2f;
         float zSpeedUp = 0;
         float zSpeedDown = 0;
         float zSpeed = 0;
@@ -128,17 +131,17 @@ namespace Client
         private void Fly(List<Events.TickNametagData> nametags)
         {
 
-            if (Pad.IsDisabledControlPressed(0, 21))
+            if (Pad.IsDisabledControlPressed(0, 21))//SHIFT
             {
-                speed = 1.2f;
+                speed = fastSpeed;
             }
-            else if(Pad.IsDisabledControlPressed(0,36))
+            else if(Pad.IsDisabledControlPressed(0,36))//BAL CTRL
             {
-                speed = 0.2f;
+                speed = slowSpeed;
             }
             else
             {
-                speed = 0.4f;
+                speed = normalSpeed;
             }
 
 
