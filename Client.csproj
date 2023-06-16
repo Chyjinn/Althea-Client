@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,8 +9,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="rage-sharp">
-      <HintPath>..\..\runtime\rage-sharp.dll</HintPath>
+    <Reference Include="rage-sharpN">
+      <HintPath>..\..\..\dotnet\rage-sharpN.dll</HintPath>
     </Reference>
   </ItemGroup>
 
