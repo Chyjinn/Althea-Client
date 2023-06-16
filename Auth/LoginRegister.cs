@@ -22,7 +22,12 @@ namespace Client.Login
             
             Events.Add("client:LoginAttempt", LoginAttempt);
             Events.Add("client:RegisterAttempt", RegisterAttempt);
-            
+            Events.Add("client:LogError", ErrorLog);
+        }
+
+        public void ErrorLog(object[] args)
+        {
+            Chat.Output(args.ToString());
         }
 
         public void ProcessLoginScreen()
@@ -42,7 +47,7 @@ namespace Client.Login
             RegisterCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/register.html");
             RegisterCEF.Active = true;
             RegisterCEF.Active = false;
-            SetHudState(false);
+            SetHudState(true);
         }
 
         public void DestroyAuthForms()
@@ -84,9 +89,8 @@ namespace Client.Login
 
         public void LoginAttempt(object[] args)
         {
-            string username = (string)args[0];
-            string password = (string)args[1];
-            Events.CallRemote("server:LoginAttempt", username, password);
+            Chat.Output(args.ToString());
+            Events.CallRemote("server:LoginAttempt", (string)args[0], (string)args[1]);
         }
 
         public void RegisterAttempt(object[] args)
@@ -102,11 +106,6 @@ namespace Client.Login
             string name = Convert.ToString(args[0]);
             RAGE.Game.Streaming.RequestIpl(name);
             RAGE.Chat.Output(RAGE.Game.Streaming.IsIplActive(name).ToString());
-        }
-
-        public void SendLoginInfoToServer(object[] args)
-        {
-            Events.CallRemote("LoginInfoFromClient", (string)args[0], (string)args[1]);
         }
 
 
