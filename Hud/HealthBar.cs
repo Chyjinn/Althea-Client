@@ -1,14 +1,14 @@
 ﻿using RAGE;
 using System.Collections.Generic;
 
-namespace Client
+namespace Client.Hud
 {
-    internal class HealthBar: Events.Script
+    internal class HealthBar : Events.Script
     {
         RAGE.Ui.HtmlWindow CEF;
         public HealthBar()
         {
-            
+
             CEF = new RAGE.Ui.HtmlWindow("package://hp/test.html");
             //"C:\RAGEMP\server-files\client_packages\health\test.html"
             CEF.Active = true;

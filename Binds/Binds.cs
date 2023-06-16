@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Client
+namespace Client.Binds
 {
     internal static class Binds
     {
@@ -33,20 +33,20 @@ namespace Client
 
         public static void toggleRecording()
         {
-            if (!RAGE.Game.Recording.IsRecording())
+            if (!Recording.IsRecording())
             {
-                RAGE.Game.Recording.Start(1);
+                Recording.Start(1);
             }
             else
             {
-                RAGE.Game.Recording.StopAndSaveClip();
+                Recording.StopAndSaveClip();
             }
         }
 
         public static void startRockstarEditor()
         {
-            RAGE.Game.Rendering.ResetEditorValues();
-            RAGE.Game.Rendering.ActivateRockstarEditor();
+            Rendering.ResetEditorValues();
+            Rendering.ActivateRockstarEditor();
         }
 
         public static void ToggleCursor()

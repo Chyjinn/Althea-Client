@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Client
+namespace Client.Admin
 {
-    internal class FreeCam: Events.Script
+    internal class FreeCam : Events.Script
     {
         public FreeCam()
         {
@@ -32,7 +32,7 @@ namespace Client
                 {
                     Chat.Output("Alpha 0");
                     p.SetAlpha(0, true);
-                    
+
                 }
                 else
                 {
@@ -55,7 +55,7 @@ namespace Client
 
         public void OnEntityStreamIn(RAGE.Elements.Entity entity)
         {
-            Chat.Output("StreamIN "+entity.Position.ToString());
+            Chat.Output("StreamIN " + entity.Position.ToString());
             if (entity.Type == RAGE.Elements.Type.Player)
             {
                 RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
@@ -124,7 +124,7 @@ namespace Client
 
             if (flag)
             {
-                RAGE.Game.Player.SetPlayerInvincible(true);
+                Player.SetPlayerInvincible(true);
                 //RAGE.Elements.Player.LocalPlayer.FreezePosition(true);
                 //RAGE.Elements.Player.LocalPlayer.SetAlpha(0, true);
 
@@ -139,7 +139,7 @@ namespace Client
             }
             else
             {
-                RAGE.Game.Player.SetPlayerInvincible(false);
+                Player.SetPlayerInvincible(false);
                 //RAGE.Elements.Player.LocalPlayer.FreezePosition(false);
                 //RAGE.Elements.Player.LocalPlayer.SetAlpha(255, true);
                 Cam.RenderScriptCams(false, false, 0, true, false, 0);
@@ -194,7 +194,7 @@ namespace Client
             {
                 speed = fastSpeed;
             }
-            else if(Pad.IsDisabledControlPressed(0,36))//BAL CTRL
+            else if (Pad.IsDisabledControlPressed(0, 36))//BAL CTRL
             {
                 speed = slowSpeed;
             }
@@ -258,7 +258,7 @@ namespace Client
             newPos.Z = pos.Z - movementVector.Z + rightVector.Z + zSpeed;
             Cam.SetCamCoord(flyCam, newPos.X, newPos.Y, newPos.Z);
             Cam.SetCamRot(flyCam, rot.X + rightAxisY * -5.0f, 0.0f, rot.Z + rightAxisX * -5.0f, 2);
-            
+
             if (DateTime.Now > nextUpdate)
             {
                 TimeSpan span = new TimeSpan(5000000);
