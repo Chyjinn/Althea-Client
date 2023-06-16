@@ -16,19 +16,6 @@ namespace Client.Binds
                 ToggleCursor();
                 return 1;
             });
-
-            Key.Bind(Keys.VK_F3, true, () =>
-            {
-                toggleRecording();
-                return 1;
-            });
-
-            Key.Bind(Keys.VK_F5, true, () =>
-            {
-                int cam = Cam.GetRenderingCam();
-                Cam.SetCamFov(cam, 130f);
-                return 1;
-            });
         }
 
         public static void toggleRecording()

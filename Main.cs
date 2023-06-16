@@ -21,8 +21,7 @@ namespace Client
             Interior.EnableInteriorProp(166657, "V_Michael_S_items");
             Interior.EnableInteriorProp(166657, "V_Michael_L_Items");
             Interior.RefreshInterior(166657);
-
-            Binds.bindKeys();
+            Binds.Binds.bindKeys();
         }
 
 
