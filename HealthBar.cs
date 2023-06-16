@@ -1,9 +1,5 @@
 ﻿using RAGE;
-using RAGE.Elements;
-using System;
 using System.Collections.Generic;
-using System.Runtime.ConstrainedExecution;
-using System.Text;
 
 namespace Client
 {
@@ -12,16 +8,16 @@ namespace Client
         RAGE.Ui.HtmlWindow CEF;
         public HealthBar()
         {
-            Events.Tick += UpdateHealth;
-            CEF = new RAGE.Ui.HtmlWindow("package:\\health\test.html");
+            
+            CEF = new RAGE.Ui.HtmlWindow("package://hp/test.html");
             //"C:\RAGEMP\server-files\client_packages\health\test.html"
             CEF.Active = true;
+            Events.Tick += UpdateHealth;
         }
 
         private void UpdateHealth(List<Events.TickNametagData> nametags)
         {
-            CEF.ExecuteJs($"Update(\"{Player.LocalPlayer.GetHealth()}\")");
-
+            CEF.ExecuteJs($"Update(\"{RAGE.Elements.Player.LocalPlayer.GetHealth()}\")");
         }
 
     }
