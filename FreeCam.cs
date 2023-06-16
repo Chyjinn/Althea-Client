@@ -11,6 +11,69 @@ namespace Client
         public FreeCam()
         {
             Events.Add("client:Fly", ToggleFly);
+            Events.OnEntityStreamIn += OnEntityStreamIn;
+            Events.OnEntityStreamOut += OnEntityStreamOut;
+            Events.AddDataHandler("frozen", PlayerFrozen);
+            Events.AddDataHandler("invisible", PlayerInvisible);
+        }
+
+        private void OnEntityStreamOut(RAGE.Elements.Entity entity)
+        {
+            Chat.Output("StreamOUT " + entity.Position.ToString());
+        }
+
+        private void PlayerInvisible(RAGE.Elements.Entity entity, object arg, object oldArg)
+        {
+            if (entity.Type == RAGE.Elements.Type.Player)
+            {
+                RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
+
+                if ((bool)arg == true)
+                {
+                    Chat.Output("Alpha 0");
+                    p.SetAlpha(0, true);
+                    
+                }
+                else
+                {
+                    Chat.Output("Alpha 255");
+                    p.SetAlpha(255, true);
+                }
+            }
+        }
+
+        private void PlayerFrozen(RAGE.Elements.Entity entity, object arg, object oldArg)
+        {
+            if (entity.Type == RAGE.Elements.Type.Player)
+            {
+                RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
+                bool state = (bool)arg;
+                Chat.Output("Frozen changed: " + state.ToString());
+                p.FreezePosition(state);
+            }
+        }
+
+        public void OnEntityStreamIn(RAGE.Elements.Entity entity)
+        {
+            Chat.Output("StreamIN "+entity.Position.ToString());
+            if (entity.Type == RAGE.Elements.Type.Player)
+            {
+                RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
+                bool state = (bool)p.GetSharedData("frozen");
+                Chat.Output("StreamIn frozen: " + state.ToString());
+                p.FreezePosition(state);
+
+                bool invisible = (bool)p.GetSharedData("invisible");
+                Chat.Output("StreamIn invisible: " + state.ToString());
+                if (invisible)
+                {
+                    p.SetAlpha(0, true);
+                }
+                else
+                {
+                    p.SetAlpha(255, true);
+                }
+            }
         }
 
         int flyCam = -1;
@@ -62,8 +125,8 @@ namespace Client
             if (flag)
             {
                 RAGE.Game.Player.SetPlayerInvincible(true);
-                RAGE.Elements.Player.LocalPlayer.FreezePosition(true);
-                RAGE.Elements.Player.LocalPlayer.SetAlpha(0, true);
+                //RAGE.Elements.Player.LocalPlayer.FreezePosition(true);
+                //RAGE.Elements.Player.LocalPlayer.SetAlpha(0, true);
 
                 Events.Tick += Fly;
 
@@ -73,13 +136,12 @@ namespace Client
                 Cam.SetCamActive(flyCam, true);
                 Cam.RenderScriptCams(true, false, 0, true, false, 0);
                 Cam.SetCamAffectsAiming(flyCam, false);
-                
             }
             else
             {
                 RAGE.Game.Player.SetPlayerInvincible(false);
-                RAGE.Elements.Player.LocalPlayer.FreezePosition(false);
-                RAGE.Elements.Player.LocalPlayer.SetAlpha(255, true);
+                //RAGE.Elements.Player.LocalPlayer.FreezePosition(false);
+                //RAGE.Elements.Player.LocalPlayer.SetAlpha(255, true);
                 Cam.RenderScriptCams(false, false, 0, true, false, 0);
                 Cam.DestroyAllCams(true);
                 Events.Tick -= Fly;
@@ -196,6 +258,7 @@ namespace Client
             newPos.Z = pos.Z - movementVector.Z + rightVector.Z + zSpeed;
             Cam.SetCamCoord(flyCam, newPos.X, newPos.Y, newPos.Z);
             Cam.SetCamRot(flyCam, rot.X + rightAxisY * -5.0f, 0.0f, rot.Z + rightAxisX * -5.0f, 2);
+            
             if (DateTime.Now > nextUpdate)
             {
                 TimeSpan span = new TimeSpan(5000000);
