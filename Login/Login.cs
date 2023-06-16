@@ -39,6 +39,12 @@ namespace Client.Login
             string password2 = (string)args[1];
             Events.CallRemote("server:RegisterAttempt", username, email, password1, password2);
         }
+        public void LoadIPL(object[] args)
+        {
+            string name = Convert.ToString(args[0]);
+            RAGE.Game.Streaming.RequestIpl(name);
+            RAGE.Chat.Output(RAGE.Game.Streaming.IsIplActive(name).ToString());
+        }
 
         public void SendLoginInfoToServer(object[] args)
         {

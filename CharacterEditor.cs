@@ -10,13 +10,8 @@ namespace Client
     {
         public CharacterEditor()
         {
-            Events.Add("ChangeSlider", ChangeFaceFeature);
-
-        }
-
-        public void ChangeFaceFeature(object[] args)
-        {
             
+
         }
 
 

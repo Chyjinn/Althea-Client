@@ -13,13 +13,13 @@ namespace Client
         {
             Key.Bind(Keys.VK_M, true, () =>
             {
-                Binds.ToggleCursor();
+                ToggleCursor();
                 return 1;
             });
 
             Key.Bind(Keys.VK_F3, true, () =>
             {
-                Binds.toggleRecording();
+                toggleRecording();
                 return 1;
             });
 
@@ -29,16 +29,6 @@ namespace Client
                 Cam.SetCamFov(cam, 130f);
                 return 1;
             });
-        }
-
-        public static void ToggleCursor()
-        {
-            RAGE.Ui.Cursor.Visible = !RAGE.Ui.Cursor.Visible;
-        }
-
-        public static void ToggleCursor(bool flag)
-        {
-            RAGE.Ui.Cursor.Visible = flag;
         }
 
         public static void toggleRecording()
@@ -51,6 +41,22 @@ namespace Client
             {
                 RAGE.Game.Recording.StopAndSaveClip();
             }
+        }
+
+        public static void startRockstarEditor()
+        {
+            RAGE.Game.Rendering.ResetEditorValues();
+            RAGE.Game.Rendering.ActivateRockstarEditor();
+        }
+
+        public static void ToggleCursor()
+        {
+            RAGE.Ui.Cursor.Visible = !RAGE.Ui.Cursor.Visible;
+        }
+
+        public static void ToggleCursor(bool flag)
+        {
+            RAGE.Ui.Cursor.Visible = flag;
         }
 
 
