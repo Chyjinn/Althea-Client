@@ -8,7 +8,6 @@ namespace Client
 {
     internal class FreeCam: Events.Script
     {
-
         public FreeCam()
         {
             Events.Add("client:Fly", ToggleFly);
@@ -21,8 +20,6 @@ namespace Client
         float slowSpeed = 0.2f;
         float normalSpeed = 0.4f;
         float fastSpeed = 1.2f;
-        float zSpeedUp = 0;
-        float zSpeedDown = 0;
         float zSpeed = 0;
 
         int[] disabledControls = new int[31]{ 30, // A & D

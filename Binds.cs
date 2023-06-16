@@ -51,12 +51,12 @@ namespace Client
 
         public static void ToggleCursor()
         {
-            RAGE.Ui.Cursor.Visible = !RAGE.Ui.Cursor.Visible;
+            RAGE.Ui.Cursor.ShowCursor(!RAGE.Ui.Cursor.Visible, !RAGE.Ui.Cursor.Visible);
         }
 
         public static void ToggleCursor(bool flag)
         {
-            RAGE.Ui.Cursor.Visible = flag;
+            RAGE.Ui.Cursor.ShowCursor(flag, flag);
         }
 
 
