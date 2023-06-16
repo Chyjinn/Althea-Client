@@ -89,7 +89,6 @@ namespace Client.Login
 
         public void LoginAttempt(object[] args)
         {
-            Chat.Output(args.ToString());
             Events.CallRemote("server:LoginAttempt", (string)args[0], (string)args[1]);
         }
 
@@ -101,6 +100,7 @@ namespace Client.Login
             string password2 = (string)args[1];
             Events.CallRemote("server:RegisterAttempt", username, email, password1, password2);
         }
+
         public void LoadIPL(object[] args)
         {
             string name = Convert.ToString(args[0]);
