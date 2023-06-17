@@ -7,11 +7,11 @@ namespace Client
     internal class PlayerAttach : Events.Script
     {
         private List<int> objList = new List<int>();
+        Dictionary<RAGE.Elements.Player, RAGE.Game.Object> objDic = new Dictionary<RAGE.Elements.Player, RAGE.Game.Object>();
         public PlayerAttach()
         {
             Events.Add("client:getGroundHeight", getGroundHeight);
-            Events.Add("client:createBox", createBox);
-            Events.OnPlayerQuit += playerQuit;
+            Events.Add("client:getBoxDictionary", getBoxDictionary);
         }
 
         public void getGroundHeight(object[] args)
@@ -26,27 +26,20 @@ namespace Client
             Events.CallRemote("server:getGroundHeight", lastArgsToVectorZ);
         }
 
-        public void createBox(object[] args)
+        public void attachBoxToPlayer(object[] args)
         {
-            var player = (RAGE.Elements.Player)args[0];
-            var obj = RAGE.Game.Object.CreateObject(2930714276, player.Position.X, player.Position.Y, player.Position.Z, false, false, false);
-            //RAGE.Chat.Output("Var obj kiíratás: " + obj);
-            objList.Add(obj);
-
-
+            Events.CallRemote("server:getBoxDictonary");
         }
 
-        public void playerQuit(RAGE.Elements.Player client)
-        {            
-            if (client.RemoteId == RAGE.Elements.Player.LocalPlayer.RemoteId)
+        public void getBoxDictionary(object[] args)
+        {
+            objDic.Add((RAGE.Elements.Player)args[0], (RAGE.Game.Object)args[1]);
+            foreach (var item in objDic)
             {
-                foreach (var item in objList)
-                {
-                    int refInt = item;
-                    RAGE.Game.Object.DeleteObject(ref refInt);
-                }
+                RAGE.Chat.Output("ObjDic kiíratás: " + item.Value);
             }
         }
+                
 
     }
 }
