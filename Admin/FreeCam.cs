@@ -107,6 +107,7 @@ namespace Client.Admin
 
         private void ToggleFly(object[] args)
         {
+            
             RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
             bool flag = (bool)p.GetSharedData("flying");
             //RAGE.Discord.Update("abbbb", "bcaaca");
