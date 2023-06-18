@@ -1,4 +1,5 @@
 ﻿using RAGE;
+using RAGE.NUI;
 using System;
 using System.Collections.Generic;
 
@@ -10,9 +11,21 @@ namespace Client
         Dictionary<RAGE.Elements.Player, RAGE.Game.Object> objDic = new Dictionary<RAGE.Elements.Player, RAGE.Game.Object>();
         public PlayerAttach()
         {
+            RAGE.Elements.Player player = RAGE.Elements.Player.LocalPlayer;                        
+            Key.Bind(Keys.VK_SPACE, true, () =>
+            {
+                var sharedData = player.GetSharedData("anim");
+                if (sharedData != "")
+                {
+                    Events.CallRemote("server:stopAnim");
+                }
+                return 1;
+            });
+
             Events.Add("client:getGroundHeight", getGroundHeight);
-            Events.Add("client:getBoxDictionary", getBoxDictionary);
-        }
+            Events.Add("client:getBoxDictionary", getBoxDictionary);         
+        }        
+                
 
         public void getGroundHeight(object[] args)
         {
