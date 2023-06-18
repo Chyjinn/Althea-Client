@@ -11,82 +11,60 @@ namespace Client.Login
 {
     class LoginRegister : Events.Script
     {
-        RAGE.Ui.HtmlWindow LoginCEF;
-        RAGE.Ui.HtmlWindow RegisterCEF;
+        RAGE.Ui.HtmlWindow AuthCEF;
         public LoginRegister() {
-            //Events.OnPlayerReady += ProcessLoginScreen;
+            Events.OnPlayerReady += ProcessLoginScreen;
 
-            Events.Add("ShowLoginForm", ShowLoginForm);
-            Events.Add("ShowRegisterForm", ShowRegisterForm);
-
-            
+            Events.Add("client:ShowLoginForm", ShowLoginForm);
+            Events.Add("client:ShowRegisterForm", ShowRegisterForm);
+            Events.Add("client:DestroyAuthForm", DestroyAuthForm);
             Events.Add("client:LoginAttempt", LoginAttempt);
             Events.Add("client:RegisterAttempt", RegisterAttempt);
-            Events.Add("client:LogError", ErrorLog);
-        }
-
-        public void ErrorLog(object[] args)
-        {
-            Chat.Output(args.ToString());
         }
 
         public void ProcessLoginScreen()
         {
-            CreateAuthForms();
-            
+            SetHudState(true);
+            CreateAuthForm();
+            RAGE.Elements.Player.LocalPlayer.FreezePosition(false);
         }
 
-        public void CreateAuthForms()
+        public void CreateAuthForm()
         {
             for (int i = 0; i < 362; i++)
             {
                 Pad.DisableControlAction(0, i, true);
             }
-
-            LoginCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/login.html");
-            LoginCEF.Active = true;
-            RegisterCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/register.html");
-            RegisterCEF.Active = true;
-            RegisterCEF.Active = false;
-            SetHudState(true);
+            
+            AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/login.html");
+            AuthCEF.Active = true;
         }
 
-        public void DestroyAuthForms()
+        public void DestroyAuthForm(object[] args)//Szerver oldali hívásnál
         {
-            LoginCEF.Active = false;
-            RegisterCEF.Active = false;
-            LoginCEF.Destroy();
-            RegisterCEF.Destroy();
+            AuthCEF.Active = false;
+            AuthCEF.Destroy();
+        }
+
+        public void DestroyAuthForm()//Local hívásnál
+        {
+            AuthCEF.Active = false;
+            AuthCEF.Destroy();
         }
 
         public void ShowLoginForm(object[] args)
         {
-            RegisterCEF.Active = false;
-            LoginCEF.Active = true;
+            DestroyAuthForm();
+            AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/login.html");
+            AuthCEF.Active = true;
         }
 
         public void ShowRegisterForm(object[] args)
         {
-            RegisterCEF.Active = true;
-            LoginCEF.Active = false;
+            DestroyAuthForm();
+            AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/register.html");
+            AuthCEF.Active = true;
         }
-
-        int camera = 1;
-        public void SetLoginCamera(object[] args)
-        {
-            float posX = Convert.ToSingle(args[0]);
-            float posY = Convert.ToSingle(args[1]);
-            float posZ = Convert.ToSingle(args[2]);
-            float rotX = Convert.ToSingle(args[3]);
-            float rotY = Convert.ToSingle(args[4]);
-            float rotZ = Convert.ToSingle(args[5]);
-            float fov = Convert.ToSingle(args[6]);
-            camera = RAGE.Game.Cam.CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", 501.61f, 5604.5f, 797.9f, 0f, 0f, 0f, fov, true, 2);
-            RAGE.Game.Cam.SetCamActive(camera, true);
-            RAGE.Game.Cam.RenderScriptCams(true, false, 0, true, false, 0);
-        }
-
-
 
         public void LoginAttempt(object[] args)
         {
@@ -97,15 +75,6 @@ namespace Client.Login
         {
             Events.CallRemote("server:RegisterAttempt", (string)args[0], (string)args[1], (string)args[2], (string)args[3]);
         }
-
-        public void LoadIPL(object[] args)
-        {
-            string name = Convert.ToString(args[0]);
-            RAGE.Game.Streaming.RequestIpl(name);
-            RAGE.Chat.Output(RAGE.Game.Streaming.IsIplActive(name).ToString());
-        }
-
-
 
         public void SetHudState(bool flag)
         {
