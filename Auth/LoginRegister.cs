@@ -12,7 +12,8 @@ namespace Client.Login
     class LoginRegister : Events.Script
     {
         RAGE.Ui.HtmlWindow AuthCEF;
-        public LoginRegister() {
+        public LoginRegister()
+        {
             Events.OnPlayerReady += ProcessLoginScreen;
 
             Events.Add("client:ShowLoginForm", ShowLoginForm);
@@ -20,12 +21,26 @@ namespace Client.Login
             Events.Add("client:DestroyAuthForm", DestroyAuthForm);
             Events.Add("client:LoginAttempt", LoginAttempt);
             Events.Add("client:RegisterAttempt", RegisterAttempt);
+            Events.Add("client:SaveToken", SaveToken);
+            Events.Add("client:LoadToken", LoadToken);
+        }
+        private void LoadToken(object[] args)
+        {
+            string token = args[0].ToString();
+            Events.CallLocal("server:TokenFromClient", token);
+        }
+
+        private void SaveToken(object[] args)
+        {
+            string token = args[0].ToString();
+            Events.CallLocal("js:saveToken", token);
         }
 
         public void ProcessLoginScreen()
         {
             SetHudState(true);
             CreateAuthForm();
+            Events.CallRemote("server:LogChat", "Valami teszt");
             RAGE.Elements.Player.LocalPlayer.FreezePosition(false);
         }
 

@@ -96,6 +96,7 @@ namespace Client.Character
         RAGE.Ui.HtmlWindow CharCEF;
         RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
         Character[] characters;
+        DateTime nextUpdate = DateTime.Now;
 
         public CharacterScreen()
         {
@@ -107,9 +108,13 @@ namespace Client.Character
         }
         private void CharChangeToServer(object[] args)
         {
-            Chat.Output("Kliens megkapja");
-            Events.CallRemote("server:CharChange", (string)args[0]);//ID
-            CharCEF.ExecuteJs($"RefreshCharData(\"{characters[Convert.ToInt32(args[0])].Name}\", \"{characters[Convert.ToInt32(args[0])].AppearanceID}\")");
+            if (DateTime.Now > nextUpdate)
+            {
+                TimeSpan span = TimeSpan.FromSeconds(3);
+                nextUpdate = DateTime.Now + span;
+                Events.CallRemote("server:CharChange", (string)args[0]);//ID
+                CharCEF.ExecuteJs($"RefreshCharData(\"{characters[Convert.ToInt32(args[0])].Name}\", \"{characters[Convert.ToInt32(args[0])].AppearanceID}\")");
+            }
         }
 
         private void CharacterStopWalk(object[] args)
