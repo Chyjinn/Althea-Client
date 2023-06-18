@@ -12,7 +12,7 @@ namespace Client
         public PlayerAttach()
         {
             RAGE.Elements.Player player = RAGE.Elements.Player.LocalPlayer;                        
-            Key.Bind(Keys.VK_SPACE, true, () =>
+            /*Key.Bind(Keys.VK_SPACE, true, () =>
             {
                 var sharedData = player.GetSharedData("anim");
                 if (sharedData != "")
@@ -20,7 +20,7 @@ namespace Client
                     Events.CallRemote("server:stopAnim");
                 }
                 return 1;
-            });
+            });*/
 
             Events.Add("client:getGroundHeight", getGroundHeight);
             Events.Add("client:getBoxDictionary", getBoxDictionary);         
