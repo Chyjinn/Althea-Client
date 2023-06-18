@@ -10,6 +10,7 @@ namespace Client.Animator
         {
             Events.Add("client:playAnimator", playAnimator);
             Events.Add("client:bindRightArrow", bindRightArrow);
+            Events.Add("client:unbindRightArrow", unbindRightArrow);
             RAGE.Elements.Player player = RAGE.Elements.Player.LocalPlayer;
             //RAGE.Chat.Output(player.GetSharedData("anim").ToString());
             /*if(player.GetSharedData("anim") == "true")
@@ -58,6 +59,11 @@ namespace Client.Animator
                 Events.CallLocal("client:playAnimator");
                 return 1;
             });
+        }
+
+        public void unbindRightArrow(object[] args)
+        {
+            Key.Unbind(Keys.VK_RIGHT);
         }
     }
 }
