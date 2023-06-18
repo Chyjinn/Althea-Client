@@ -228,6 +228,23 @@ public class Key: Events.Script
         }
     }
 
+    static public void Unbind(int keyCode, bool triggertype, Func<int> func)
+    {
+        int keyIndex = keyList.FindIndex(x => x.keyCode == keyCode);
+        if (keyIndex != -1) keyList[keyIndex].keyFuncs.Remove(func);
+        else
+        {
+            var keyFuncs = new List<Func<int>>
+            {
+                func
+            };
+
+            KeyHandler handler = new KeyHandler(keyCode, keyFuncs, false, triggertype);
+            keyList.Remove(handler);
+        }
+    }
+
+
     static public void Bind(int[] keyCodes, bool triggertype, Func<int> func)
     {
         for(int i = 0; i < keyCodes.Length; i++) Bind(keyCodes[i], triggertype, func);
