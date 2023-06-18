@@ -2,17 +2,69 @@
 using RAGE.Game;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Client.Character
 {
-    internal class CharacterScreen : Events.Script
+    class Character
     {
-        int[] disabledControls = new int[31]{ 30, // A & D
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int AppearanceID { get; set; }
+        public Appearance Appearance { get; set; }
+        public Character(int charID, string charName, int charApperanceID)
+        {
+            Id = charID;
+            Name = charName;
+            AppearanceID = charApperanceID;
+        }
+    }
+
+    public class Appearance
+    {
+        public int Id { get; set; }
+        public bool Gender { get; set; }
+        public byte EyeColor { get; set; }
+        public byte HairColor { get; set; }
+        public byte HairHighlight { get; set; }
+        public byte Parent1Face { get; set; }
+        public byte Parent2Face { get; set; }
+        public byte Parent3Face { get; set; }
+        public byte Parent1Skin { get; set; }
+        public byte Parent2Skin { get; set; }
+        public byte Parent3Skin { get; set; }
+        public byte FaceMix { get; set; }
+        public byte SkinMix { get; set; }
+        public byte OverrideMix { get; set; }
+        public sbyte NoseWidth { get; set; }
+        public sbyte NoseHeight { get; set; }
+        public sbyte NoseLength { get; set; }
+        public sbyte NoseBridge { get; set; }
+        public sbyte NoseTip { get; set; }
+        public sbyte NoseBroken { get; set; }
+        public sbyte BrowHeight { get; set; }
+        public sbyte BrowWidth { get; set; }
+        public sbyte CheekboneHeight { get; set; }
+        public sbyte CheekboneWidth { get; set; }
+        public sbyte CheekWidth { get; set; }
+        public sbyte Eyes { get; set; }
+        public sbyte Lips { get; set; }
+        public sbyte JawWidth { get; set; }
+        public sbyte JawHeight { get; set; }
+        public sbyte ChinLength { get; set; }
+        public sbyte ChinPosition { get; set; }
+        public sbyte ChinWidth { get; set; }
+        public sbyte ChinShape { get; set; }
+        public sbyte NeckWidth { get; set; }
+
+    }
+        internal class CharacterScreen : Events.Script
+    {
+        int[] disabledControls = new int[32]{ 30, // A & D
         31, // W & S
         21, // Left Shift
         36, // Left Ctrl
         22, // Space
+        24, // Attack
         44, // Q
         38, // E
         71, // W - Vehicle
@@ -42,73 +94,49 @@ namespace Client.Character
 
 
         RAGE.Ui.HtmlWindow CharCEF;
+        RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
+        Character[] characters;
 
         public CharacterScreen()
         {
             Events.Add("client:showCharScreen", ShowCharScreen);
-            Events.Add("client:PedTest", PedTest);
             Events.Add("client:CharWalkIn", CharacterWalkIn);
             Events.Add("client:CharWalkOut", CharacterWalkOut);
             Events.Add("client:ChatStopWalk", CharacterStopWalk);
+            Events.Add("client:CharChangeToServer", CharChangeToServer);
         }
-
+        private void CharChangeToServer(object[] args)
+        {
+            Chat.Output("Kliens megkapja");
+            Events.CallRemote("server:CharChange", (string)args[0]);//ID
+            CharCEF.ExecuteJs($"RefreshCharData(\"{characters[Convert.ToInt32(args[0])].Name}\", \"{characters[Convert.ToInt32(args[0])].AppearanceID}\")");
+        }
 
         private void CharacterStopWalk(object[] args)
         {
-            RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
             p.ClearTasksImmediately();
         }
         private void CharacterWalkIn(object[] args)
         {
-            RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
             //p.TaskGoStraightToCoord(-815.4f, 176.9f, 76.74f, 0.1f, -1, 57f, 0.1f);
             p.TaskGoStraightToCoord(-811.62f, 175.17f, 76.75f, 0.3f, -1, 107.7f, 0f);
         }
 
         private void CharacterWalkOut(object[] args)
         {
-            RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
             p.TaskGoStraightToCoord(-815.4f, 176.9f, 76.75f, 0.3f, -1, 57f, 0f);
             
-        }
-
-        private async void PedTest(object[] args)
-        {
-            RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
-            switch ((int)args[0])
-            {
-                case 0:
-                    p.TaskGoStraightToCoord(-813.36f, 173.24f, 76.74f, 0.1f, -1, -37f, 0.1f);
-                    break;
-                    case 1:
-                    
-                    break;
-                    case 2:
-                    
-                    break;
-
-                default:
-                    break;
-            }
-            //-813.36, 173.24, 76.74, 0,0,-37.27 SPAWN
-            //-811.76, 175.14, 76.74, 0, 0, 107.7 FŐ
-            //-815.4f, 176.9f, 76.74f, 0, 0, 57 KISÉTÁLT
-
-            
-            //p.TaskWanderInArea(-814.6f, 177.9f, 76.74f, 0.2f, 1f, 1f);
-            Chat.Output("Ped Test");
-            //Vector3 v = new Vector3(-811.8f, 175.06f, 76.75f);
-            //RAGE.Elements.Ped ped = new RAGE.Elements.Ped(0x9C9EFFD8, v);
-            //KINT -814.6, 177.9, 76.74, 0, 0, -95
-            //BENT -813.5, 173.2, 76.74, 0, 0, -167
-           //ped.SetToRagdoll(5000, 5000, 2, true, true, true);
-            //ped.TaskWanderInArea(-814.6f, 177.9f, 76.74f, 0.2f, 1f, 1f);
-            //ped.TaskGoStraightToCoord(-814.6f, 177.9f, 76.74f, 2f, -1, 10f, 10f);
         }
 
         private void ShowCharScreen(object[] args)
         {
             CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
+            CharCEF.Active = false;
+            characters = RAGE.Util.Json.Deserialize<Character[]>(args[0].ToString());
+            for (int i = 0; i < characters.Length; i++)
+            {
+                CharCEF.ExecuteJs($"AddCharacter(\"{i}\", \"{characters[i].Name}\")");
+            }
             CharCEF.Active = true;
             Events.Tick += CharScreenControl;
         }
@@ -119,12 +147,6 @@ namespace Client.Character
             {
                 Pad.DisableControlAction(0, disabledControls[i], true);
             }
-        }
-
-
-        private void ProcessCharacters(object[] args)
-        {
-
         }
     }
 }
