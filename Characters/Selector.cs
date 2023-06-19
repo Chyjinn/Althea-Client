@@ -57,7 +57,7 @@ namespace Client.Character
         public sbyte NeckWidth { get; set; }
 
     }
-        internal class CharacterScreen : Events.Script
+        internal class Selector : Events.Script
     {
         int[] disabledControls = new int[32]{ 30, // A & D
         31, // W & S
@@ -98,7 +98,7 @@ namespace Client.Character
         Character[] characters;
         DateTime nextUpdate = DateTime.Now;
 
-        public CharacterScreen()
+        public Selector()
         {
             Events.Add("client:showCharScreen", ShowCharScreen);
             Events.Add("client:CharWalkIn", CharacterWalkIn);
@@ -106,6 +106,7 @@ namespace Client.Character
             Events.Add("client:ChatStopWalk", CharacterStopWalk);
             Events.Add("client:CharChangeToServer", CharChangeToServer);
         }
+
         private void CharChangeToServer(object[] args)
         {
             if (DateTime.Now > nextUpdate)
@@ -140,7 +141,7 @@ namespace Client.Character
             characters = RAGE.Util.Json.Deserialize<Character[]>(args[0].ToString());
             for (int i = 0; i < characters.Length; i++)
             {
-                CharCEF.ExecuteJs($"AddCharacter(\"{i}\", \"{characters[i].Name}\")");
+                CharCEF.ExecuteJs($"AddCharacter(\"{characters[i].Id}\", \"{characters[i].Name}\")");
             }
             CharCEF.Active = true;
             Events.Tick += CharScreenControl;
