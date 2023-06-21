@@ -120,13 +120,13 @@ namespace Client.Login
 
             if (type)//tokenlogin
             {
-                AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/tokenlogin.html");
+                //AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/tokenlogin.html");
             }
             else//sima login
             {
-                AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/login.html");
+                //AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/login.html");
             }
-            AuthCEF.Active = true;
+            //AuthCEF.Active = true;
             
         }
 

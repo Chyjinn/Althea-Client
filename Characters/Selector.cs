@@ -2,6 +2,7 @@
 using RAGE.Game;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Client.Character
 {
@@ -9,13 +10,17 @@ namespace Client.Character
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public DateTime DOB { get; set; }
+        public string POB { get; set; }
         public float posX { get; set; }
         public float posY { get; set; }
         public float posZ { get; set; }
         public int AppearanceID { get; set; }
         public Appearance Appearance { get; set; }
-        public Character(int Id, string Name, int AppearanceID, float posX, float posY, float posZ)
+        public Character(int Id, string Name, DateTime DOB, string POB, int AppearanceID, float posX, float posY, float posZ)
         {
+            this.DOB = DOB;
+            this.POB = POB;
             this.Id = Id;
             this.Name = Name;
             this.AppearanceID = AppearanceID;
@@ -61,7 +66,6 @@ namespace Client.Character
         public sbyte ChinWidth { get; set; }
         public sbyte ChinShape { get; set; }
         public sbyte NeckWidth { get; set; }
-
     }
         internal class Selector : Events.Script
     {
@@ -119,9 +123,24 @@ namespace Client.Character
             {
                 TimeSpan span = TimeSpan.FromSeconds(3);
                 nextUpdate = DateTime.Now + span;
-                Events.CallRemote("server:CharChange", (string)args[0]);//ID
-                CharCEF.ExecuteJs($"RefreshCharData(\"{characters[Convert.ToInt32(args[0])].Name}\", \"{characters[Convert.ToInt32(args[0])].AppearanceID}\")");
+                string location = RAGE.Game.Gxt.Get(Zone.GetNameOfZone(characters[GetCharIndexById(Convert.ToInt32(args[0]))].posX, characters[GetCharIndexById(Convert.ToInt32(args[0]))].posY, characters[GetCharIndexById(Convert.ToInt32(args[0]))].posZ));
+                string pob = characters[GetCharIndexById(Convert.ToInt32(args[0]))].POB;
+                string dob = characters[GetCharIndexById(Convert.ToInt32(args[0]))].DOB.ToString("yyyy.MM.dd.", CultureInfo.CurrentCulture);
+                Events.CallRemote("server:CharChange", args[0].ToString());//ID
+                CharCEF.ExecuteJs($"RefreshCharData(\"{characters[GetCharIndexById(Convert.ToInt32(args[0]))].Name}\", \"{location}\", \"{pob}\", \"{dob}\")");
             }
+        }
+
+        private int GetCharIndexById(int id)
+        {
+            for (int i = 0; i < characters.Length; i++)
+            {
+                if (characters[i].Id == id)
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
 
         private void CharacterStopWalk(object[] args)
