@@ -9,13 +9,19 @@ namespace Client.Character
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public float posX { get; set; }
+        public float posY { get; set; }
+        public float posZ { get; set; }
         public int AppearanceID { get; set; }
         public Appearance Appearance { get; set; }
-        public Character(int charID, string charName, int charApperanceID)
+        public Character(int Id, string Name, int AppearanceID, float posX, float posY, float posZ)
         {
-            Id = charID;
-            Name = charName;
-            AppearanceID = charApperanceID;
+            this.Id = Id;
+            this.Name = Name;
+            this.AppearanceID = AppearanceID;
+            this.posX = posX;
+            this.posY = posY;
+            this.posZ = posZ;
         }
     }
 
@@ -122,6 +128,7 @@ namespace Client.Character
         {
             p.ClearTasksImmediately();
         }
+
         private void CharacterWalkIn(object[] args)
         {
             //p.TaskGoStraightToCoord(-815.4f, 176.9f, 76.74f, 0.1f, -1, 57f, 0.1f);
@@ -131,7 +138,6 @@ namespace Client.Character
         private void CharacterWalkOut(object[] args)
         {
             p.TaskGoStraightToCoord(-815.4f, 176.9f, 76.75f, 0.3f, -1, 57f, 0f);
-            
         }
 
         private void ShowCharScreen(object[] args)

@@ -29,7 +29,7 @@ namespace Client.Login
         public LoginRegister()
         {
             Events.OnPlayerReady += GetTokenFromJS;//amint betöltött a játék megpróbáljuk betölteni a login tokent
-
+            
             Events.Add("client:ShowLoginForm", ShowLoginForm);
             Events.Add("client:ShowRegisterForm", ShowRegisterForm);
             Events.Add("client:DestroyAuthForm", DestroyAuthForm);
