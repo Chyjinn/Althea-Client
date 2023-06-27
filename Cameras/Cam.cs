@@ -10,6 +10,7 @@ namespace Client.Cameras
         int camera = 1;
         public Cam() {
             Events.Add("client:SetCamera", SetCamera);
+            Events.Add("client:DeleteCamera", DeleteCamera);
         }
        
         public void SetCamera(object[] args)
@@ -24,6 +25,14 @@ namespace Client.Cameras
             camera = RAGE.Game.Cam.CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", posX, posY, posZ, rotX, rotY, rotZ, fov, true, 2);
             RAGE.Game.Cam.SetCamActive(camera, true);
             RAGE.Game.Cam.RenderScriptCams(true, false, 0, true, false, 0);
+        }
+
+
+        public void DeleteCamera(object[] args)
+        {
+            RAGE.Game.Cam.DestroyCam(camera, true);
+            RAGE.Game.Cam.SetCamActive(camera, false);
+            RAGE.Game.Cam.RenderScriptCams(false, false, 0, true, false, 0);
         }
     }
 }

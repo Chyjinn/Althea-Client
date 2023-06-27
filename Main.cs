@@ -40,7 +40,7 @@ namespace Client
             {
                 YTCEF.Active = false;
                 YTCEF.Destroy();
-            }, 60000);
+            }, 5000);
 
         }
 

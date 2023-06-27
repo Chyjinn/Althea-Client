@@ -36,6 +36,7 @@ namespace Client.Login
 
             Events.Add("client:LoginAttempt", LoginAttempt);
             Events.Add("client:LoginAttemptWithToken", LoginAttemptWithToken);
+
             Events.Add("client:IncorrectToken", IncorrectToken);
 
             Events.Add("client:RegisterAttempt", RegisterAttempt);
@@ -46,7 +47,7 @@ namespace Client.Login
 
         private void GetTokenFromJS()//indításnál fut le (onPlayerReady) -> client:LoadToken-t hívja majd vissza
         {
-            Events.CallLocal("js:loadToken");
+            Events.CallLocal("js:LoadToken");
         }
 
         private void SaveToken(object[] args)//szerver meghívja, mentjük .storage-ba a tokent
@@ -54,7 +55,7 @@ namespace Client.Login
             uint accid = Convert.ToUInt32(args[0]);
             string token = args[1].ToString();
             string expiration = args[2].ToString();
-            Events.CallLocal("js:saveToken", accid, token, expiration);
+            Events.CallLocal("js:SaveToken", accid, token, expiration);
         }
 
 
@@ -110,7 +111,6 @@ namespace Client.Login
                     ProcessLoginScreen(true);
                 }
             }
-
         }
 
         public void ProcessLoginScreen(bool type)//type=true -> token-es login | type=false -> sima login
@@ -120,13 +120,13 @@ namespace Client.Login
 
             if (type)//tokenlogin
             {
-                //AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/tokenlogin.html");
+                AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/tokenlogin.html");
             }
             else//sima login
             {
-                //AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/login.html");
+                AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/login.html");
             }
-            //AuthCEF.Active = true;
+            AuthCEF.Active = true;
             
         }
 
