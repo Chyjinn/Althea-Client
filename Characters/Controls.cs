@@ -93,17 +93,23 @@ namespace Client.Characters
             if (entity.Type == RAGE.Elements.Type.Player)
             {
                 RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
-                bool frozen = (bool)p.GetSharedData("player:Frozen");
-                p.FreezePosition(frozen);
-
-                bool invisible = (bool)p.GetSharedData("player:Invisible");
-                if (invisible)
+                if (p.HasData("player:Frozen"))
                 {
-                    p.SetAlpha(0, true);
+                    bool frozen = (bool)p.GetSharedData("player:Frozen");
+                    p.FreezePosition(frozen);
                 }
-                else
+
+                if (p.HasData("player:Invisible"))
                 {
-                    p.SetAlpha(255, true);
+                    bool invisible = (bool)p.GetSharedData("player:Invisible");
+                    if (invisible)
+                    {
+                        p.SetAlpha(0, true);
+                    }
+                    else
+                    {
+                        p.SetAlpha(255, true);
+                    }
                 }
             }
         }

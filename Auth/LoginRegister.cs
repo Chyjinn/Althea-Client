@@ -76,7 +76,6 @@ namespace Client.Login
 
         public void SetHudState(bool flag)
         {
-            RAGE.Nametags.Enabled = flag;
             RAGE.Game.Ui.DisplayRadar(flag);
         }
 

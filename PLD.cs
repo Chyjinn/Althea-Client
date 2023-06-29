@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using RAGE;
 using RAGE.Game;
 using RAGE.Ui;
@@ -21,6 +22,7 @@ namespace RageBibopClient
 
         public void Update(List<Events.TickNametagData> tick)
         {
+
             var position = RAGE.Elements.Player.LocalPlayer.Position;
             var tempStreet = 0;
             var tempCrossing = 0;
