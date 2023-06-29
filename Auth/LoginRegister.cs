@@ -28,7 +28,7 @@ namespace Client.Login
         TokenData t;
         public LoginRegister()
         {
-            //Events.OnPlayerReady += GetTokenFromJS;//amint betöltött a játék megpróbáljuk betölteni a login tokent
+            Events.OnPlayerReady += GetTokenFromJS;//amint betöltött a játék megpróbáljuk betölteni a login tokent
             
             Events.Add("client:ShowLoginForm", ShowLoginForm);
             Events.Add("client:ShowRegisterForm", ShowRegisterForm);

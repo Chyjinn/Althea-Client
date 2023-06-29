@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace Client.Characters
 {
-    internal class Controls: Script
+    internal class Controls : Events.Script
     {
         int[] disabledControls = new int[32]{ 30, // A & D
         31, // W & S
@@ -47,13 +47,15 @@ namespace Client.Characters
             Events.AddDataHandler("player:Invisible", PlayerInvisible);
             Events.OnEntityStreamIn += OnEntityStreamIn;
         }
+
         private void PlayerInvisible(RAGE.Elements.Entity entity, object arg, object oldArg)
         {
             if (entity.Type == RAGE.Elements.Type.Player)
             {
-                RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
+                bool state = Convert.ToBoolean(arg);
 
-                if ((bool)arg == true)
+                RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
+                if (state)
                 {
                     p.SetAlpha(0, true);
                 }
@@ -68,16 +70,20 @@ namespace Client.Characters
         {
             if (entity.Type == RAGE.Elements.Type.Player)
             {
-                RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
                 bool state = Convert.ToBoolean(arg);
+
+                RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
                 p.FreezePosition(state);
-                if (state)
+                if (p.RemoteId == RAGE.Elements.Player.LocalPlayer.RemoteId)
                 {
-                    Events.Tick += KeepControlsDisabled;
-                }
-                else
-                {
-                    Events.Tick -= KeepControlsDisabled;
+                    if (state)
+                    {
+                        Events.Tick += KeepControlsDisabled;
+                    }
+                    else
+                    {
+                        Events.Tick -= KeepControlsDisabled;
+                    }
                 }
             }
         }
@@ -87,10 +93,10 @@ namespace Client.Characters
             if (entity.Type == RAGE.Elements.Type.Player)
             {
                 RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
-                bool state = (bool)p.GetSharedData("frozen");
-                p.FreezePosition(state);
+                bool frozen = (bool)p.GetSharedData("player:Frozen");
+                p.FreezePosition(frozen);
 
-                bool invisible = (bool)p.GetSharedData("invisible");
+                bool invisible = (bool)p.GetSharedData("player:Invisible");
                 if (invisible)
                 {
                     p.SetAlpha(0, true);
