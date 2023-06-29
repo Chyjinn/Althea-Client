@@ -14,8 +14,15 @@ namespace Client
     public class Main : Events.Script
     {
         RAGE.Ui.HtmlWindow YTCEF;
+        HtmlWindow Chat;
         public Main() 
         {
+            RAGE.Chat.Show(false);
+            Chat = new HtmlWindow("package://frontend/chat/index.html");
+            Chat.Active = true;
+            Chat.MarkAsChat();
+            
+
             Interior.EnableInteriorProp(166657, "V_Michael_bed_tidy");
             Interior.EnableInteriorProp(166657, "V_Michael_M_items");
             Interior.EnableInteriorProp(166657, "V_Michael_D_items");
