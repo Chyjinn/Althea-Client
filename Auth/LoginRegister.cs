@@ -95,6 +95,9 @@ namespace Client.Login
 
         private void LoadToken(object[] args)//A "js:loadToken" ezt fogja meghívni, itt vizsgálni kell hogy valid token van-e ha a player belenyúlna (jó adatokat kapunk-e, lejárt-e a token)
         {
+            Chat.Output(args[0].ToString());
+            Chat.Output(args[1].ToString());
+            Chat.Output(args[2].ToString());
             //TODO: kezelni ha a user belenyúl a tokenbe
             if (args[0].ToString() == "0" || args[1].ToString() == "tokenerror" || args[2].ToString() == "0")//ha nem tudja beolvasni a JS a tokent akkor is ezeket az értékeket kapjuk
             {
@@ -108,6 +111,10 @@ namespace Client.Login
                 {
                     ProcessLoginScreen(true);
                 }
+                else//lejárt a token
+                {
+                    ProcessLoginScreen(false);
+                }
             }
         }
 
@@ -115,14 +122,24 @@ namespace Client.Login
         {
             SetHudState(true);
             RAGE.Elements.Player.LocalPlayer.FreezePosition(false);
-
+            Chat.Output("LoginProcess:  " + type.ToString());
             if (type)//tokenlogin
             {
                 AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/tokenlogin.html");
+                int x = 1920;
+                int y = 1080;
+
+                RAGE.Game.Graphics.GetActiveScreenResolution(ref x, ref y);
+                AuthCEF.ExecuteJs($"SetResolution(\"{x}\", \"{y}\")");
             }
             else//sima login
             {
                 AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/login.html");
+                int x = 1920;
+                int y = 1080;
+
+                RAGE.Game.Graphics.GetActiveScreenResolution(ref x, ref y);
+                AuthCEF.ExecuteJs($"SetResolution(\"{x}\", \"{y}\")");
             }
             AuthCEF.Active = true;
             

@@ -45,7 +45,26 @@ namespace Client.Characters
         {
             Events.AddDataHandler("player:Frozen", PlayerFrozen);
             Events.AddDataHandler("player:Invisible", PlayerInvisible);
+            Events.AddDataHandler("player:Ragdoll", PlayerRagdoll);
             Events.OnEntityStreamIn += OnEntityStreamIn;
+        }
+
+        private void PlayerRagdoll(RAGE.Elements.Entity entity, object arg, object oldArg)
+        {
+            if (entity.Type == RAGE.Elements.Type.Player)
+            {
+                bool state = Convert.ToBoolean(arg);
+
+                RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
+                if (state)
+                {
+                    p.SetToRagdoll(10000000, 0, 0, true, true, false);
+                }
+                else
+                {
+                    p.SetToRagdoll(1, 0, 0, true, true, false);
+                }
+            }
         }
 
         private void PlayerInvisible(RAGE.Elements.Entity entity, object arg, object oldArg)
@@ -97,6 +116,16 @@ namespace Client.Characters
                 {
                     bool frozen = (bool)p.GetSharedData("player:Frozen");
                     p.FreezePosition(frozen);
+                }
+
+                if (p.HasData("player:Ragdoll"))
+                {
+                    bool state = (bool)p.GetSharedData("player:Ragdoll");
+                    if (state)
+                    {
+                        p.SetToRagdoll(1000000, 0, 0, true, true, false);
+                    }
+                    
                 }
 
                 if (p.HasData("player:Invisible"))
