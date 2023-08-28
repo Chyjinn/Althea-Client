@@ -1,0 +1,250 @@
+﻿using RAGE.Game;
+using RAGE;
+using System;
+using System.Collections.Generic;
+using RAGE.Elements;
+using System.Linq;
+using System.Security.Principal;
+
+namespace Client.Vehicles
+{
+    class VehControls : Events.Script
+    {
+        RAGE.Ui.HtmlWindow SpeedCam;
+        RAGE.Elements.Vehicle LastVehicle = null;
+        float TopSpeed = -1f;
+
+        public VehControls()
+        {
+            Events.AddDataHandler("vehicle:Siren", VehicleSiren);
+            Events.OnEntityStreamIn += OnEntityStreamIn;
+            Events.Tick += Tick;
+            //Events.Add("client:Siren", VehSiren);
+            SpeedCam = new RAGE.Ui.HtmlWindow("package://frontend/radar-gun/radar.html");
+            SpeedCam.Active = true;
+        }
+
+
+
+        private void Tick(List<Events.TickNametagData> nametags)
+        {
+            int endEntity = -1;
+            RAGE.Game.Player.GetEntityPlayerIsFreeAimingAt(ref endEntity);
+            int entityType = RAGE.Game.Entity.GetEntityType(endEntity);
+            
+            if (entityType == 1)
+            {
+                RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtHandle(endEntity);
+                if (p.Vehicle != null)
+                {
+                    RAGE.Elements.Vehicle v = p.Vehicle;
+                    if (v != LastVehicle)
+                    {
+                        RAGE.Game.Audio.PlaySound(2, "5_SEC_WARNING", "HUD_MINI_GAME_SOUNDSET", true,0, true);
+                        LastVehicle = v;
+                        TopSpeed = 0f;
+                    }
+                    float speed = v.GetSpeed();
+                    if (speed > TopSpeed)
+                    {
+                        TopSpeed = speed;
+                    }
+                    int kmh = Convert.ToInt32(TopSpeed * 3.6);
+
+                    Vector3 ppos = RAGE.Elements.Player.LocalPlayer.Position;
+                    Vector3 vpos = v.Position;
+                    float dist = RAGE.Game.Misc.GetDistanceBetweenCoords(ppos.X, ppos.Y, ppos.Z, vpos.X, vpos.Y, vpos.Z, true);
+                    string speedres = kmh.ToString();
+                    string speedpadded = "";
+                    if (kmh < 10)
+                    {
+                        speedpadded = speedres.PadLeft(3, '0');
+                    }
+                    else if (kmh < 100)
+                    {
+                        speedpadded = speedres.PadLeft(2, '0');
+                    }
+                    else
+                    {
+                        speedpadded = speedres;
+                    }
+
+
+                    string distpadded = "";
+                    string distres = Convert.ToInt32(dist).ToString();
+                    if (dist < 10)
+                    {
+                        distpadded = distres.PadLeft(3, '0');
+                    }
+                    else if (dist < 100)
+                    {
+                        distpadded = distres.PadLeft(2, '0');
+                    }
+                    else
+                    {
+                        distpadded = distres;
+                    }
+
+
+                    SpeedCam.ExecuteJs($"updateSpeed('{speedpadded}')");
+                    SpeedCam.ExecuteJs($"updateDist('{distpadded}')");
+                    //Chat.Output(RAGE.Game.Vehicle.GetDisplayNameFromVehicleModel(v.Model).ToString() + " - " + speed + " M/S; " + kmh + " km/h; " + mph + " MPH");
+                }
+
+            }
+            else if (entityType == 2)
+            {
+                RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtHandle(endEntity);
+                if (v != LastVehicle)
+                {
+                    LastVehicle = v;
+                    TopSpeed = 0f;
+                }
+                float speed = v.GetSpeed();
+                if (speed > TopSpeed)
+                {
+                    TopSpeed = speed;
+                }
+                int kmh = Convert.ToInt32(TopSpeed * 3.6);
+
+                Vector3 ppos = RAGE.Elements.Player.LocalPlayer.Position;
+                Vector3 vpos = v.Position;
+
+
+
+                float dist = RAGE.Game.Misc.GetDistanceBetweenCoords(ppos.X, ppos.Y, ppos.Z, vpos.X, vpos.Y, vpos.Z, true);
+                string speedres = kmh.ToString();
+                string speedpadded = "";
+                if (kmh < 10)
+                {
+                    speedpadded = speedres.PadLeft(3, '0');
+                }
+                else if (kmh < 100)
+                {
+                    speedpadded = speedres.PadLeft(3, '0');
+                }
+                else
+                {
+                    speedpadded = speedres;
+                }
+
+
+                string distpadded = "";
+                string distres = Convert.ToInt32(dist).ToString();
+                if (dist < 10)
+                {
+                    distpadded = distres.PadLeft(3, '0');
+                }
+                else if (dist < 100)
+                {
+                    distpadded = distres.PadLeft(3, '0');
+                }
+                else
+                {
+                    distpadded = distres;
+                }
+
+                SpeedCam.ExecuteJs($"updateSpeed('{speedpadded}')");
+                SpeedCam.ExecuteJs($"updateDist('{distpadded}')");
+                //Chat.Output(RAGE.Game.Vehicle.GetDisplayNameFromVehicleModel(v.Model).ToString() + " - " + speed + " M/S; "+ kmh + " km/h; " + mph + " MPH");
+
+            }
+            /*
+            Vector3 headPos = RAGE.Elements.Player.LocalPlayer.GetBoneCoords(31086, 0.0f, 0.0f, 0.0f);
+            Vector3 offsetPos = RAGE.Game.Cam.GetGameplayCamRot(0);
+                //RAGE.Game.Entity.GetOffsetFromEntityInWorldCoords(RAGE.Elements.Player.LocalPlayer.Handle, 0.0f, 2.0f, 0f);
+            RAGE.Game.Graphics.DrawLine(headPos.X, headPos.Y, headPos.Z, offsetPos.X, offsetPos.Y, offsetPos.Z, 255, 0, 0, 255);
+            int resultShape = RAGE.Game.Shapetest.StartShapeTestRay(headPos.X, headPos.Y, headPos.Z, offsetPos.X, offsetPos.Y, offsetPos.Z, 1, RAGE.Elements.Player.LocalPlayer.Handle, 7);
+
+            int hit = -1;
+            Vector3 endCoords = new Vector3();
+            Vector3 surfaseNormal = new Vector3();
+            int endEndidty = -1;
+            
+            int result = RAGE.Game.Shapetest.GetShapeTestResult(resultShape, ref hit, endCoords, surfaseNormal, ref endEndidty);
+
+            RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtHandle(endEndidty);
+            if (result != 0)
+            {
+                RAGE.Game.Graphics.DrawMarker(28, endCoords.X, endCoords.Y, endCoords.Z, 0.0f, 0.0f, 0.0f, 0.0f, 180.0f, 0.0f, 0.2f, 0.2f, 0.2f, 255, 128, 0, 50, false, true, 2, false, null, null, false);
+                Chat.Output(v.Model.ToString());
+            }*/
+                
+        }
+/*
+        public static RAGE.Elements.Player GetPlayerFromRaycast(Vector3 fromCoords, Vector3 toCoords, int ignoreEntity, int flags)
+        {
+            bool hit = false;
+            Vector3 endCoords = new Vector3();
+            Vector3 surfaceNormal = new Vector3();
+            RAGE.Elements.Entity EntityHit = null;
+            int materialHash = -1;
+            int elementHitHandle = -1;
+
+            int ray = RAGE.Game.Shapetest.StartShapeTestRay(fromCoords.X, fromCoords.Y, fromCoords.Z, toCoords.X, toCoords.Y, toCoords.Z, flags, ignoreEntity, 0);
+
+            int curTemp = 0;
+
+            int shapeResult = RAGE.Game.Shapetest.GetShapeTestResultEx(ray, ref curTemp, endCoords, surfaceNormal, ref materialHash, ref elementHitHandle);
+
+            // I think GetAtHandle is still broken so:
+
+            if (elementHitHandle > 0)
+            {
+                int entityType = RAGE.Game.Entity.GetEntityType(elementHitHandle);
+                // 0 = nothing, probably something in the world.
+                // 1 = Ped or Player.
+                // 2 = Vehicle
+                // 3 = Object
+                if (entityType == 1)
+                {
+                    EntityHit = RAGE.Elements.Entities.Players.All.FirstOrDefault(x => x.Handle == elementHitHandle);
+                }
+            }
+
+            return EntityHit;
+        }
+*/
+
+        private void VehicleSiren(RAGE.Elements.Entity entity, object arg, object oldArg)
+        {
+            string siren = Convert.ToString(arg);
+            RAGE.Chat.Output("SZIRÉNA: " + siren);
+
+            RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(entity.RemoteId);
+            //bool state = Convert.ToBoolean(arg);
+            if (siren != "-")
+                {
+                    RAGE.Game.Audio.PlaySoundFromEntity(1, siren, v.Handle, "", true, 0);
+                }
+                else
+                {
+                    RAGE.Game.Audio.StopSound(1);
+                }
+        }
+
+
+        private void VehSiren(object[] args)
+        {
+            string siren = Convert.ToString(args[0]);
+            RAGE.Chat.Output("SZIRÉNA: " + siren);
+            //bool state = Convert.ToBoolean(arg);
+            RAGE.Elements.Vehicle v = RAGE.Elements.Player.LocalPlayer.Vehicle;
+
+            if (siren != "")
+            {
+                RAGE.Game.Audio.PlaySoundFromEntity(1, siren, v.Handle, "", true, 0);
+            }
+            else
+            {
+                RAGE.Game.Audio.StopSound(1);
+            }
+        }
+
+
+        public void OnEntityStreamIn(RAGE.Elements.Entity entity)
+        {
+
+        }
+    }
+}

@@ -23,7 +23,7 @@ namespace Client
             Chat = new HtmlWindow("package://frontend/chat/index.html");
             Chat.Active = true;
             Chat.MarkAsChat();
-            Events.Tick += OnTick;
+            //Events.Tick += OnTick;
             Interior.EnableInteriorProp(166657, "V_Michael_bed_tidy");
             Interior.EnableInteriorProp(166657, "V_Michael_M_items");
             Interior.EnableInteriorProp(166657, "V_Michael_D_items");
@@ -33,11 +33,6 @@ namespace Client
             Binds.Binds.bindKeys();
             Events.Add("client:YTtest", YoutubeTest);
             Events.Add("client:LoadIPL", LoadIPL);
-        }
-
-        private void OnTick(List<Events.TickNametagData> nametags)
-        {
-            //RAGE.Game.Ui.HideHudComponentThisFrame()
         }
 
         private void YoutubeTest(object[] args)

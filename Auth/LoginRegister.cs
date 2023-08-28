@@ -28,7 +28,7 @@ namespace Client.Login
         TokenData t;
         public LoginRegister()
         {
-            Events.OnPlayerReady += GetTokenFromJS;//amint betöltött a játék megpróbáljuk betölteni a login tokent
+            //Events.OnPlayerReady += GetTokenFromJS;//amint betöltött a játék megpróbáljuk betölteni a login tokent
             
             Events.Add("client:ShowLoginForm", ShowLoginForm);
             Events.Add("client:ShowRegisterForm", ShowRegisterForm);
@@ -47,7 +47,8 @@ namespace Client.Login
 
         private void GetTokenFromJS()//indításnál fut le (onPlayerReady) -> client:LoadToken-t hívja majd vissza
         {
-            Events.CallLocal("js:LoadToken");
+            ProcessLoginScreen(false);
+            //Events.CallLocal("js:LoadToken"); - ameddig nincs meg laptopon a token kezelés addig átugorjuk
         }
 
         private void SaveToken(object[] args)//szerver meghívja, mentjük .storage-ba a tokent
