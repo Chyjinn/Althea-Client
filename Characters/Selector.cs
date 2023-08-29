@@ -79,8 +79,6 @@ namespace Client.Character
             Events.Add("client:showCharScreen", ShowCharScreen);
             Events.Add("client:hideCharScreen", HideCharScreen);
             Events.Add("client:CharWalkIn", CharacterWalkIn);
-            Events.Add("client:CharWalkOut", CharacterWalkOut);
-            Events.Add("client:ChatStopWalk", CharacterStopWalk);
             Events.Add("client:CharChangeToServer", CharChangeToServer);
             Events.Add("client:SelectCharacter", CharSelected);
         }
@@ -94,7 +92,7 @@ namespace Client.Character
         {
             if (DateTime.Now > nextUpdate)
             {
-                TimeSpan span = TimeSpan.FromSeconds(3);
+                TimeSpan span = TimeSpan.FromSeconds(1);
                 nextUpdate = DateTime.Now + span;
                 string location = RAGE.Game.Gxt.Get(Zone.GetNameOfZone(characters[GetCharIndexById(Convert.ToInt32(args[0]))].posX, characters[GetCharIndexById(Convert.ToInt32(args[0]))].posY, characters[GetCharIndexById(Convert.ToInt32(args[0]))].posZ));
                 string pob = characters[GetCharIndexById(Convert.ToInt32(args[0]))].POB;
@@ -116,11 +114,6 @@ namespace Client.Character
             return -1;
         }
 
-        private void CharacterStopWalk(object[] args)
-        {
-            p.ClearTasksImmediately();
-        }
-
         private void CharacterWalkIn(object[] args)
         {
             float x = Convert.ToSingle(args[0]);
@@ -129,11 +122,6 @@ namespace Client.Character
             float rot = Convert.ToSingle(args[3]);
             //p.TaskGoStraightToCoord(-815.4f, 176.9f, 76.74f, 0.1f, -1, 57f, 0.1f);
             p.TaskGoStraightToCoord(x, y, z, 0.3f, -1, rot, 0f);
-        }
-
-        private void CharacterWalkOut(object[] args)
-        {
-            p.TaskGoStraightToCoord(-815.4f, 176.9f, 76.75f, 0.3f, -1, 57f, 0f);
         }
 
         private void ShowCharScreen(object[] args)
