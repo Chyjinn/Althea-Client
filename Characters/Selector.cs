@@ -122,12 +122,12 @@ namespace Client.Character
             float rot = Convert.ToSingle(args[3]);
             //p.TaskGoStraightToCoord(-815.4f, 176.9f, 76.74f, 0.1f, -1, 57f, 0.1f);
             p.TaskGoStraightToCoord(x, y, z, 0.3f, -1, rot, 0f);
+            CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
+            CharCEF.Active = false;
         }
 
         private void ShowCharScreen(object[] args)
         {
-            CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
-            CharCEF.Active = false;
             characters = RAGE.Util.Json.Deserialize<Character[]>(args[0].ToString());
             for (int i = 0; i < characters.Length; i++)
             {

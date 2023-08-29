@@ -47,6 +47,30 @@ namespace Client.Characters
             Events.AddDataHandler("player:Invisible", PlayerInvisible);
             Events.AddDataHandler("player:Ragdoll", PlayerRagdoll);
             Events.OnEntityStreamIn += OnEntityStreamIn;
+            Events.OnPlayerWeaponShot += WeaponShot;
+        }
+
+        private void WeaponShot(Vector3 targetPos, RAGE.Elements.Player target, Events.CancelEventArgs cancel)
+        {
+            float rightAxisX = Pad.GetControlNormal(0, 220);
+            float rightAxisY = Pad.GetControlNormal(0, 221);
+
+            
+            Random r = new Random();
+
+            int value = r.Next(-100, 101);
+            float percent = Convert.ToSingle(value) / 20f;
+            rightAxisX = rightAxisX + percent;
+            value = r.Next(-100, 101);
+            percent = Convert.ToSingle(value) / 20f;
+            rightAxisY = rightAxisY + percent;
+            //RAGE.Game.Cam.SetGameplayCamShakeAmplitude(100f);
+            RAGE.Game.Cam.ShakeGameplayCam("SMALL_EXPLOSION_SHAKE", 0.5f);
+            RAGE.Game.Cam.SetGameplayCamRelativeHeading(rightAxisY);
+            RAGE.Game.Cam.SetGameplayCamRelativePitch(rightAxisX, 1f);
+            //Cam.SetGameplayCamRawYaw
+            //RAGE.Game.Pad.SetControlNormal(0, 270, 1f);
+            //RAGE.Game.Pad.SetControlNormal(0, 272, -1f);
         }
 
         private void PlayerRagdoll(RAGE.Elements.Entity entity, object arg, object oldArg)
