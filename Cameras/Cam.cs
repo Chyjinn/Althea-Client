@@ -9,10 +9,38 @@ namespace Client.Cameras
     {
         int camera = 1;
         public Cam() {
+            Events.Add("client:SkyCam", SkyCam);
             Events.Add("client:SetCamera", SetCamera);
             Events.Add("client:DeleteCamera", DeleteCamera);
         }
-       
+
+        private void SkyCam(object[] args)
+        {
+                RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
+                bool state = Convert.ToBoolean(args[0]);
+                if (state == true && !CheckSkyCam())
+                {
+                    RAGE.Game.Invoker.Invoke(0xD8295AF639FD9CB8, p.Handle, 0, 1);
+                }
+                else
+                {
+                    RAGE.Game.Invoker.Invoke(0xAAB3200ED59016BC, p.Handle, 0, 1);
+                }
+        }
+
+        private bool CheckSkyCam()
+        {
+            RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
+            if (RAGE.Game.Invoker.Invoke<bool>(0xD9D2CFFF49FAB35F, p.Handle, 0, 1))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public void SetCamera(object[] args)
         {
             float posX = Convert.ToSingle(args[0]);

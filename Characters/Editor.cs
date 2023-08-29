@@ -14,11 +14,13 @@ namespace Client.Characters
 
         public void CharacterEditor(object[] args)
         {
+            //int leftbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Left, true, RotateCharLeft);
+            //int rightbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Right, true, RotateCharRight);
+            //RAGE.Input.Unbind(leftbindid);
+            //nem jó mert csak 1x hívja meg a függvényt
+
             Events.Tick += Tick;
-            RAGE.Input.TakeScreenshot("valami.png", 1, 100, 100);
-            //CAM -813.95, 174.2, 76.78, 0, 0, -69
-            //kamera megvan, karakter is a helyén
-            //CEF-et megnyitni
+
         }
         private void Tick(List<Events.TickNametagData> nametags)
         {

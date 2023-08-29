@@ -76,7 +76,6 @@ namespace Client.Character
 
         public Selector()
         {
-            Events.Add("client:CamToAir", CamToAir);
             Events.Add("client:showCharScreen", ShowCharScreen);
             Events.Add("client:hideCharScreen", HideCharScreen);
             Events.Add("client:CharWalkIn", CharacterWalkIn);
@@ -84,22 +83,6 @@ namespace Client.Character
             Events.Add("client:ChatStopWalk", CharacterStopWalk);
             Events.Add("client:CharChangeToServer", CharChangeToServer);
             Events.Add("client:SelectCharacter", CharSelected);
-        }
-        //-424, 1126, 325
-        //-285, 1051, 235
-        private void CamToAir(object[] args)
-        {
-            int state = Convert.ToInt32(args[0]);
-            if (state == 0)
-            {
-                int ideal = RAGE.Game.Invoker.Invoke<int>(0xB5D7B26B45720E05, -424f,1126f,325f,-285f,1051f,235f);
-
-            }
-            else
-            {
-                RAGE.Game.Invoker.Invoke(0xFAA23F2CBA159D67, p.Handle, 0, 1);
-            }
-            
         }
 
         private void CharSelected(object[] args)
