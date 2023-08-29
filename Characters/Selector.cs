@@ -123,8 +123,12 @@ namespace Client.Character
 
         private void CharacterWalkIn(object[] args)
         {
+            float x = Convert.ToSingle(args[0]);
+            float y = Convert.ToSingle(args[1]);
+            float z = Convert.ToSingle(args[2]);
+            float rot = Convert.ToSingle(args[3]);
             //p.TaskGoStraightToCoord(-815.4f, 176.9f, 76.74f, 0.1f, -1, 57f, 0.1f);
-            p.TaskGoStraightToCoord(-811.62f, 175.17f, 76.75f, 0.3f, -1, 107.7f, 0f);
+            p.TaskGoStraightToCoord(x, y, z, 0.3f, -1, rot, 0f);
         }
 
         private void CharacterWalkOut(object[] args)

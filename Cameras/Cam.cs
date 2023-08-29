@@ -1,4 +1,5 @@
 ﻿using RAGE;
+using RAGE.NUI.PauseMenu;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,15 +17,16 @@ namespace Client.Cameras
 
         private void SkyCam(object[] args)
         {
-                RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
-                bool state = Convert.ToBoolean(args[0]);
-                if (state == true && !CheckSkyCam())
+            
+            RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
+            bool state = Convert.ToBoolean(args[0]);
+            if (state)
                 {
-                    RAGE.Game.Invoker.Invoke(0xD8295AF639FD9CB8, p.Handle, 0, 1);
+                    RAGE.Game.Invoker.Invoke(0xAAB3200ED59016BC, p.Handle, 0, 1);
                 }
                 else
                 {
-                    RAGE.Game.Invoker.Invoke(0xAAB3200ED59016BC, p.Handle, 0, 1);
+                    RAGE.Game.Invoker.Invoke(0xD8295AF639FD9CB8, p.Handle, 0, 1);
                 }
         }
 

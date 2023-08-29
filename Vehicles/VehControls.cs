@@ -12,7 +12,7 @@ namespace Client.Vehicles
     {
         RAGE.Ui.HtmlWindow SpeedCam;
         RAGE.Elements.Vehicle LastVehicle = null;
-        float TopSpeed = -1f;
+        float TopSpeed = 0f;
 
         public VehControls()
         {
@@ -40,7 +40,7 @@ namespace Client.Vehicles
                     RAGE.Elements.Vehicle v = p.Vehicle;
                     if (v != LastVehicle)
                     {
-                        RAGE.Game.Audio.PlaySound(2, "5_SEC_WARNING", "HUD_MINI_GAME_SOUNDSET", true,0, true);
+                        RAGE.Game.Audio.PlaySoundFrontend(-1, "Beep_Red", "DLC_HEIST_HACKING_SNAKE_SOUNDS", true);
                         LastVehicle = v;
                         TopSpeed = 0f;
                     }
@@ -53,38 +53,17 @@ namespace Client.Vehicles
 
                     Vector3 ppos = RAGE.Elements.Player.LocalPlayer.Position;
                     Vector3 vpos = v.Position;
+
+
+
                     float dist = RAGE.Game.Misc.GetDistanceBetweenCoords(ppos.X, ppos.Y, ppos.Z, vpos.X, vpos.Y, vpos.Z, true);
                     string speedres = kmh.ToString();
-                    string speedpadded = "";
-                    if (kmh < 10)
-                    {
-                        speedpadded = speedres.PadLeft(3, '0');
-                    }
-                    else if (kmh < 100)
-                    {
-                        speedpadded = speedres.PadLeft(2, '0');
-                    }
-                    else
-                    {
-                        speedpadded = speedres;
-                    }
+                    string speedpadded = speedres.PadLeft(3, '0');
 
 
-                    string distpadded = "";
+                    
                     string distres = Convert.ToInt32(dist).ToString();
-                    if (dist < 10)
-                    {
-                        distpadded = distres.PadLeft(3, '0');
-                    }
-                    else if (dist < 100)
-                    {
-                        distpadded = distres.PadLeft(2, '0');
-                    }
-                    else
-                    {
-                        distpadded = distres;
-                    }
-
+                    string distpadded = distres.PadLeft(3, '0');
 
                     SpeedCam.ExecuteJs($"updateSpeed('{speedpadded}')");
                     SpeedCam.ExecuteJs($"updateDist('{distpadded}')");
@@ -97,6 +76,7 @@ namespace Client.Vehicles
                 RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtHandle(endEntity);
                 if (v != LastVehicle)
                 {
+                    RAGE.Game.Audio.PlaySoundFrontend(-1, "Beep_Red", "DLC_HEIST_HACKING_SNAKE_SOUNDS", true);
                     LastVehicle = v;
                     TopSpeed = 0f;
                 }
@@ -114,35 +94,12 @@ namespace Client.Vehicles
 
                 float dist = RAGE.Game.Misc.GetDistanceBetweenCoords(ppos.X, ppos.Y, ppos.Z, vpos.X, vpos.Y, vpos.Z, true);
                 string speedres = kmh.ToString();
-                string speedpadded = "";
-                if (kmh < 10)
-                {
-                    speedpadded = speedres.PadLeft(3, '0');
-                }
-                else if (kmh < 100)
-                {
-                    speedpadded = speedres.PadLeft(3, '0');
-                }
-                else
-                {
-                    speedpadded = speedres;
-                }
+                string speedpadded = speedres.PadLeft(3, '0');
 
 
-                string distpadded = "";
+
                 string distres = Convert.ToInt32(dist).ToString();
-                if (dist < 10)
-                {
-                    distpadded = distres.PadLeft(3, '0');
-                }
-                else if (dist < 100)
-                {
-                    distpadded = distres.PadLeft(3, '0');
-                }
-                else
-                {
-                    distpadded = distres;
-                }
+                string distpadded = distres.PadLeft(3, '0');
 
                 SpeedCam.ExecuteJs($"updateSpeed('{speedpadded}')");
                 SpeedCam.ExecuteJs($"updateDist('{distpadded}')");
