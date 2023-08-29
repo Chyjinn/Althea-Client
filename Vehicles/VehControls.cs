@@ -18,10 +18,10 @@ namespace Client.Vehicles
         {
             Events.AddDataHandler("vehicle:Siren", VehicleSiren);
             Events.OnEntityStreamIn += OnEntityStreamIn;
-            Events.Tick += Tick;
+            //Events.Tick += Tick;
             //Events.Add("client:Siren", VehSiren);
-            SpeedCam = new RAGE.Ui.HtmlWindow("package://frontend/radar-gun/radar.html");
-            SpeedCam.Active = true;
+            //SpeedCam = new RAGE.Ui.HtmlWindow("package://frontend/radar-gun/radar.html");
+            //SpeedCam.Active = true;
         }
 
 
