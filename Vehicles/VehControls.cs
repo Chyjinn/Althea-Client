@@ -16,15 +16,29 @@ namespace Client.Vehicles
 
         public VehControls()
         {
+            Events.Add("client:RadarGun", ToggleRadarGun);
             Events.AddDataHandler("vehicle:Siren", VehicleSiren);
+
             Events.OnEntityStreamIn += OnEntityStreamIn;
-            //Events.Tick += Tick;
-            //Events.Add("client:Siren", VehSiren);
-            //SpeedCam = new RAGE.Ui.HtmlWindow("package://frontend/radar-gun/radar.html");
-            //SpeedCam.Active = true;
         }
 
+        private void ToggleRadarGun(object[] args)
+        {
+            bool state = Convert.ToBoolean(args[0]);
 
+            if (state)
+            {
+                Events.Tick += Tick;
+                SpeedCam = new RAGE.Ui.HtmlWindow("package://frontend/radar-gun/radar.html");
+                SpeedCam.Active = true;
+            }
+            else
+            {
+                Events.Tick -= Tick;
+                SpeedCam.Active = false;
+                SpeedCam.Destroy();
+            }
+        }
 
         private void Tick(List<Events.TickNametagData> nametags)
         {
@@ -181,26 +195,35 @@ namespace Client.Vehicles
         }
 
 
-        private void VehSiren(object[] args)
-        {
-            string siren = Convert.ToString(args[0]);
-            RAGE.Chat.Output("SZIRÉNA: " + siren);
-            //bool state = Convert.ToBoolean(arg);
-            RAGE.Elements.Vehicle v = RAGE.Elements.Player.LocalPlayer.Vehicle;
-
-            if (siren != "")
-            {
-                RAGE.Game.Audio.PlaySoundFromEntity(1, siren, v.Handle, "", true, 0);
-            }
-            else
-            {
-                RAGE.Game.Audio.StopSound(1);
-            }
-        }
-
 
         public void OnEntityStreamIn(RAGE.Elements.Entity entity)
         {
+            if (entity.Type == RAGE.Elements.Type.Vehicle)
+            {
+                
+                RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(entity.RemoteId);
+                if (v.GetSharedData("vehicle:Siren") != null)
+                {
+                    RAGE.Chat.Output("has data");
+                    string siren = Convert.ToString(v.GetSharedData("vehicle:Siren"));
+                    
+                    if (siren != "-")
+                    {
+                        RAGE.Game.Audio.PlaySoundFromEntity(1, siren, v.Handle, "", true, 0);
+                    }
+                    else
+                    {
+                        RAGE.Game.Audio.StopSound(1);
+                    }
+                    
+                }
+                else
+                {
+                    Chat.Output("no data");
+                }
+            }
+
+
 
         }
     }

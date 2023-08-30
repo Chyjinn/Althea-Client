@@ -52,22 +52,16 @@ namespace Client.Characters
 
         private void WeaponShot(Vector3 targetPos, RAGE.Elements.Player target, Events.CancelEventArgs cancel)
         {
-            float rightAxisX = Pad.GetControlNormal(0, 220);
-            float rightAxisY = Pad.GetControlNormal(0, 221);
-
-            
             Random r = new Random();
 
             int value = r.Next(-100, 101);
             float percent = Convert.ToSingle(value) / 20f;
-            rightAxisX = rightAxisX + percent;
-            value = r.Next(-100, 101);
-            percent = Convert.ToSingle(value) / 20f;
-            rightAxisY = rightAxisY + percent;
+            float heading = Cam.GetGameplayCamRelativeHeading() + percent;
+            float pitch = Cam.GetGameplayCamRelativePitch() + percent;
             //RAGE.Game.Cam.SetGameplayCamShakeAmplitude(100f);
             RAGE.Game.Cam.ShakeGameplayCam("SMALL_EXPLOSION_SHAKE", 0.5f);
-            RAGE.Game.Cam.SetGameplayCamRelativeHeading(rightAxisY);
-            RAGE.Game.Cam.SetGameplayCamRelativePitch(rightAxisX, 1f);
+            RAGE.Game.Cam.SetGameplayCamRelativeHeading(heading);
+            RAGE.Game.Cam.SetGameplayCamRelativePitch(pitch, 1f);
             //Cam.SetGameplayCamRawYaw
             //RAGE.Game.Pad.SetControlNormal(0, 270, 1f);
             //RAGE.Game.Pad.SetControlNormal(0, 272, -1f);
@@ -100,11 +94,11 @@ namespace Client.Characters
                 RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
                 if (state)
                 {
-                    p.SetAlpha(0, true);
+                    p.SetAlpha(0, false);
                 }
                 else
                 {
-                    p.SetAlpha(255, true);
+                    p.SetAlpha(255, false);
                 }
             }
         }
@@ -157,11 +151,11 @@ namespace Client.Characters
                     bool invisible = (bool)p.GetSharedData("player:Invisible");
                     if (invisible)
                     {
-                        p.SetAlpha(0, true);
+                        p.SetAlpha(0, false);
                     }
                     else
                     {
-                        p.SetAlpha(255, true);
+                        p.SetAlpha(255, false);
                     }
                 }
             }

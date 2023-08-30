@@ -31,8 +31,8 @@ namespace Client.Login
         {
             //Events.OnPlayerReady += GetTokenFromJS;//amint betöltött a játék megpróbáljuk betölteni a login tokent
             Events.Add("client:LoginScreen", LoginScreen);
-            //Events.Add("client:ShowLoginForm", ShowLoginForm);
-            //Events.Add("client:ShowRegisterForm", ShowRegisterForm);
+            Events.Add("client:ShowLoginForm", ShowLoginForm);
+            Events.Add("client:ShowRegisterForm", ShowRegisterForm);
             Events.Add("client:DestroyAuthForm", DestroyAuthForm);
 
             Events.Add("client:LoginAttempt", LoginAttempt);
