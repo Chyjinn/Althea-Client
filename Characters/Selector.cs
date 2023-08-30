@@ -121,7 +121,7 @@ namespace Client.Character
             float z = Convert.ToSingle(args[2]);
             float rot = Convert.ToSingle(args[3]);
             //p.TaskGoStraightToCoord(-815.4f, 176.9f, 76.74f, 0.1f, -1, 57f, 0.1f);
-            p.TaskGoStraightToCoord(x, y, z, 0.1f, 5, rot, 5f);
+            p.TaskGoStraightToCoord(x, y, z, 0.3f, -1, rot, 0.1f);
             CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
             CharCEF.Active = false;
         }

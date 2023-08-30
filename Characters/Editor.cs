@@ -1,12 +1,20 @@
 ﻿using RAGE;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Client.Characters
 {
     class Editor : Events.Script
     {
+        //int leftbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Left, true, RotateCharLeft);
+        //int rightbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Right, true, RotateCharRight);
+        //RAGE.Input.Unbind(leftbindid);
+        //nem jó mert csak 1x hívja meg a függvényt
+        RAGE.Ui.HtmlWindow EditorCEF;
+        RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
+        DateTime nextUpdate = DateTime.Now;
         public Editor()
         {
             Events.Add("client:CharEdit",CharacterEditor);
@@ -14,10 +22,8 @@ namespace Client.Characters
 
         public void CharacterEditor(object[] args)
         {
-            //int leftbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Left, true, RotateCharLeft);
-            //int rightbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Right, true, RotateCharRight);
-            //RAGE.Input.Unbind(leftbindid);
-            //nem jó mert csak 1x hívja meg a függvényt
+            EditorCEF = new RAGE.Ui.HtmlWindow("package://frontend/editor/charedit.html");
+            EditorCEF.Active = true;
 
             Events.Tick += Tick;
 
