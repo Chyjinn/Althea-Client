@@ -18,7 +18,17 @@ namespace Client.Characters
         public Editor()
         {
             Events.Add("client:CharEdit",CharacterEditor);
+
+            Events.Add("client:AttributeToServer", AttributeToServer);
         }
+
+        private void AttributeToServer(object[] args)
+        {
+            Events.CallRemote("server:EditAttribute", Convert.ToInt32(args[0]), Convert.ToString(args[1]));//attribute id, value
+        }
+
+
+    
 
         public void CharacterEditor(object[] args)
         {
