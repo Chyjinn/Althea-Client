@@ -133,6 +133,11 @@ namespace Client.Character
             {
                 CharCEF.ExecuteJs($"AddCharacter(\"{characters[i].Id}\", \"{characters[i].Name}\")");
             }
+            string location = RAGE.Game.Gxt.Get(Zone.GetNameOfZone(characters[0].posX, characters[0].posY, characters[0].posZ));
+            string pob = characters[0].POB;
+            string dob = characters[0].DOB.ToString("yyyy.MM.dd.", CultureInfo.CurrentCulture);
+
+            CharCEF.ExecuteJs($"RefreshCharData(\"{characters[0].Name}\", \"{location}\", \"{pob}\", \"{dob}\")");
             CharCEF.Active = true;
         }
 
