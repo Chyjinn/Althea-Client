@@ -4,69 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Client.Character
-{
-    class Character
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public DateTime DOB { get; set; }
-        public string POB { get; set; }
-        public float posX { get; set; }
-        public float posY { get; set; }
-        public float posZ { get; set; }
-        public int AppearanceID { get; set; }
-        public Appearance Appearance { get; set; }
-        public Character(int Id, string Name, DateTime DOB, string POB, int AppearanceID, float posX, float posY, float posZ)
-        {
-            this.DOB = DOB;
-            this.POB = POB;
-            this.Id = Id;
-            this.Name = Name;
-            this.AppearanceID = AppearanceID;
-            this.posX = posX;
-            this.posY = posY;
-            this.posZ = posZ;
-        }
-    }
+namespace Client.Characters
+{ 
 
-    public class Appearance
-    {
-        public int Id { get; set; }
-        public bool Gender { get; set; }
-        public byte EyeColor { get; set; }
-        public byte HairColor { get; set; }
-        public byte HairHighlight { get; set; }
-        public byte Parent1Face { get; set; }
-        public byte Parent2Face { get; set; }
-        public byte Parent3Face { get; set; }
-        public byte Parent1Skin { get; set; }
-        public byte Parent2Skin { get; set; }
-        public byte Parent3Skin { get; set; }
-        public byte FaceMix { get; set; }
-        public byte SkinMix { get; set; }
-        public byte OverrideMix { get; set; }
-        public sbyte NoseWidth { get; set; }
-        public sbyte NoseHeight { get; set; }
-        public sbyte NoseLength { get; set; }
-        public sbyte NoseBridge { get; set; }
-        public sbyte NoseTip { get; set; }
-        public sbyte NoseBroken { get; set; }
-        public sbyte BrowHeight { get; set; }
-        public sbyte BrowWidth { get; set; }
-        public sbyte CheekboneHeight { get; set; }
-        public sbyte CheekboneWidth { get; set; }
-        public sbyte CheekWidth { get; set; }
-        public sbyte Eyes { get; set; }
-        public sbyte Lips { get; set; }
-        public sbyte JawWidth { get; set; }
-        public sbyte JawHeight { get; set; }
-        public sbyte ChinLength { get; set; }
-        public sbyte ChinPosition { get; set; }
-        public sbyte ChinWidth { get; set; }
-        public sbyte ChinShape { get; set; }
-        public sbyte NeckWidth { get; set; }
-    }
         internal class Selector : Events.Script
     {
         RAGE.Ui.HtmlWindow CharCEF;
@@ -80,12 +20,19 @@ namespace Client.Character
             Events.Add("client:hideCharScreen", HideCharScreen);
             Events.Add("client:CharWalkIn", CharacterWalkIn);
             Events.Add("client:CharChangeToServer", CharChangeToServer);
+
+            Events.Add("client:CharEditToServer", CharEditToServer);
             Events.Add("client:SelectCharacter", CharSelected);
         }
 
         private void CharSelected(object[] args)
         {
             Events.CallRemote("server:CharSelect", Convert.ToInt32(args[0]));//karakter id
+        }
+
+        private void CharEditToServer(object[] args)
+        {
+            Events.CallRemote("server:CharEdit", Convert.ToUInt32(args[0]));//karakter id
         }
 
         private void CharChangeToServer(object[] args)
@@ -133,10 +80,11 @@ namespace Client.Character
             {
                 CharCEF.ExecuteJs($"AddCharacter(\"{characters[i].Id}\", \"{characters[i].Name}\")");
             }
+            
             string location = RAGE.Game.Gxt.Get(Zone.GetNameOfZone(characters[0].posX, characters[0].posY, characters[0].posZ));
             string pob = characters[0].POB;
             string dob = characters[0].DOB.ToString("yyyy.MM.dd.", CultureInfo.CurrentCulture);
-
+            CharCEF.ExecuteJs($"SetFirstCharId(\"{characters[0].Id}\")");
             CharCEF.ExecuteJs($"RefreshCharData(\"{characters[0].Name}\", \"{location}\", \"{pob}\", \"{dob}\")");
             CharCEF.Active = true;
         }

@@ -19,7 +19,6 @@ namespace Client.Characters
         public Editor()
         {
             Events.Add("client:CharEdit",CharacterEditor);
-            //Events.Add("client:camtest", SetCamera);
 
             Events.Add("client:AttributeToServer", AttributeToServer);
             Events.Add("client:FinishEditing", FinishEditing);
@@ -52,8 +51,8 @@ namespace Client.Characters
 
         public void DeleteCamera()
         {
-            RAGE.Game.Cam.DestroyCam(camera, true);
             RAGE.Game.Cam.SetCamActive(camera, false);
+            RAGE.Game.Cam.DestroyCam(camera, true);
             RAGE.Game.Cam.RenderScriptCams(false, true, 500, true, false, 0);
         }
 
@@ -79,10 +78,7 @@ namespace Client.Characters
                 DeleteCamera();
                 Events.Tick -= Tick;
             }
-
-
         }
-
 
         private void Tick(List<Events.TickNametagData> nametags)
         {
