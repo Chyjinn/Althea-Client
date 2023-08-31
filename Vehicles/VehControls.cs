@@ -18,8 +18,34 @@ namespace Client.Vehicles
         {
             Events.Add("client:RadarGun", ToggleRadarGun);
             Events.AddDataHandler("vehicle:Siren", VehicleSiren);
-
+            Events.AddDataHandler("vehicle:IndicatorLeft", IndicatorsLeft);
+            Events.AddDataHandler("vehicle:IndicatorRight", IndicatorsRight);
+            int leftbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Left, true, IndicatorLeft);
+            int rightbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Right, true, IndicatorRight);
             Events.OnEntityStreamIn += OnEntityStreamIn;
+        }
+        public void IndicatorLeft()
+        {
+            Events.CallRemote("server:VehicleIndicator", false);
+        }
+
+        public void IndicatorRight()
+        {
+            Events.CallRemote("server:VehicleIndicator", true);
+        }
+
+        public void IndicatorsLeft(RAGE.Elements.Entity entity, object arg, object oldArg)
+        {
+            bool state = (bool)arg;
+            RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(entity.RemoteId);
+            v.SetIndicatorLights(1, state);
+        }
+
+        public void IndicatorsRight(RAGE.Elements.Entity entity, object arg, object oldArg)
+        {
+            bool state = (bool)arg;
+            RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(entity.RemoteId);
+            v.SetIndicatorLights(0, state);
         }
 
         private void ToggleRadarGun(object[] args)
@@ -202,9 +228,21 @@ namespace Client.Vehicles
             {
                 
                 RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(entity.RemoteId);
+
+                if (v.GetSharedData("vehicle:IndicatorLeft") != null)
+                {
+                    bool state = (bool)v.GetSharedData("vehicle:IndicatorLeft");
+                    v.SetIndicatorLights(1, state);
+                }
+
+                if (v.GetSharedData("vehicle:IndicatorRight") != null)
+                {
+                    bool state = (bool)v.GetSharedData("vehicle:IndicatorRight");
+                    v.SetIndicatorLights(0, state);
+                }
+
                 if (v.GetSharedData("vehicle:Siren") != null)
                 {
-                    RAGE.Chat.Output("has data");
                     string siren = Convert.ToString(v.GetSharedData("vehicle:Siren"));
                     
                     if (siren != "-")
@@ -216,10 +254,6 @@ namespace Client.Vehicles
                         RAGE.Game.Audio.StopSound(1);
                     }
                     
-                }
-                else
-                {
-                    Chat.Output("no data");
                 }
             }
 

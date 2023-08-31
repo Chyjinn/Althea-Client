@@ -9,8 +9,7 @@ namespace Client.Characters
 {
     class Editor : Events.Script
     {
-        //int leftbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Left, true, RotateCharLeft);
-        //int rightbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Right, true, RotateCharRight);
+
         //RAGE.Input.Unbind(leftbindid);
         //nem jó mert csak 1x hívja meg a függvényt
         RAGE.Ui.HtmlWindow EditorCEF;
