@@ -13,7 +13,7 @@ namespace Client.Cameras
 
         float camHeightOffset = 0f;
         Vector3 camStartPositions;
-        float camZoom = 60f;
+        float camZoom = 65f;
 
         public Cam() {
             Events.Add("client:SkyCam", SkyCam);
@@ -69,7 +69,7 @@ namespace Client.Cameras
         {
             Vector3 pos = Player.LocalPlayer.Position;
             camHeightOffset = 0f;
-            camZoom = 60f;
+            camZoom = 65f;
 
             float radians = -Player.LocalPlayer.GetHeading() * (float)Math.PI / 180f;
             float nx = pos.X + (1.7f * (float)Math.Sin(radians));
@@ -120,7 +120,7 @@ namespace Client.Cameras
 
             if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.E))
             {
-                if (camZoom > 15f)
+                if (camZoom > 10f)
                 {
                     camZoom -= 0.3f;
                 }
@@ -128,7 +128,7 @@ namespace Client.Cameras
             }
             else if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.Q))
             {
-                if (camZoom < 70f)
+                if (camZoom < 80f)
                 {
                     camZoom += 0.3f;
                 }
