@@ -13,7 +13,7 @@ namespace bigmap {
 		{
 			RAGE.Game.Ui.SetRadarBigmapEnabled(false, false);
 			RAGE.Game.Ui.Unknown._0x82CEDC33687E1F50(false);
-			RAGE.Game.Ui.SetRadarZoom(1);
+			RAGE.Game.Ui.SetRadarZoom(0);
 
 			Events.Tick += Tick;
 		}
@@ -24,56 +24,16 @@ namespace bigmap {
 			{
 				if(status == 0)
 				{
-					RAGE.Game.Ui.SetRadarZoom(0);
-					status = 1;
-
-					timer = new Timer((object unused) =>
-					{
-						RAGE.Game.Ui.SetRadarBigmapEnabled(false, true);
-						RAGE.Game.Ui.SetRadarZoom(1);
-
-						status = 0;
-						timer.Dispose();
-						timer = null;
-
-					}, null, 10000, Timeout.Infinite);
-				}
-				else if(status == 1)
-				{
-					if(timer != null)
-					{
-						timer.Dispose();
-						timer = null;
-					}
-
-					RAGE.Game.Ui.SetRadarBigmapEnabled(true, false);
-					RAGE.Game.Ui.Unknown._0x82CEDC33687E1F50(true);
-					RAGE.Game.Ui.SetRadarZoom(0);
-					status = 2;
-
-					timer = new Timer((object unused) =>
-					{
-						RAGE.Game.Ui.SetRadarBigmapEnabled(false, true);
-						RAGE.Game.Ui.Unknown._0x82CEDC33687E1F50(false);
-						RAGE.Game.Ui.SetRadarZoom(1);
-
-						status = 0;
-						timer.Dispose();
-						timer = null;
-
-					}, null, 10000, Timeout.Infinite);
-				}
+                    RAGE.Game.Ui.SetRadarBigmapEnabled(true, false);
+                    RAGE.Game.Ui.Unknown._0x82CEDC33687E1F50(true);
+                    RAGE.Game.Ui.SetRadarZoom(1);
+                    status = 1;
+                }
 				else
 				{
-					if (timer != null)
-					{
-						timer.Dispose();
-						timer = null;
-					}
-
 					RAGE.Game.Ui.SetRadarBigmapEnabled(false, false);
 					RAGE.Game.Ui.Unknown._0x82CEDC33687E1F50(false);
-					RAGE.Game.Ui.SetRadarZoom(1);
+					RAGE.Game.Ui.SetRadarZoom(0);
 					status = 0;
 				}
 			}

@@ -1,5 +1,6 @@
 ﻿using RAGE.Game;
 using RAGE;
+using RAGE.Elements;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -30,7 +31,7 @@ namespace Client.Admin
             //RAGE.Discord.Update("abbbb", "bcaaca");
             if (flag)
             {
-                Player.SetPlayerInvincible(true);
+                RAGE.Game.Player.SetPlayerInvincible(true);
                 //RAGE.Elements.Player.LocalPlayer.FreezePosition(true);
                 //RAGE.Elements.Player.LocalPlayer.SetAlpha(0, true);
 
@@ -45,7 +46,7 @@ namespace Client.Admin
             }
             else
             {
-                Player.SetPlayerInvincible(false);
+                RAGE.Game.Player.SetPlayerInvincible(false);
                 //RAGE.Elements.Player.LocalPlayer.FreezePosition(false);
                 //RAGE.Elements.Player.LocalPlayer.SetAlpha(255, true);
                 Cam.RenderScriptCams(false, false, 0, true, false, 0);
@@ -95,7 +96,6 @@ namespace Client.Admin
 
         private void Fly(List<Events.TickNametagData> nametags)
         {
-
             if (Pad.IsDisabledControlPressed(0, 21))//SHIFT
             {
                 speed = fastSpeed;
@@ -157,11 +157,14 @@ namespace Client.Admin
             newPos.Z = pos.Z - movementVector.Z + rightVector.Z + zSpeed;
             Cam.SetCamCoord(flyCam, newPos.X, newPos.Y, newPos.Z);
             Cam.SetCamRot(flyCam, rot.X + rightAxisY * -5.0f, 0.0f, rot.Z + rightAxisX * -5.0f, 2);
-
+            RAGE.Elements.Player.LocalPlayer.SetRotation(0f, 0f, rot.Z + rightAxisX * -5.0f, 2, true);
+            RAGE.Elements.Player.LocalPlayer.Position = newPos;
+            
             if (DateTime.Now > nextUpdate)
             {
                 TimeSpan span = new TimeSpan(5000000);
                 nextUpdate = DateTime.Now + span;
+                
                 Events.CallRemote("server:Fly", newPos.X, newPos.Y, newPos.Z);
             }
         }
