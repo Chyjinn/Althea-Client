@@ -13,7 +13,7 @@ namespace Client.Hud
         const float height = 0.0065f;
         const float border = 0.001f;
         public NameTag() {
-            Chat.Output("Nametag cucc");
+
             RAGE.Nametags.Enabled = false;
             SetNameTagEnabled(true);
         }

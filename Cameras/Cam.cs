@@ -21,7 +21,7 @@ namespace Client.Cameras
             Events.Add("client:EditorCamera", EditorCamera);
             Events.Add("client:DeleteCamera", DeleteCamera);
 
-
+            Events.Add("client:InfrontCamera", InfrontCamera);
         }
 
         private void SkyCam(object[] args)
@@ -83,6 +83,23 @@ namespace Client.Cameras
             Events.Tick += Tick;
         }
 
+        public void InfrontCamera(object[] args)
+        {
+            Vector3 pos = Player.LocalPlayer.Position;
+            camHeightOffset = 0f;
+            camZoom = 80f;
+
+            float radians = -Player.LocalPlayer.GetHeading() * (float)Math.PI / 180f;
+            float nx = pos.X + (3f * (float)Math.Sin(radians));
+            float ny = pos.Y + (3f * (float)Math.Cos(radians));
+
+            camera = RAGE.Game.Cam.CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", nx, ny, pos.Z + 0.3f, 0f, 0f, 0f, 60f, true, 2);
+            RAGE.Game.Cam.PointCamAtCoord(camera, pos.X, pos.Y, pos.Z);
+            RAGE.Game.Cam.SetCamActive(camera, true);
+            RAGE.Game.Cam.RenderScriptCams(true, true, 500, true, false, 0);
+            camStartPositions = new Vector3(nx, ny, pos.Z + 0.3f);
+        }
+
         public void DeleteCamera(object[] args)
         {
             RAGE.Game.Cam.SetCamActive(camera, false);
@@ -128,7 +145,7 @@ namespace Client.Cameras
             }
             else if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.Q))
             {
-                if (camZoom < 80f)
+                if (camZoom < 90f)
                 {
                     camZoom += 0.3f;
                 }

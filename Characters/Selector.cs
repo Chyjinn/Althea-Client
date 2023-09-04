@@ -10,7 +10,6 @@ namespace Client.Characters
         internal class Selector : Events.Script
     {
         RAGE.Ui.HtmlWindow CharCEF;
-        RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
         Character[] characters;
         DateTime nextUpdate = DateTime.Now;
 
@@ -18,7 +17,7 @@ namespace Client.Characters
         {
             Events.Add("client:showCharScreen", ShowCharScreen);
             Events.Add("client:hideCharScreen", HideCharScreen);
-            Events.Add("client:CharWalkIn", CharacterWalkIn);
+            //Events.Add("client:CharWalkIn", CharacterWalkIn);
             Events.Add("client:CharChangeToServer", CharChangeToServer);
             Events.Add("client:NewCharToServer", NewCharToServer);
             Events.Add("client:CharEditToServer", CharEditToServer);
@@ -66,6 +65,7 @@ namespace Client.Characters
             return -1;
         }
 
+        /*
         private void CharacterWalkIn(object[] args)
         {
             float x = Convert.ToSingle(args[0]);
@@ -77,9 +77,14 @@ namespace Client.Characters
             CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
             CharCEF.Active = false;
         }
+        */
+
 
         private void ShowCharScreen(object[] args)
         {
+            CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
+            
+
             characters = RAGE.Util.Json.Deserialize<Character[]>(args[0].ToString());
             for (int i = 0; i < characters.Length; i++)
             {

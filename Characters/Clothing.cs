@@ -22,7 +22,6 @@ namespace Client.Characters
             ClothesCEF.Active = false;
             ClothesCEF.Destroy();
             Events.CallRemote("server:CloseClothingShop");
-
         }
 
         private void OpenClothingShop(object[] args)
@@ -31,11 +30,8 @@ namespace Client.Characters
 
             if (state)
             {
-
-
                 ClothesCEF = new RAGE.Ui.HtmlWindow("package://frontend/clothing/shop.html");
                 ClothesCEF.Active = true;
-
             }
             else
             {
@@ -44,20 +40,22 @@ namespace Client.Characters
 
             }
         }
-
+        int slot = 0;
+        int drawable = 0;
+        int texture = 0;
         private void TextureToServer(object[] args)
         {
-            int slot = Convert.ToInt32(args[0]);
-            int texture = Convert.ToInt32(args[1]);
-            Events.CallRemote("server:TextureFromClient", slot, texture);
+            slot = Convert.ToInt32(args[0]);
+            texture = Convert.ToInt32(args[1]);
+            Player.LocalPlayer.SetComponentVariation(slot, drawable, texture, 0);
         }
 
         private void DrawableToServer(object[] args)
         {
             
-            int slot = Convert.ToInt32(args[0]);
-            int drawable = Convert.ToInt32(args[1]);
-            Events.CallRemote("server:DrawableFromClient", slot, drawable);
+            slot = Convert.ToInt32(args[0]);
+            drawable = Convert.ToInt32(args[1]);
+            Player.LocalPlayer.SetComponentVariation(slot, drawable, texture, 0);
         }
     }
 }

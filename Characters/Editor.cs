@@ -12,7 +12,7 @@ namespace Client.Characters
 {
     class Editor : Events.Script
     {
-        Character character;
+        private Character character;
         Appearance appearance;
         RAGE.Ui.HtmlWindow EditorCEF;
         public Editor()
@@ -34,8 +34,8 @@ namespace Client.Characters
         private void LoadCharacterAppearance(object[] args)
         {
             character = RAGE.Util.Json.Deserialize<Character>(args[0].ToString());//megkapjuk szervertől a karaktert, lementjük
+            Chat.Output("Karakter betöltve szerver oldalról..." + args[0].ToString());
             HandleCharacterAppearance();
-            
         }
 
         private void AttributeToServer(object[] args)
@@ -258,6 +258,7 @@ namespace Client.Characters
 
         public void HandleCharacterAppearance()
         {
+            
             if (character.Appearance.Gender)//férfi
             {
                 RAGE.Elements.Player.LocalPlayer.Model = 0x705E61F2;
@@ -292,11 +293,10 @@ namespace Client.Characters
                 RAGE.Elements.Player.LocalPlayer.SetComponentVariation(8, 2, 0, 0);
                 RAGE.Elements.Player.LocalPlayer.SetComponentVariation(11, 15, 0, 0);
             }
-
+            
             //parents
-            RAGE.Elements.Player.LocalPlayer.SetHeadBlendData(Convert.ToInt32(character.Appearance.Parent1Face), Convert.ToInt32(character.Appearance.Parent2Face), Convert.ToInt32(character.Appearance.Parent3Face), Convert.ToInt32(character.Appearance.Parent1Skin), Convert.ToInt32(character.Appearance.Parent2Skin), Convert.ToInt32(character.Appearance.Parent3Skin), (float)character.Appearance.FaceMix/100f, (float)character.Appearance.SkinMix/100f, (float)character.Appearance.OverrideMix/100f, true);
-            Chat.Output(character.Appearance.Parent1Face + ", " + character.Appearance.Parent2Face + ", " + character.Appearance.Parent3Face + ", " + character.Appearance.Parent1Skin + ", " + character.Appearance.Parent2Skin + ", " + character.Appearance.Parent3Skin + ", " + (float)character.Appearance.FaceMix / 100f + ", " + (float)character.Appearance.SkinMix / 100+ ", "+ (float)character.Appearance.OverrideMix / 100f);
-            //face featuresw
+            RAGE.Elements.Player.LocalPlayer.SetHeadBlendData(character.Appearance.Parent1Face, character.Appearance.Parent2Face, character.Appearance.Parent3Face, character.Appearance.Parent1Skin, character.Appearance.Parent2Skin, character.Appearance.Parent3Skin, (float)character.Appearance.FaceMix/100f, (float)character.Appearance.SkinMix/100f, (float)character.Appearance.OverrideMix/100f, true);
+            //face features
             float[] FaceFeatures = character.Appearance.GetFaceFeatures();
 
             for (int i = 0; i < 19; i++)
@@ -340,6 +340,7 @@ namespace Client.Characters
             RAGE.Elements.Player.LocalPlayer.SetComponentVariation(2, character.Appearance.HairStyle, 0, 0);
             RAGE.Elements.Player.LocalPlayer.SetEyeColor(character.Appearance.EyeColor);
             RAGE.Elements.Player.LocalPlayer.SetHairColor(character.Appearance.HairColor, character.Appearance.HairHighlight);
+            Chat.Output("KARAKTER FRISSÍTVE LOL");
         }
 
 
