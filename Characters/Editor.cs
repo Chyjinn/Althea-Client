@@ -35,6 +35,7 @@ namespace Client.Characters
         {
             character = RAGE.Util.Json.Deserialize<Character>(args[0].ToString());//megkapjuk szervertől a karaktert, lementjük
             HandleCharacterAppearance();
+            
         }
 
         private void AttributeToServer(object[] args)
@@ -293,8 +294,8 @@ namespace Client.Characters
             }
 
             //parents
-            RAGE.Elements.Player.LocalPlayer.SetHeadBlendData(character.Appearance.Parent1Face, character.Appearance.Parent2Face, character.Appearance.Parent3Face, character.Appearance.Parent1Skin, character.Appearance.Parent2Skin, character.Appearance.Parent3Skin, character.Appearance.FaceMix, character.Appearance.SkinMix, character.Appearance.OverrideMix, true);
-
+            RAGE.Elements.Player.LocalPlayer.SetHeadBlendData(Convert.ToInt32(character.Appearance.Parent1Face), Convert.ToInt32(character.Appearance.Parent2Face), Convert.ToInt32(character.Appearance.Parent3Face), Convert.ToInt32(character.Appearance.Parent1Skin), Convert.ToInt32(character.Appearance.Parent2Skin), Convert.ToInt32(character.Appearance.Parent3Skin), (float)character.Appearance.FaceMix/100f, (float)character.Appearance.SkinMix/100f, (float)character.Appearance.OverrideMix/100f, true);
+            Chat.Output(character.Appearance.Parent1Face + ", " + character.Appearance.Parent2Face + ", " + character.Appearance.Parent3Face + ", " + character.Appearance.Parent1Skin + ", " + character.Appearance.Parent2Skin + ", " + character.Appearance.Parent3Skin + ", " + (float)character.Appearance.FaceMix / 100f + ", " + (float)character.Appearance.SkinMix / 100+ ", "+ (float)character.Appearance.OverrideMix / 100f);
             //face featuresw
             float[] FaceFeatures = character.Appearance.GetFaceFeatures();
 
