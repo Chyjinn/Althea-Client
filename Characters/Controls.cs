@@ -9,38 +9,40 @@ namespace Client.Characters
 {
     internal class Controls : Events.Script
     {
-        int[] disabledControls = new int[32]{ 30, // A & D
-        31, // W & S
-        21, // Left Shift
-        36, // Left Ctrl
-        22, // Space
-        24, // Attack
-        44, // Q
-        38, // E
-        71, // W - Vehicle
-        72, // S - Vehicle
-        59, // A & D - Vehicle
-        60, // L Shift & L CTRL - Vehicle
-        42, // D PAD Up || ]
-        43, // D PAD Down || [
-        85,
-        86,
-        15, // Mouse Wheel Up
-        14, // Mouse Wheel Down
-        228,
-        229,
-        172,
-        173,
-        37,
-        44,
-        178,
-        244,
-        220,
-        221,
-        218,
-        219,
-        16,
-    17 };
+        int[] disabledControls = new int[32]{ 
+            30, // A & D
+            31, // W & S
+            21, // Left Shift
+            36, // Left Ctrl
+            22, // Space
+            24, // Attack
+            44, // Q
+            38, // E
+            71, // W - Vehicle
+            72, // S - Vehicle
+            59, // A & D - Vehicle
+            60, // L Shift & L CTRL - Vehicle
+            42, // D PAD Up || ]
+            43, // D PAD Down || [
+            85,
+            86,
+            15, // Mouse Wheel Up
+            14, // Mouse Wheel Down
+            228,
+            229,
+            172,
+            173,
+            37,
+            44,
+            178,
+            244,
+            220,
+            221,
+            218,
+            219,
+            16,
+            17 };
+
         public Controls()
         {
             Events.AddDataHandler("player:Frozen", PlayerFrozen);

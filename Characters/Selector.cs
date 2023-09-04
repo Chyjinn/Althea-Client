@@ -20,7 +20,7 @@ namespace Client.Characters
             Events.Add("client:hideCharScreen", HideCharScreen);
             Events.Add("client:CharWalkIn", CharacterWalkIn);
             Events.Add("client:CharChangeToServer", CharChangeToServer);
-
+            Events.Add("client:NewCharToServer", NewCharToServer);
             Events.Add("client:CharEditToServer", CharEditToServer);
             Events.Add("client:SelectCharacter", CharSelected);
         }
@@ -33,6 +33,11 @@ namespace Client.Characters
         private void CharEditToServer(object[] args)
         {
             Events.CallRemote("server:CharEdit", Convert.ToUInt32(args[0]));//karakter id
+        }
+
+        private void NewCharToServer(object[] args)
+        {
+            Events.CallRemote("server:NewChar");//karakter id
         }
 
         private void CharChangeToServer(object[] args)
