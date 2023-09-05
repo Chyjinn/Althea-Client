@@ -340,7 +340,6 @@ namespace Client.Characters
             RAGE.Elements.Player.LocalPlayer.SetComponentVariation(2, character.Appearance.HairStyle, 0, 0);
             RAGE.Elements.Player.LocalPlayer.SetEyeColor(character.Appearance.EyeColor);
             RAGE.Elements.Player.LocalPlayer.SetHairColor(character.Appearance.HairColor, character.Appearance.HairHighlight);
-            Chat.Output("KARAKTER FRISSÍTVE LOL");
         }
 
 

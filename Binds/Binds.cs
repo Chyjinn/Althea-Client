@@ -8,14 +8,15 @@ namespace Client.Binds
 {
     internal static class Binds
     {
-
+        static int mouseBind;
         public static void bindKeys()
         {
-            Key.Bind(Keys.VK_M, true, () =>
-            {
-                ToggleCursor();
-                return 1;
-            });
+            mouseBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.M, true, ToggleCursor);
+        }
+
+        public static void unbindKeys()
+        {
+            RAGE.Input.Unbind(mouseBind);
         }
 
         public static void toggleRecording()

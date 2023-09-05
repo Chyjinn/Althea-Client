@@ -15,14 +15,11 @@ namespace Client
     public class Main : Events.Script
     {
         RAGE.Ui.HtmlWindow YTCEF;
-        HtmlWindow Chat;
+
         public Main() 
         {
             RAGE.Game.Misc.SetFadeOutAfterDeath(false);
-            RAGE.Chat.Show(false);
-            Chat = new HtmlWindow("package://frontend/chat/index.html");
-            Chat.Active = true;
-            Chat.MarkAsChat();
+
             //Events.Tick += OnTick;
             Interior.EnableInteriorProp(166657, "V_Michael_bed_tidy");
             Interior.EnableInteriorProp(166657, "V_Michael_M_items");
@@ -30,7 +27,6 @@ namespace Client
             Interior.EnableInteriorProp(166657, "V_Michael_S_items");
             Interior.EnableInteriorProp(166657, "V_Michael_L_Items");
             Interior.RefreshInterior(166657);
-            Binds.Binds.bindKeys();
             Events.Add("client:YTtest", YoutubeTest);
             Events.Add("client:LoadIPL", LoadIPL);
         }

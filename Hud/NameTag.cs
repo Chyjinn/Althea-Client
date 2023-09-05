@@ -1,4 +1,6 @@
 ﻿using RAGE;
+using RAGE.Elements;
+using RAGE.Ui;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,10 +14,76 @@ namespace Client.Hud
         const float width = 0.03f;
         const float height = 0.0065f;
         const float border = 0.001f;
-        public NameTag() {
+        RAGE.Ui.HtmlWindow HUD;
+        HtmlWindow ChatCEF;
+        HtmlWindow VersionCEF;
 
+        public NameTag() {
             RAGE.Nametags.Enabled = false;
             SetNameTagEnabled(true);
+            Events.Add("client:HUD", SetHudVisible);
+            Events.Add("client:Chat", ShowChat);
+            Events.Add("client:BindKeys", BindKeys);
+
+
+            RAGE.Chat.Show(false);
+            ChatCEF = new HtmlWindow("package://frontend/chat/index.html");
+            ChatCEF.Active = false;
+
+            VersionCEF = new HtmlWindow("package://frontend/version/ver.html");
+            VersionCEF.Active = true;
+            ChatCEF.MarkAsChat();
+                Events.OnPlayerEnterVehicle += OnPlayerEnterVehicle;
+        }
+
+        private void OnPlayerEnterVehicle(Vehicle vehicle, int seatId)
+        {
+            vehicle.SetReduceGrip(true);
+        }
+
+        private void BindKeys(object[] args)
+        {
+            bool state = (bool)args[0];
+
+            if (state)
+            {
+                Binds.Binds.bindKeys();
+            }
+            else
+            {
+                Binds.Binds.unbindKeys();
+            }
+        }
+
+        private void ShowChat(object[] args)
+        {
+            bool state = (bool)args[0];
+
+            if (state)
+            {
+                ChatCEF.Active = true;
+            }
+            else
+            {
+                ChatCEF.Active = false;
+            }
+        }
+
+        private void SetHudVisible(object[] args)
+        {
+            bool state = (bool)args[0];
+
+            if (state)
+            {
+                HUD = new RAGE.Ui.HtmlWindow("package://frontend/hud/hud.html");
+                HUD.Active = true;
+            }
+            else
+            {
+                HUD.Active = false;
+                HUD.Destroy();
+
+            }
         }
 
         public static void SetNameTagEnabled(bool status)
@@ -33,6 +101,8 @@ namespace Client.Hud
 
         private static void Render(List<Events.TickNametagData> nametags)
         {
+            RAGE.Elements.Vehicle v = new RAGE.Elements.Vehicle(0,0);
+            
             
             if (nametags != null)
             {

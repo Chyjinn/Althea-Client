@@ -157,7 +157,13 @@ namespace Client.Admin
             newPos.Z = pos.Z - movementVector.Z + rightVector.Z + zSpeed;
             Cam.SetCamCoord(flyCam, newPos.X, newPos.Y, newPos.Z);
             Cam.SetCamRot(flyCam, rot.X + rightAxisY * -5.0f, 0.0f, rot.Z + rightAxisX * -5.0f, 2);
-            RAGE.Elements.Player.LocalPlayer.SetRotation(0f, 0f, rot.Z + rightAxisX * -5.0f, 2, true);
+
+            //Ui.UnlockMinimapAngle();
+            
+
+            //Chat.Output(rot.Z.ToString() + " - " + Convert.ToInt32(rot.Z + rightAxisX * -5.0f).ToString());
+            RAGE.Elements.Player.LocalPlayer.SetRotation(0f, 0f, rot.Z, 2, true);
+            RAGE.Game.Ui.LockMinimapAngle(Convert.ToInt32(rot.Z));
             RAGE.Elements.Player.LocalPlayer.Position = newPos;
             
             if (DateTime.Now > nextUpdate)

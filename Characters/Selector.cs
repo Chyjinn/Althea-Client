@@ -83,7 +83,7 @@ namespace Client.Characters
         private void ShowCharScreen(object[] args)
         {
             CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
-            
+            RAGE.Ui.Cursor.ShowCursor(true, true);
 
             characters = RAGE.Util.Json.Deserialize<Character[]>(args[0].ToString());
             for (int i = 0; i < characters.Length; i++)

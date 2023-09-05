@@ -97,7 +97,7 @@ namespace Client.Login
                 AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/tokenlogin.html");
                 int x = 1920;
                 int y = 1080;
-
+                RAGE.Ui.Cursor.ShowCursor(true, true);
                 RAGE.Game.Graphics.GetActiveScreenResolution(ref x, ref y);
                 AuthCEF.ExecuteJs($"SetResolution(\"{x}\", \"{y}\")");
             }
@@ -106,7 +106,7 @@ namespace Client.Login
                 AuthCEF = new RAGE.Ui.HtmlWindow("package://frontend/auth/login.html");
                 int x = 1920;
                 int y = 1080;
-
+                RAGE.Ui.Cursor.ShowCursor(true, true);
                 RAGE.Game.Graphics.GetActiveScreenResolution(ref x, ref y);
                 AuthCEF.ExecuteJs($"SetResolution(\"{x}\", \"{y}\")");
             }
