@@ -4,21 +4,38 @@ using RAGE.Ui;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Runtime.ConstrainedExecution;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Client.Hud
 {
+    public class Minimap
+    {
+        public float Width { get; set; }
+        public float Height { get; set; }
+        public float ScaleX { get; set; }
+        public float ScaleY { get; set; }
+        public float LeftX { get; set; }
+        public float BottomY { get; set; }
+        public float RightX { get; set; }
+        public float TopY { get; set; }
+    }
+
     internal class NameTag : Events.Script
     {
         const float maxDistance = 200f;
         const float width = 0.03f;
         const float height = 0.0065f;
         const float border = 0.001f;
-        RAGE.Ui.HtmlWindow HUD;
+        static HtmlWindow HudCEF;
+        
         HtmlWindow ChatCEF;
         HtmlWindow VersionCEF;
 
         public NameTag() {
+            HudCEF = new RAGE.Ui.HtmlWindow("package://frontend/hud/hud.html");
+            HudCEF.Active = true;
             RAGE.Nametags.Enabled = false;
             SetNameTagEnabled(true);
             Events.Add("client:HUD", SetHudVisible);
@@ -33,12 +50,37 @@ namespace Client.Hud
             VersionCEF = new HtmlWindow("package://frontend/version/ver.html");
             VersionCEF.Active = true;
             ChatCEF.MarkAsChat();
-                Events.OnPlayerEnterVehicle += OnPlayerEnterVehicle;
         }
 
-        private void OnPlayerEnterVehicle(Vehicle vehicle, int seatId)
+
+        public static Minimap GetMinimapAnchor()
         {
-            vehicle.SetReduceGrip(true);
+            float sfX = 1.0f / 20.0f;
+            float sfY = 1.0f / 20.0f;
+
+            // You need to replace these with the actual C# functions for retrieving safeZone, aspectRatio, and resolution.
+            float safeZone = RAGE.Game.Graphics.GetSafeZoneSize();
+            float aspectRatio = RAGE.Game.Graphics.GetAspectRatio(false);
+            int resolutionX = 0; int resolutionY = 0;
+            RAGE.Game.Graphics.GetActiveScreenResolution(ref resolutionX, ref resolutionY);
+
+            float scaleX = 1.0f / resolutionX;
+            float scaleY = 1.0f / resolutionY;
+
+            Minimap minimap = new Minimap
+            {
+                Width = resolutionX * (scaleX * (resolutionX / (4 * aspectRatio))),
+                Height = resolutionY * (scaleY * (resolutionY / 5.674f)),
+                ScaleX = resolutionX * scaleX,
+                ScaleY = resolutionY* scaleY,
+                LeftX = resolutionX * (scaleX * (resolutionX * (sfX * (Math.Abs(safeZone - 1.0f) * 10f)))),
+                BottomY = resolutionY * (1.0f - scaleY * (resolutionY * (sfY * (Math.Abs(safeZone - 1.0f) * 10f)))),
+            };
+
+            minimap.RightX = minimap.LeftX + minimap.Width;
+            minimap.TopY = minimap.BottomY - minimap.Height;
+            //Chat.Output(minimap.Width + ", " + minimap.Height + ", " + minimap.LeftX + ", " + minimap.RightX + ", " + minimap.TopY + ", " + minimap.BottomY);
+            return minimap;
         }
 
         private void BindKeys(object[] args)
@@ -75,13 +117,12 @@ namespace Client.Hud
 
             if (state)
             {
-                HUD = new RAGE.Ui.HtmlWindow("package://frontend/hud/hud.html");
-                HUD.Active = true;
+               
             }
             else
             {
-                HUD.Active = false;
-                HUD.Destroy();
+                HudCEF.Active = false;
+                HudCEF.Destroy();
 
             }
         }
@@ -101,8 +142,11 @@ namespace Client.Hud
 
         private static void Render(List<Events.TickNametagData> nametags)
         {
-            RAGE.Elements.Vehicle v = new RAGE.Elements.Vehicle(0,0);
-            
+            Minimap map = GetMinimapAnchor();
+            //RefreshHealthBarPosition(width, height, leftX, rightX, topY, bottomY)
+
+            HudCEF.ExecuteJs($" RefreshHealthBarPosition(\"{Convert.ToInt32(map.Width)}\", \"{Convert.ToInt32(map.Height)}\", \"{Convert.ToInt32(map.LeftX)}\", \"{Convert.ToInt32(map.RightX)}\", \"{Convert.ToInt32(map.TopY)}\", \"{Convert.ToInt32(map.BottomY)}\")");
+            //Chat.Output(res[0].ToString()+", " + res[1].ToString()+", "+res[2].ToString()+", " + res[3].ToString()+", " + res[4].ToString()+", " + res[5].ToString());
             
             if (nametags != null)
             {

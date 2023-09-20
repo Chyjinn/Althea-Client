@@ -1,11 +1,13 @@
 ﻿using RAGE;
+using System;
 using System.Collections.Generic;
+using System.Runtime.ConstrainedExecution;
 
 namespace Client.Hud
 {
     internal class HealthBar : Events.Script
     {
-        //RAGE.Ui.HtmlWindow CEF;
+        //RAGE.Ui.HtmlWindow HUDCEF;
         int MapScaleform;
         public HealthBar()
         {
@@ -15,6 +17,8 @@ namespace Client.Hud
             //CEF.Active = true;
             Events.Tick += UpdateHealth;
         }
+
+
 
         public async void Minimap()
         {
@@ -38,6 +42,8 @@ namespace Client.Hud
             RAGE.Game.Graphics.PushScaleformMovieFunction(MapScaleform, "SETUP_HEALTH_ARMOUR");
             RAGE.Game.Graphics.PushScaleformMovieFunctionParameterInt(3);
             RAGE.Game.Graphics.PopScaleformMovieFunction();
+
+            
             //CEF.ExecuteJs($"Update(\"{RAGE.Elements.Player.LocalPlayer.GetHealth()}\")");
         }
 
