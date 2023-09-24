@@ -22,10 +22,27 @@ namespace Client.Hud
             HudCEF = new RAGE.Ui.HtmlWindow("package://frontend/hud/hud.html");
             HudCEF.Active = false;
             Events.OnPlayerEnterVehicle += PlayerEnterVehicle;
-            Events.OnPlayerExitCheckpoint += PlayerExitVehicle;
+            Events.OnPlayerLeaveVehicle += PlayerLeaveVehicle;
+            Events.AddDataHandler("vehicle:IndicatorRight", ToggleIndicator);
+            Events.AddDataHandler("vehicle:IndicatorLeft", ToggleIndicator);
         }
 
-        private void PlayerExitVehicle(Checkpoint checkpoint, Events.CancelEventArgs cancel)
+        private void ToggleIndicator(Entity entity, object arg, object oldArg)
+        {
+            if (entity == RAGE.Elements.Player.LocalPlayer.Vehicle)
+            {
+                if ((bool)arg == true)
+                {
+                    HudCEF.ExecuteJs($"ToggleBlinker(1)");
+                }
+                else
+                {
+                    HudCEF.ExecuteJs($"ToggleBlinker(0)");
+                }
+            }
+        }
+
+        private void PlayerLeaveVehicle(Vehicle vehicle, int seatId)
         {
             HudCEF.ExecuteJs($"EnableVehicleGauges(0)");
         }
@@ -91,7 +108,8 @@ namespace Client.Hud
                 HudCEF.Active = false;
             }
         }
-
+        Random r = new Random();
+        DateTime nextUpdate = DateTime.Now;
         private void UpdateHealth(List<Events.TickNametagData> nametags)
         {
             if (RAGE.Elements.Player.LocalPlayer.Vehicle != null)
@@ -101,6 +119,13 @@ namespace Client.Hud
                 int mph = Convert.ToInt32(speed * 2.236936);
                 float rpm = RAGE.Elements.Player.LocalPlayer.Vehicle.Rpm;
                 HudCEF.ExecuteJs($"RefreshSpeed(\"{Convert.ToInt32(mph)}\",\"{Math.Round(rpm*100,0)}\",\"{gear}\")");
+
+                if (DateTime.Now > nextUpdate)
+                {
+                    TimeSpan span = new TimeSpan(5000000);
+                    nextUpdate = DateTime.Now + span;
+                    HudCEF.ExecuteJs($"RefreshFuel(\"{Convert.ToInt32(r.Next(0, 101))}\")");
+                }
                 
                 //Chat.Output(speed + " m/s -  " + mph + " mph - " + rpm + " rpm");
             }
