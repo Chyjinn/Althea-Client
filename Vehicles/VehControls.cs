@@ -90,14 +90,14 @@ namespace Client.Vehicles
                         TopSpeed = speed;
                     }
                     int kmh = Convert.ToInt32(TopSpeed * 3.6);
-
+                    int mph = Convert.ToInt32(TopSpeed * 2.236936); 
                     Vector3 ppos = RAGE.Elements.Player.LocalPlayer.Position;
                     Vector3 vpos = v.Position;
 
 
 
                     float dist = RAGE.Game.Misc.GetDistanceBetweenCoords(ppos.X, ppos.Y, ppos.Z, vpos.X, vpos.Y, vpos.Z, true);
-                    string speedres = kmh.ToString();
+                    string speedres = mph.ToString();
                     string speedpadded = speedres.PadLeft(3, '0');
 
 

@@ -21,6 +21,18 @@ namespace Client.Hud
             Events.Tick += UpdateHealth;
             HudCEF = new RAGE.Ui.HtmlWindow("package://frontend/hud/hud.html");
             HudCEF.Active = false;
+            Events.OnPlayerEnterVehicle += PlayerEnterVehicle;
+            Events.OnPlayerExitCheckpoint += PlayerExitVehicle;
+        }
+
+        private void PlayerExitVehicle(Checkpoint checkpoint, Events.CancelEventArgs cancel)
+        {
+            HudCEF.ExecuteJs($"EnableVehicleGauges(0)");
+        }
+
+        private void PlayerEnterVehicle(Vehicle vehicle, int seatId)
+        {
+            HudCEF.ExecuteJs($"EnableVehicleGauges(1)");
         }
 
         public static Minimap GetMinimapAnchor()
@@ -82,7 +94,16 @@ namespace Client.Hud
 
         private void UpdateHealth(List<Events.TickNametagData> nametags)
         {
-
+            if (RAGE.Elements.Player.LocalPlayer.Vehicle != null)
+            {
+                float speed = RAGE.Elements.Player.LocalPlayer.Vehicle.GetSpeed();
+                int gear = RAGE.Elements.Player.LocalPlayer.Vehicle.Gear;
+                int mph = Convert.ToInt32(speed * 2.236936);
+                float rpm = RAGE.Elements.Player.LocalPlayer.Vehicle.Rpm;
+                HudCEF.ExecuteJs($"RefreshSpeed(\"{Convert.ToInt32(mph)}\",\"{Math.Round(rpm*100,0)}\",\"{gear}\")");
+                
+                //Chat.Output(speed + " m/s -  " + mph + " mph - " + rpm + " rpm");
+            }
             Minimap map = GetMinimapAnchor();
             //Chat.Output(map.Width + "," + map.Height + "," + map.LeftX + "," + map.RightX + "," + map.TopY + "," + map.BottomY);
             RAGE.Game.Player.SetPlayerHealthRechargeMultiplier(0f);
