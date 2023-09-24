@@ -4,6 +4,7 @@ using RAGE.Elements;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Client.Cameras
 {
@@ -39,7 +40,7 @@ namespace Client.Cameras
                 }
         }
 
-        private bool CheckSkyCam()
+        public static bool CheckSkyCam()
         {
             RAGE.Elements.Player p = RAGE.Elements.Player.LocalPlayer;
             if (RAGE.Game.Invoker.Invoke<bool>(0xD9D2CFFF49FAB35F, p.Handle, 0, 1))

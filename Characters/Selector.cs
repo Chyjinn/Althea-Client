@@ -22,6 +22,8 @@ namespace Client.Characters
             Events.Add("client:NewCharToServer", NewCharToServer);
             Events.Add("client:CharEditToServer", CharEditToServer);
             Events.Add("client:SelectCharacter", CharSelected);
+            CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
+            CharCEF.Active = false;
         }
 
         private void CharSelected(object[] args)
@@ -80,23 +82,39 @@ namespace Client.Characters
         */
 
 
-        private void ShowCharScreen(object[] args)
+        private async void ShowCharScreen(object[] args)
         {
+            CharCEF.Destroy();
             CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
-            RAGE.Ui.Cursor.ShowCursor(true, true);
-
-            characters = RAGE.Util.Json.Deserialize<Character[]>(args[0].ToString());
-            for (int i = 0; i < characters.Length; i++)
+            CharCEF.Active = false;
+            if (Cameras.Cam.CheckSkyCam())//ha a levegőben van még a kamera várunk 1 másodpercet és meghívjuk újra ezt a függvényt
             {
-                CharCEF.ExecuteJs($"AddCharacter(\"{characters[i].Id}\", \"{characters[i].Name}\")");
+                RAGE.Task.Run(() =>
+                {
+                    ShowCharScreen(args);
+
+                }, 1000);
             }
-            
-            string location = RAGE.Game.Gxt.Get(Zone.GetNameOfZone(characters[0].posX, characters[0].posY, characters[0].posZ));
-            string pob = characters[0].POB;
-            string dob = characters[0].DOB.ToString("yyyy.MM.dd.", CultureInfo.CurrentCulture);
-            CharCEF.ExecuteJs($"SetFirstCharId(\"{characters[0].Id}\")");
-            CharCEF.ExecuteJs($"RefreshCharData(\"{characters[0].Name}\", \"{location}\", \"{pob}\", \"{dob}\")");
-            CharCEF.Active = true;
+            else//már nincs a levegőben a kamera, megnyithatjuk a menüt
+            {
+
+                RAGE.Ui.Cursor.ShowCursor(true, true);
+
+                characters = RAGE.Util.Json.Deserialize<Character[]>(args[0].ToString());
+                for (int i = 0; i < characters.Length; i++)
+                {
+                    CharCEF.ExecuteJs($"AddCharacter(\"{characters[i].Id}\", \"{characters[i].Name}\")");
+                }
+
+                string location = RAGE.Game.Gxt.Get(Zone.GetNameOfZone(characters[0].posX, characters[0].posY, characters[0].posZ));
+                string pob = characters[0].POB;
+                string dob = characters[0].DOB.ToString("yyyy.MM.dd.", CultureInfo.CurrentCulture);
+                CharCEF.ExecuteJs($"SetFirstCharId(\"{characters[0].Id}\")");
+                CharCEF.ExecuteJs($"RefreshCharData(\"{characters[0].Name}\", \"{location}\", \"{pob}\", \"{dob}\")");
+                CharCEF.Active = true;
+            }
+
+
         }
 
 

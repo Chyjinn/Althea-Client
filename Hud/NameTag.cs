@@ -28,17 +28,16 @@ namespace Client.Hud
         const float width = 0.03f;
         const float height = 0.0065f;
         const float border = 0.001f;
-        static HtmlWindow HudCEF;
+
         
         HtmlWindow ChatCEF;
         HtmlWindow VersionCEF;
 
         public NameTag() {
-            HudCEF = new RAGE.Ui.HtmlWindow("package://frontend/hud/hud.html");
-            HudCEF.Active = true;
+
             RAGE.Nametags.Enabled = false;
             SetNameTagEnabled(true);
-            Events.Add("client:HUD", SetHudVisible);
+            
             Events.Add("client:Chat", ShowChat);
             Events.Add("client:BindKeys", BindKeys);
 
@@ -50,37 +49,6 @@ namespace Client.Hud
             VersionCEF = new HtmlWindow("package://frontend/version/ver.html");
             VersionCEF.Active = true;
             ChatCEF.MarkAsChat();
-        }
-
-
-        public static Minimap GetMinimapAnchor()
-        {
-            float sfX = 1.0f / 20.0f;
-            float sfY = 1.0f / 20.0f;
-
-            // You need to replace these with the actual C# functions for retrieving safeZone, aspectRatio, and resolution.
-            float safeZone = RAGE.Game.Graphics.GetSafeZoneSize();
-            float aspectRatio = RAGE.Game.Graphics.GetAspectRatio(false);
-            int resolutionX = 0; int resolutionY = 0;
-            RAGE.Game.Graphics.GetActiveScreenResolution(ref resolutionX, ref resolutionY);
-
-            float scaleX = 1.0f / resolutionX;
-            float scaleY = 1.0f / resolutionY;
-
-            Minimap minimap = new Minimap
-            {
-                Width = resolutionX * (scaleX * (resolutionX / (4 * aspectRatio))),
-                Height = resolutionY * (scaleY * (resolutionY / 5.674f)),
-                ScaleX = resolutionX * scaleX,
-                ScaleY = resolutionY* scaleY,
-                LeftX = resolutionX * (scaleX * (resolutionX * (sfX * (Math.Abs(safeZone - 1.0f) * 10f)))),
-                BottomY = resolutionY * (1.0f - scaleY * (resolutionY * (sfY * (Math.Abs(safeZone - 1.0f) * 10f)))),
-            };
-
-            minimap.RightX = minimap.LeftX + minimap.Width;
-            minimap.TopY = minimap.BottomY - minimap.Height;
-            //Chat.Output(minimap.Width + ", " + minimap.Height + ", " + minimap.LeftX + ", " + minimap.RightX + ", " + minimap.TopY + ", " + minimap.BottomY);
-            return minimap;
         }
 
         private void BindKeys(object[] args)
@@ -111,21 +79,7 @@ namespace Client.Hud
             }
         }
 
-        private void SetHudVisible(object[] args)
-        {
-            bool state = (bool)args[0];
 
-            if (state)
-            {
-               
-            }
-            else
-            {
-                HudCEF.Active = false;
-                HudCEF.Destroy();
-
-            }
-        }
 
         public static void SetNameTagEnabled(bool status)
         {
@@ -142,11 +96,6 @@ namespace Client.Hud
 
         private static void Render(List<Events.TickNametagData> nametags)
         {
-            Minimap map = GetMinimapAnchor();
-            //RefreshHealthBarPosition(width, height, leftX, rightX, topY, bottomY)
-
-            HudCEF.ExecuteJs($" RefreshHealthBarPosition(\"{Convert.ToInt32(map.Width)}\", \"{Convert.ToInt32(map.Height)}\", \"{Convert.ToInt32(map.LeftX)}\", \"{Convert.ToInt32(map.RightX)}\", \"{Convert.ToInt32(map.TopY)}\", \"{Convert.ToInt32(map.BottomY)}\")");
-            //Chat.Output(res[0].ToString()+", " + res[1].ToString()+", "+res[2].ToString()+", " + res[3].ToString()+", " + res[4].ToString()+", " + res[5].ToString());
             
             if (nametags != null)
             {
