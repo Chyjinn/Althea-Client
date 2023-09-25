@@ -1,4 +1,5 @@
-﻿using RAGE;
+﻿using Client.Hud;
+using RAGE;
 using RAGE.Game;
 using System;
 using System.Collections.Generic;
@@ -84,6 +85,7 @@ namespace Client.Characters
 
         private async void ShowCharScreen(object[] args)
         {
+            RAGE.Game.Ui.DisplayHud(false);
             CharCEF.Destroy();
             CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
             CharCEF.Active = false;
@@ -122,6 +124,8 @@ namespace Client.Characters
         {
             CharCEF.Active = false;
             CharCEF.Destroy();
+            RAGE.Game.Ui.DisplayHud(true);
+            Compass.DrawCompass(true);
         }
     }
 }

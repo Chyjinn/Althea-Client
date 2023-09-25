@@ -3,6 +3,7 @@ using RAGE.Elements;
 using RAGE.Ui;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Runtime.ConstrainedExecution;
 
 namespace Client.Hud
@@ -18,13 +19,14 @@ namespace Client.Hud
             Events.Add("client:HUD", SetHudVisible);
             //CEF = new RAGE.Ui.HtmlWindow("package://frontend/inventory/inventory.html");
             //CEF.Active = true;
-            Events.Tick += UpdateHealth;
+            
             HudCEF = new RAGE.Ui.HtmlWindow("package://frontend/hud/hud.html");
             HudCEF.Active = false;
             Events.OnPlayerEnterVehicle += PlayerEnterVehicle;
             Events.OnPlayerLeaveVehicle += PlayerLeaveVehicle;
             Events.AddDataHandler("vehicle:IndicatorRight", ToggleIndicator);
             Events.AddDataHandler("vehicle:IndicatorLeft", ToggleIndicator);
+            Events.Tick += UpdateHealth;
         }
 
         private void ToggleIndicator(Entity entity, object arg, object oldArg)
@@ -110,6 +112,12 @@ namespace Client.Hud
         }
         Random r = new Random();
         DateTime nextUpdate = DateTime.Now;
+
+
+
+
+
+
         private void UpdateHealth(List<Events.TickNametagData> nametags)
         {
             if (RAGE.Elements.Player.LocalPlayer.Vehicle != null)
@@ -143,7 +151,8 @@ namespace Client.Hud
             int hp = RAGE.Elements.Player.LocalPlayer.GetHealth();
             int armor = RAGE.Elements.Player.LocalPlayer.GetArmour();
             HudCEF.ExecuteJs($"RefreshHealth(\"{hp - 100}\",\"{armor}\")");
-            
+
+
             //HudCEF.ExecuteJs($" RefreshHealthBarPosition(\"{Convert.ToInt32(map.Width)}\", \"{Convert.ToInt32(map.Height)}\", \"{Convert.ToInt32(map.LeftX)}\", \"{Convert.ToInt32(map.RightX+20)}\", \"{Convert.ToInt32(map.TopY+10)}\", \"{Convert.ToInt32(map.BottomY)}\")");
             //CEF.ExecuteJs($"Update(\"{RAGE.Elements.Player.LocalPlayer.GetHealth()}\")");
         }
