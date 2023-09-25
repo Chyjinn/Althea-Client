@@ -72,9 +72,9 @@ namespace Client.Hud
             compass.TickSize = new Vector3(0.001f, 0.003f, 0f);
 
             compass.Cardinal.TextSize = 0.5f;
-            compass.Cardinal.TextOffset = -0.01f;
+            compass.Cardinal.TextOffset = -0.017f;
             compass.Cardinal.TextColour = Color.White;
-            compass.Cardinal.TickShow = true;
+            compass.Cardinal.TickShow = false;
             compass.Cardinal.TickSize = new Vector3(0.001f, 0.012f, 0f);
             compass.Cardinal.TickColour = Color.White;
 
@@ -185,29 +185,42 @@ namespace Client.Hud
                         // Draw cardinal
                         if (compass.Cardinal.TickShow)
                         {
-                            RAGE.Game.Graphics.DrawRect(tickPosition, compass.Position.Y+0.01f, compass.Cardinal.TickSize.X + 0.01f,, compass.Cardinal.TickSize.Y, 0, 0, 0, 255, 0);
-                            RAGE.Game.Graphics.DrawRect(tickPosition, compass.Position.Y, compass.Cardinal.TickSize.X, compass.Cardinal.TickSize.Y, compass.Background.Color.R, compass.Background.Color.G, compass.Background.Color.B, compass.Background.Color.A, 0);
+                            RAGE.Game.Graphics.DrawRect(tickPosition, compass.Position.Y, compass.Cardinal.TickSize.X, compass.Cardinal.TickSize.Y, compass.Cardinal.TickColour.R, compass.Cardinal.TickColour.G, compass.Cardinal.TickColour.B, 255, 0);
 
                         }
                         Point pos = new Point();
-                        pos.X = Convert.ToInt32(tickPosition*1280);
+                        Point pos2 = new Point();
+                        pos.X = Convert.ToInt32(tickPosition * 1280);
                         pos.Y = Convert.ToInt32((compass.Position.Y + compass.Cardinal.TextOffset)*720);
-                        RAGE.Game.UIText.Draw(DegressToIntercardinalDirection(tickDegree), pos, compass.Cardinal.TextSize, compass.Cardinal.TextColour, RAGE.Game.Font.Pricedown, true);
+
+                        pos2.X = pos.X + 1;
+                        pos2.Y = pos.Y + 1;
+                        RAGE.Game.UIText.Draw(DegressToIntercardinalDirection(tickDegree), pos2, compass.Cardinal.TextSize, Color.Black, RAGE.Game.Font.Monospace, true);
+                        RAGE.Game.UIText.Draw(DegressToIntercardinalDirection(tickDegree), pos, compass.Cardinal.TextSize, compass.Cardinal.TextColour, RAGE.Game.Font.Monospace, true);
+
+                        
                     }
                     else if ((tickDegree % 45.0f) == 0 || compass.Intercardinal.Show)
                     {
                         // Draw intercardinal
                         if (compass.Intercardinal.TickShow)
                         {
+                            RAGE.Game.Graphics.DrawRect(tickPosition + 0.001f, compass.Position.Y + 0.001f, compass.Intercardinal.TickSize.X, compass.Intercardinal.TickSize.Y, 0, 0, 0, compass.Intercardinal.TextColour.A, 0);
                             RAGE.Game.Graphics.DrawRect(tickPosition, compass.Position.Y, compass.Intercardinal.TickSize.X, compass.Intercardinal.TickSize.Y, compass.Intercardinal.TextColour.R, compass.Intercardinal.TextColour.G, compass.Intercardinal.TextColour.B, compass.Intercardinal.TextColour.A, 0);
+                            
                         }
 
                         if (compass.Intercardinal.TextShow)
                         {
                             Point pos = new Point();
+                            Point pos2 = new Point();
                             pos.X = Convert.ToInt32(tickPosition * 1280);
-                            pos.Y = Convert.ToInt32((compass.Position.Y + compass.Intercardinal.TextOffset) * 720);
-                            RAGE.Game.UIText.Draw(DegressToIntercardinalDirection(tickDegree), pos, compass.Intercardinal.TextSize, compass.Intercardinal.TextColour, RAGE.Game.Font.Pricedown, true);
+                            pos.Y = Convert.ToInt32((compass.Position.Y + compass.Cardinal.TextOffset) * 720);
+
+                            pos2.X = pos.X + 1;
+                            pos2.Y = pos.Y + 1;
+                            RAGE.Game.UIText.Draw(DegressToIntercardinalDirection(tickDegree), pos2, compass.Intercardinal.TextSize, Color.Black, RAGE.Game.Font.Monospace, true);
+                            RAGE.Game.UIText.Draw(DegressToIntercardinalDirection(tickDegree), pos, compass.Intercardinal.TextSize, compass.Intercardinal.TextColour, RAGE.Game.Font.Monospace, true);
                         }
                     }
                     else
