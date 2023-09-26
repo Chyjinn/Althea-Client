@@ -15,19 +15,17 @@ namespace Client.Inventory
         public int OwnerID { get; set; }
         public int OwnerType { get; set; }
         public uint ItemID { get; set; }
-        public int ItemSection { get; set; }
         public string ItemValue { get; set; }//itemvalue, json
         public int ItemAmount { get; set; }
         public bool Duty { get; set; }
         public int ItemSlot { get; set; }
         public bool InUse { get; set; }
-        public Item(uint dbid, int ownerid, int ownertype, uint itemid, int itemsection, string itemvalue, int itemamount, bool duty, int itemslot)
+        public Item(uint dbid, int ownerid, int ownertype, uint itemid, string itemvalue, int itemamount, bool duty, int itemslot)
         {
             DBID = dbid;
             OwnerID = ownerid;
             OwnerType = ownertype;
             ItemID = itemid;
-            ItemSection = itemsection;
             ItemValue = itemvalue;
             ItemAmount = itemamount;
             Duty = duty;
@@ -37,20 +35,23 @@ namespace Client.Inventory
     }
 
 
+
     public class Entry
     {
         public uint ItemID { get; set; }//itemid
         public string Name { get; set; }//item neve
         public string Description { get; set; }//leírás, ha van megjelenítjük
         public int ItemType { get; set; }//felhasználás kezeléséhez kell majd, pl Weapon akkor úgy kezeljük
+        public int ItemSection { get; set; }
         public string ItemImage { get; set; }//lehet local, pl. src/img.png, vagy url
         public int MaxStack { get; set; }
-        public Entry(uint id, string name, string desc, int type, string itemimage, int stack)
+        public Entry(uint id, string name, string desc, int type, int section, string itemimage, int stack)
         {
             ItemID = id;
             Name = name;
             Description = desc;
             ItemType = type;
+            ItemSection = section;
             ItemImage = itemimage;
             MaxStack = stack;
         }
@@ -70,8 +71,17 @@ namespace Client.Inventory
             Events.Add("client:InventoryFromServer", ReloadInventory);
             Events.Add("client:ItemListFromServer", ReloadItemList);
             Events.Add("client:UseItemToServer", UseItem);
+            Events.Add("client:MoveItemInInventoryToServer", MoveItemInInv);
             Events.Add("client:ItemUseToCEF", ItemUseToCEF);
             RAGE.Input.Bind(73, true, ToggleInventory);
+        }
+
+        private void MoveItemInInv(object[] args)
+        {
+            int section = Convert.ToInt32(args[0]);
+            int startslot = Convert.ToInt32(args[1]);
+            int endslot = Convert.ToInt32(args[2]);
+            Events.CallRemote("server:MoveItemInInventory", section, startslot, endslot);
         }
 
         private void ItemUseToCEF(object[] args)
@@ -123,15 +133,53 @@ namespace Client.Inventory
 
         private void InventoryToCEF()
         {
+            InventoryCEF.ExecuteJs($"clearInventory()");
             foreach (var item in inventory)
             {
-                Chat.Output(item.ItemSection + ", " + item.ItemSlot + ", " + item.ItemID + ", " + item.ItemAmount + ", " + GetItemPicture(item.ItemID));
-                InventoryCEF.ExecuteJs($"addNewItem(\"{item.ItemSection}\",\"{item.ItemSlot}\",\"{item.ItemID}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\")");
+                Chat.Output(GetItemSection(item.ItemID) + ", " + item.ItemSlot + ", " + item.ItemID + ", " + item.ItemAmount + ", " + GetItemPicture(item.ItemID));
+                InventoryCEF.ExecuteJs($"addNewItem(\"{GetItemSection(item.ItemID)}\",\"{item.ItemSlot}\",\"{item.ItemID}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\")");
             }
 
             //HudCEF.ExecuteJs($"RefreshHealth(\"{hp - 100}\",\"{armor}\")");
             //\"{Convert.ToInt32(r.Next(0, 101))}\"
             InventoryCEF.ExecuteJs($"loadInventory()");
+        }
+
+
+        public static int GetItemType(uint itemid)
+        {
+            foreach (var item in itemList)
+            {
+                if (item.ItemID == itemid)
+                {
+                    return item.ItemType;
+                }
+            }
+            return 0;
+        }
+
+        public static int GetItemSection(uint itemid)
+        {
+            foreach (var item in itemList)
+            {
+                if (item.ItemID == itemid)
+                {
+                    return item.ItemSection;
+                }
+            }
+            return 0;
+        }
+
+        public static string GetItemName(uint itemid)
+        {
+            foreach (var item in itemList)
+            {
+                if (item.ItemID == itemid)
+                {
+                    return item.Name;
+                }
+            }
+            return "Nem létező item.";
         }
         //CEF.Active = true;
     }
