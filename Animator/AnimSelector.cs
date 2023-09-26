@@ -113,6 +113,7 @@ namespace Client.Animator
 
         public void bindRightArrow(object[] args)
         {
+            /*
             Key.Bind(Keys.VK_RIGHT, true, () =>
             {
                 Events.CallRemote("server:stopAnim");
@@ -143,16 +144,18 @@ namespace Client.Animator
                 Events.CallLocal("client:playAnimatorBackwards");
                 return 1;
             });
-
+            */
         }
 
         public void unbindRightArrow(object[] args)
         {
+            /*
             Key.Unbind(Keys.VK_RIGHT);
             Key.Unbind(Keys.VK_SPACE);
             Key.Unbind(Keys.VK_LEFT);
             Key.Unbind(Keys.VK_UP);
             counter = 0;
+            */
         }
     }
 }
