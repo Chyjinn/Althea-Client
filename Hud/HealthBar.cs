@@ -17,8 +17,7 @@ namespace Client.Hud
         {
             Minimap();
             Events.Add("client:HUD", SetHudVisible);
-            //CEF = new RAGE.Ui.HtmlWindow("package://frontend/inventory/inventory.html");
-            //CEF.Active = true;
+
             
             HudCEF = new RAGE.Ui.HtmlWindow("package://frontend/hud/hud.html");
             HudCEF.Active = false;
