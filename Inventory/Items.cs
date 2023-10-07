@@ -137,7 +137,7 @@ namespace Client.Inventory
             foreach (var item in inventory)
             {
                 Chat.Output(GetItemSection(item.ItemID) + ", " + item.ItemSlot + ", " + item.ItemID + ", " + item.ItemAmount + ", " + GetItemPicture(item.ItemID));
-                InventoryCEF.ExecuteJs($"addNewItem(\"{GetItemSection(item.ItemID)}\",\"{item.ItemSlot}\",\"{item.ItemID}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\")");
+                InventoryCEF.ExecuteJs($"addNewItem(\"{GetItemSection(item.ItemID)}\",\"{item.ItemSlot}\",\"{item.ItemID}\",\"{GetItemName(item.ItemID)}\",\"{GetItemDescription(item.ItemID)}\",\"{0}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\")");
             }
 
             //HudCEF.ExecuteJs($"RefreshHealth(\"{hp - 100}\",\"{armor}\")");
@@ -170,6 +170,7 @@ namespace Client.Inventory
             return 0;
         }
 
+
         public static string GetItemName(uint itemid)
         {
             foreach (var item in itemList)
@@ -181,6 +182,19 @@ namespace Client.Inventory
             }
             return "Nem létező item.";
         }
+        public static string GetItemDescription(uint itemid)
+        {
+            foreach (var item in itemList)
+            {
+                if (item.ItemID == itemid)
+                {
+                    return item.Description;
+                }
+            }
+            return "";
+        }
+
+
         //CEF.Active = true;
     }
 }
