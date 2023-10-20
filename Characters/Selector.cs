@@ -87,6 +87,7 @@ namespace Client.Characters
         {
             RAGE.Game.Ui.DisplayHud(false);
             CharCEF.Destroy();
+            RAGE.Ui.Cursor.ShowCursor(true, true);
             CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
             CharCEF.Active = false;
             if (Cameras.Cam.CheckSkyCam())//ha a levegőben van még a kamera várunk 1 másodpercet és meghívjuk újra ezt a függvényt
@@ -99,8 +100,6 @@ namespace Client.Characters
             }
             else//már nincs a levegőben a kamera, megnyithatjuk a menüt
             {
-
-                RAGE.Ui.Cursor.ShowCursor(true, true);
 
                 characters = RAGE.Util.Json.Deserialize<Character[]>(args[0].ToString());
                 for (int i = 0; i < characters.Length; i++)
@@ -124,6 +123,7 @@ namespace Client.Characters
         {
             CharCEF.Active = false;
             CharCEF.Destroy();
+            RAGE.Ui.Cursor.ShowCursor(false, false);
             RAGE.Game.Ui.DisplayHud(true);
             Compass.DrawCompass(true);
         }

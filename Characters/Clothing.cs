@@ -47,6 +47,11 @@ namespace Client.Characters
         {
             slot = Convert.ToInt32(args[0]);
             texture = Convert.ToInt32(args[1]);
+            if (slot == 3)
+            {
+
+            }
+
             Player.LocalPlayer.SetComponentVariation(slot, drawable, texture, 0);
         }
 
