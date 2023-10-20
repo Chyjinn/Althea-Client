@@ -6,21 +6,22 @@ using System.Collections.Generic;
 using System.Text;
 using Client.Characters;
 using System.Linq;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Client.Inventory
 {
     public class Item
     {
         public uint DBID { get; set; }
-        public int OwnerID { get; set; }
+        public uint OwnerID { get; set; }
         public int OwnerType { get; set; }
         public uint ItemID { get; set; }
         public string ItemValue { get; set; }//itemvalue, json
         public int ItemAmount { get; set; }
         public bool Duty { get; set; }
-        public int ItemSlot { get; set; }
+        public int Priority { get; set; }
         public bool InUse { get; set; }
-        public Item(uint dbid, int ownerid, int ownertype, uint itemid, string itemvalue, int itemamount, bool duty, int itemslot)
+        public Item(uint dbid, uint ownerid, int ownertype, uint itemid, string itemvalue, int itemamount, bool duty, int priority)
         {
             DBID = dbid;
             OwnerID = ownerid;
@@ -29,11 +30,10 @@ namespace Client.Inventory
             ItemValue = itemvalue;
             ItemAmount = itemamount;
             Duty = duty;
-            ItemSlot = itemslot;
+            Priority = priority;
             InUse = false;
         }
     }
-
 
 
     public class Entry
@@ -44,16 +44,17 @@ namespace Client.Inventory
         public int ItemType { get; set; }//felhasználás kezeléséhez kell majd, pl Weapon akkor úgy kezeljük
         public int ItemSection { get; set; }
         public string ItemImage { get; set; }//lehet local, pl. src/img.png, vagy url
-        public int MaxStack { get; set; }
-        public Entry(uint id, string name, string desc, int type, int section, string itemimage, int stack)
+        public uint ItemWeight { get; set; }
+        public bool Stackable { get; set; }
+        public Entry(uint id, string name, string desc, int type, uint weight, string itemimage, bool stack)
         {
             ItemID = id;
             Name = name;
             Description = desc;
             ItemType = type;
-            ItemSection = section;
+            ItemWeight = weight;
             ItemImage = itemimage;
-            MaxStack = stack;
+            Stackable = stack;
         }
 
     }
@@ -66,23 +67,37 @@ namespace Client.Inventory
         static Entry[] itemList;
         static List<Item> inventory;
         public Items() { 
-            InventoryCEF = new RAGE.Ui.HtmlWindow("package://frontend/inventory/inv.html");
+            InventoryCEF = new RAGE.Ui.HtmlWindow("package://frontend/inventory/inventory.html");
             InventoryCEF.Active = false;
             Events.Add("client:InventoryFromServer", ReloadInventory);
             Events.Add("client:ItemListFromServer", ReloadItemList);
+
+
             Events.Add("client:UseItemToServer", UseItem);
-            Events.Add("client:MoveItemInInventoryToServer", MoveItemInInv);
+
+            Events.Add("client:MoveItemInInventory", MoveItemInInventory);
+            Events.Add("client:MoveItemToContainer", MoveItemToContainer);
+
             Events.Add("client:ItemUseToCEF", ItemUseToCEF);
             RAGE.Input.Bind(73, true, ToggleInventory);
         }
 
-        private void MoveItemInInv(object[] args)
+        private void MoveItemToContainer(object[] args)
         {
-            int section = Convert.ToInt32(args[0]);
-            int startslot = Convert.ToInt32(args[1]);
-            int endslot = Convert.ToInt32(args[2]);
-            Events.CallRemote("server:MoveItemInInventory", section, startslot, endslot);
+            int source_dbid = Convert.ToInt32(args[0]);
+            int target_id = Convert.ToInt32(args[1]);
+            int target_dbid = Convert.ToInt32(args[2]);
+            Events.CallRemote("server:MoveItemToContainer", source_dbid, target_id, target_dbid);
         }
+
+        private void MoveItemInInventory(object[] args)
+        {
+            uint source_dbid = Convert.ToUInt32(args[0]);
+            uint target_dbid = Convert.ToUInt32(args[1]);
+            Events.CallRemote("server:MoveItemInInventory",source_dbid,target_dbid);
+        }
+
+
 
         private void ItemUseToCEF(object[] args)
         {
@@ -136,13 +151,15 @@ namespace Client.Inventory
             InventoryCEF.ExecuteJs($"clearInventory()");
             foreach (var item in inventory)
             {
-                Chat.Output(GetItemSection(item.ItemID) + ", " + item.ItemSlot + ", " + item.ItemID + ", " + item.ItemAmount + ", " + GetItemPicture(item.ItemID));
-                InventoryCEF.ExecuteJs($"addNewItem(\"{GetItemSection(item.ItemID)}\",\"{item.ItemSlot}\",\"{item.ItemID}\",\"{GetItemName(item.ItemID)}\",\"{GetItemDescription(item.ItemID)}\",\"{0}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\")");
+                //dbid,itemid, itemname, itemdescription, weight, amount, itempicture, priority){
+                //Chat.Output(GetItemSection(item.ItemID) + ", " + item.ItemSlot + ", " + item.ItemID + ", " + item.ItemAmount + ", " + GetItemPicture(item.ItemID));
+                Chat.Output(item.DBID+","+item.ItemID);
+                InventoryCEF.ExecuteJs($"addNewItem(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\")");
             }
 
             //HudCEF.ExecuteJs($"RefreshHealth(\"{hp - 100}\",\"{armor}\")");
             //\"{Convert.ToInt32(r.Next(0, 101))}\"
-            InventoryCEF.ExecuteJs($"loadInventory()");
+            //InventoryCEF.ExecuteJs($"loadInventory()");
         }
 
 
@@ -171,7 +188,9 @@ namespace Client.Inventory
         }
 
 
-        public static string GetItemName(uint itemid)
+
+
+        public static string GetItemNameById(uint itemid)
         {
             foreach (var item in itemList)
             {
@@ -182,7 +201,7 @@ namespace Client.Inventory
             }
             return "Nem létező item.";
         }
-        public static string GetItemDescription(uint itemid)
+        public static string GetItemDescriptionById(uint itemid)
         {
             foreach (var item in itemList)
             {
@@ -192,6 +211,18 @@ namespace Client.Inventory
                 }
             }
             return "";
+        }
+
+        public static uint GetItemWeightById(uint itemid)
+        {
+            foreach (var item in itemList)
+            {
+                if (item.ItemID == itemid)
+                {
+                    return item.ItemWeight;
+                }
+            }
+            return 0;
         }
 
 
