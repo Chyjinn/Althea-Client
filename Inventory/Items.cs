@@ -7,6 +7,7 @@ using System.Text;
 using Client.Characters;
 using System.Linq;
 using static System.Collections.Specialized.BitVector32;
+using RAGE.Game;
 
 namespace Client.Inventory
 {
@@ -116,8 +117,42 @@ namespace Client.Inventory
 
         public void ToggleInventory()
         {
-            InventoryCEF.Active = !InventoryCEF.Active;
+            if (!InventoryCEF.Active)
+            {
+                float heading = RAGE.Elements.Player.LocalPlayer.GetHeading();
+
+                int hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
+
+
+                RAGE.Task.Run(() =>
+                {
+                    RAGE.Game.Graphics.TransitionToBlurred(500);
+                    RAGE.Game.Ui.SetFrontendActive(true);
+                    RAGE.Game.Ui.ActivateFrontendMenu(RAGE.Game.Misc.GetHashKey("FE_MENU_VERSION_RAGEBEAST"), true, -1);
+
+                    RAGE.Task.Run(() =>
+                    {
+                        RAGE.Game.Ui.GivePedToPauseMenu(hashClone, 1);
+                        RAGE.Game.Invoker.Invoke(0x3CA6050692BC61B0, 1);
+                        RAGE.Game.Invoker.Invoke(0xECF128344E9FF9F1, 1);
+                        RAGE.Game.Invoker.Invoke(0x98215325A695E78A, false);
+                        RAGE.Ui.Cursor.ShowCursor(true, true);
+                        InventoryCEF.Active = !InventoryCEF.Active;
+                    }, 200);
+
+                }, 100);
+
+            }
+            else
+            {
+                RAGE.Game.Graphics.TransitionFromBlurred(500);
+                InventoryCEF.Active = !InventoryCEF.Active;
+                RAGE.Game.Ui.SetFrontendActive(false);
+                RAGE.Ui.Cursor.ShowCursor(false, false);
+            }
+            
         }
+
         public string GetItemPicture(uint itemid)
         {
             foreach (var item in itemList)
