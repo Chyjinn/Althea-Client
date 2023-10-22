@@ -44,6 +44,7 @@ namespace Client.Login
 
             Events.Add("client:SaveToken", SaveToken);
             Events.Add("client:LoadToken", LoadToken);
+            RAGE.Game.Graphics.TransitionToBlurred(500);
         }
 
         private void LoginScreen(object[] args)

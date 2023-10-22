@@ -19,10 +19,10 @@ namespace Client.Inventory
         public uint ItemID { get; set; }
         public string ItemValue { get; set; }//itemvalue, json
         public int ItemAmount { get; set; }
+        public bool InUse { get; set; }
         public bool Duty { get; set; }
         public int Priority { get; set; }
-        public bool InUse { get; set; }
-        public Item(uint dbid, uint ownerid, int ownertype, uint itemid, string itemvalue, int itemamount, bool duty, int priority)
+        public Item(uint dbid, uint ownerid, int ownertype, uint itemid, string itemvalue, int itemamount, bool inuse, bool duty, int priority)
         {
             DBID = dbid;
             OwnerID = ownerid;
@@ -32,7 +32,7 @@ namespace Client.Inventory
             ItemAmount = itemamount;
             Duty = duty;
             Priority = priority;
-            InUse = false;
+            InUse = inuse;
         }
     }
 
@@ -43,7 +43,6 @@ namespace Client.Inventory
         public string Name { get; set; }//item neve
         public string Description { get; set; }//leírás, ha van megjelenítjük
         public int ItemType { get; set; }//felhasználás kezeléséhez kell majd, pl Weapon akkor úgy kezeljük
-        public int ItemSection { get; set; }
         public string ItemImage { get; set; }//lehet local, pl. src/img.png, vagy url
         public uint ItemWeight { get; set; }
         public bool Stackable { get; set; }
@@ -58,20 +57,30 @@ namespace Client.Inventory
             Stackable = stack;
         }
 
+        
     }
 
 
 
-    internal class Items : Events.Script
+    public class Items : Events.Script
     {
-        HtmlWindow InventoryCEF;
+        static HtmlWindow InventoryCEF;
         static Entry[] itemList;
-        static List<Item> inventory;
         public Items() { 
             InventoryCEF = new RAGE.Ui.HtmlWindow("package://frontend/inventory/inventory.html");
             InventoryCEF.Active = false;
             Events.Add("client:InventoryFromServer", ReloadInventory);
             Events.Add("client:ItemListFromServer", ReloadItemList);
+
+            Events.Add("client:MoveItemToClothing", MoveItemToClothing);
+            
+            Events.Add("client:AddItemToClothing", AddItemToClothing);
+
+            Events.Add("client:RemoveItem", RemoveItem);//mindenhonnan töröl
+            Events.Add("client:AddItemToInventory", AddItemToInventory);
+
+
+
 
 
             Events.Add("client:UseItemToServer", UseItem);
@@ -81,6 +90,43 @@ namespace Client.Inventory
 
             Events.Add("client:ItemUseToCEF", ItemUseToCEF);
             RAGE.Input.Bind(73, true, ToggleInventory);
+        }
+
+
+
+        private void AddItemToClothing(object[] args)
+        {
+            Item item = RAGE.Util.Json.Deserialize<Item>(Convert.ToString(args[0]));
+            Chat.Output(Convert.ToString(args[0]));
+            RemoveItem(item.DBID);
+            
+            int item_slot = Convert.ToInt32(args[1]);
+           
+            string executed = $"addItemToSlot(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToInt32(item_slot)}\")";
+            InventoryCEF.ExecuteJs(executed);
+            Chat.Output(executed);
+            RefreshInventoryPreview();
+            //InventoryCEF.ExecuteJs($"addItemToSlot(1,1,\"Kesztyű\",\"\",500,50,\"https://pngimg.com/d/mma_gloves_PNG25.png\",5,0)");
+            //addItemToSlot(1,1,"Kesztyű","",500,50,"https://pngimg.com/d/mma_gloves_PNG25.png",5,0)
+        }
+
+
+
+        private void RemoveItem(object[] args)
+        {
+            InventoryCEF.ExecuteJs($"RemoveItem(\"{Convert.ToUInt32(args[0])}\")");//DB_ID alapján törölje
+        }
+
+        private void RemoveItem(uint db_id)
+        {
+            InventoryCEF.ExecuteJs($"RemoveItem(\"{db_id}\")");//DB_ID alapján törölje
+        }
+
+        private void MoveItemToClothing(object[] args)
+        {
+            uint db_id = Convert.ToUInt32(args[0]);
+            uint target_id = Convert.ToUInt32(args[1]);
+            Events.CallRemote("server:MoveItemToClothing", db_id,target_id);
         }
 
         private void MoveItemToContainer(object[] args)
@@ -114,15 +160,17 @@ namespace Client.Inventory
             int slot = Convert.ToInt32(args[1]);
             Events.CallRemote("server:UseItem", section, slot);
         }
-
+        int hashClone = -1;
         public void ToggleInventory()
         {
-            if (!InventoryCEF.Active)
+            if (!InventoryCEF.Active && !RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat)
             {
                 float heading = RAGE.Elements.Player.LocalPlayer.GetHeading();
 
-                int hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
-
+                hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
+                RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z-10f,true, true, false, false);
+                RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.FreezeEntityPosition, hashClone, true);
+                RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityVisible, hashClone, false, false);
 
                 RAGE.Task.Run(() =>
                 {
@@ -137,7 +185,8 @@ namespace Client.Inventory
                         RAGE.Game.Invoker.Invoke(0xECF128344E9FF9F1, 1);
                         RAGE.Game.Invoker.Invoke(0x98215325A695E78A, false);
                         RAGE.Ui.Cursor.ShowCursor(true, true);
-                        InventoryCEF.Active = !InventoryCEF.Active;
+                        InventoryCEF.Active = true;
+                        RAGE.Game.Entity.SetPedAsNoLongerNeeded(ref hashClone);
                     }, 200);
 
                 }, 100);
@@ -146,11 +195,26 @@ namespace Client.Inventory
             else
             {
                 RAGE.Game.Graphics.TransitionFromBlurred(500);
-                InventoryCEF.Active = !InventoryCEF.Active;
+                InventoryCEF.Active = false;
                 RAGE.Game.Ui.SetFrontendActive(false);
                 RAGE.Ui.Cursor.ShowCursor(false, false);
+                RAGE.Game.Entity.DeleteEntity(ref hashClone);
             }
-            
+
+        }
+        private void RefreshInventoryPreview()
+        {
+            float heading = RAGE.Elements.Player.LocalPlayer.GetHeading();
+
+            hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
+            RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z - 10f, true, true, false, false);
+            RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.FreezeEntityPosition, hashClone, true);
+            RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityVisible, hashClone, false, false);
+            RAGE.Task.Run(() =>
+            {
+                RAGE.Game.Ui.GivePedToPauseMenu(hashClone, 1);
+            }, 100);
+
         }
 
         public string GetItemPicture(uint itemid)
@@ -167,29 +231,43 @@ namespace Client.Inventory
 
         private void ReloadItemList(object[] args)
         {
+            ClearInventory();
             itemList = RAGE.Util.Json.Deserialize<Entry[]>(args[0].ToString());
+        }
+
+        private void ClearInventory(object[] args)
+        {
+            InventoryCEF.ExecuteJs($"ClearInventory()");
+        }
+
+        public static void ClearInventory()
+        {
+            InventoryCEF.ExecuteJs($"ClearInventory()");
         }
 
         public void ReloadInventory(object[] args)
         {
-            InventoryCEF.ExecuteJs($"clearInventory()");
-            inventory = RAGE.Util.Json.Deserialize<Item[]>(args[0].ToString()).ToList();
+            InventoryCEF.ExecuteJs($"ClearInventory()");
+            List<Item> inventory = RAGE.Util.Json.Deserialize<Item[]>(args[0].ToString()).ToList();
             Chat.Output(args[0].ToString());
             //Chat.Output("OWNER: " + inventory[0].OwnerID.ToString());
-            InventoryToCEF();
+            InventoryToCEF(inventory);
             //megkaptuk szervertől az inventory-t, át kell küldeni CEF-re.
         }
 
-
-        private void InventoryToCEF()
+        private void AddItemToInventory(object[] args)
         {
-            InventoryCEF.ExecuteJs($"clearInventory()");
-            foreach (var item in inventory)
+            Item item = RAGE.Util.Json.Deserialize<Item>(args[0].ToString());
+            InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\")");
+        }
+
+        private void InventoryToCEF(List<Item> inv)
+        {
+            foreach (var item in inv)
             {
                 //dbid,itemid, itemname, itemdescription, weight, amount, itempicture, priority){
                 //Chat.Output(GetItemSection(item.ItemID) + ", " + item.ItemSlot + ", " + item.ItemID + ", " + item.ItemAmount + ", " + GetItemPicture(item.ItemID));
-                Chat.Output(item.DBID+","+item.ItemID);
-                InventoryCEF.ExecuteJs($"addNewItem(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\")");
+                InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\")");
             }
 
             //HudCEF.ExecuteJs($"RefreshHealth(\"{hp - 100}\",\"{armor}\")");
@@ -210,17 +288,6 @@ namespace Client.Inventory
             return 0;
         }
 
-        public static int GetItemSection(uint itemid)
-        {
-            foreach (var item in itemList)
-            {
-                if (item.ItemID == itemid)
-                {
-                    return item.ItemSection;
-                }
-            }
-            return 0;
-        }
 
 
 
