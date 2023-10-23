@@ -57,11 +57,11 @@ namespace Client.Characters
             Random r = new Random();
 
             int value = r.Next(-100, 101);
-            float percent = Convert.ToSingle(value) / 200f;
+            float percent = Convert.ToSingle(value) / 70f;
             float heading = Cam.GetGameplayCamRelativeHeading() + percent;
             float pitch = Cam.GetGameplayCamRelativePitch() + percent;
-            RAGE.Game.Cam.SetGameplayCamShakeAmplitude(percent);
-            RAGE.Game.Cam.ShakeGameplayCam("SMALL_EXPLOSION_SHAKE", 0.1f);
+            //RAGE.Game.Cam.SetGameplayCamShakeAmplitude(100f);
+            RAGE.Game.Cam.ShakeGameplayCam("SMALL_EXPLOSION_SHAKE", 0.3f);
             RAGE.Game.Cam.SetGameplayCamRelativeHeading(heading);
             RAGE.Game.Cam.SetGameplayCamRelativePitch(pitch, 1f);
             //Cam.SetGameplayCamRawYaw

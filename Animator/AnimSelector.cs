@@ -19,8 +19,7 @@ namespace Client.Animator
         public void playAnimator(object[] args)
         {
             Dictionary<string, List<string>> animDictAnimNameDick = new Dictionary<string, List<string>>();
-            List<string> animList = Animator.AllAnimations;
-            RAGE.Elements.Player player = RAGE.Elements.Player.LocalPlayer;
+            List<string> animList = Animator.AllAnimations;            
             string[] animDictName;
 
             foreach (var item in animList)
