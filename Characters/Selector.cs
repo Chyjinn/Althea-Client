@@ -85,6 +85,7 @@ namespace Client.Characters
 
         private async void ShowCharScreen(object[] args)
         {
+            RAGE.Game.Graphics.TransitionFromBlurred(1000);
             RAGE.Game.Ui.DisplayHud(false);
             CharCEF.Destroy();
             RAGE.Ui.Cursor.ShowCursor(true, true);

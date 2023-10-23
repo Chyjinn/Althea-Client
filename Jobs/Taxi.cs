@@ -35,6 +35,5 @@ namespace Client.Jobs
             string zone = Ui.GetLabelText(tempZone);
             Chat.Output("Taxi hívás kliens oldalon " + street + " - " + zone);
             Events.CallRemote("server:CallTaxi", street, zone);
-        }
     }
 }
