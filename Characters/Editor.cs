@@ -34,7 +34,6 @@ namespace Client.Characters
         private void LoadCharacterAppearance(object[] args)
         {
             character = RAGE.Util.Json.Deserialize<Character>(args[0].ToString());//megkapjuk szervertől a karaktert, lementjük
-            Chat.Output("Karakter betöltve szerver oldalról..." + args[0].ToString());
             HandleCharacterAppearance();
         }
 
@@ -256,6 +255,7 @@ namespace Client.Characters
         }
 
 
+
         public void HandleCharacterAppearance()
         {
             
@@ -279,6 +279,7 @@ namespace Client.Characters
             else
             {
                 RAGE.Elements.Player.LocalPlayer.Model = 0x9C9EFFD8;
+
                 for (int i = 0; i < 19; i++)
                 {
                     if (i != 2)
@@ -352,9 +353,10 @@ namespace Client.Characters
             {
                 EditorCEF = new RAGE.Ui.HtmlWindow("package://frontend/editor/charedit.html");
                 EditorCEF.Active = true;
+                RAGE.Ui.Cursor.ShowCursor(true, true);
                 //itt le kell kezelni még a karakter változását majd
                 //szerver beállította a karakter kinézetét, nekünk azt le kell kérni és menteni kliens oldalra
-                
+
             }
             else
             {
