@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Client.Jobs
 {
-    internal class Taxi : Events.Script﻿
+    internal class Taxi : Events.Script
     {
         public Taxi()
         {
