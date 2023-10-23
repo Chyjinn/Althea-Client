@@ -79,8 +79,8 @@ namespace Client.Inventory
             Events.Add("client:RemoveItem", RemoveItem);//mindenhonnan töröl
             Events.Add("client:AddItemToInventory", AddItemToInventory);
 
-
-
+            Events.Add("client:SwapItem", SwapItem);
+            Events.Add("client:MoveItem", MoveItem);
 
 
             Events.Add("client:UseItemToServer", UseItem);
@@ -92,7 +92,22 @@ namespace Client.Inventory
             RAGE.Input.Bind(73, true, ToggleInventory);
         }
 
+        private void MoveItem(object[] args)
+        {
+            uint item1_dbid = Convert.ToUInt32(args[0]);
+            uint owner_type = Convert.ToUInt32(args[1]);
+            uint owner_id = Convert.ToUInt32(args[2]);
+            Chat.Output(owner_type + "," + owner_id);
+            Events.CallRemote("server:MoveItem", item1_dbid, owner_type, owner_id);
+        }
 
+        private void SwapItem(object[] args)
+        {
+            uint item1_dbid = Convert.ToUInt32(args[0]);
+            uint item2_dbid = Convert.ToUInt32(args[1]);
+            bool inuse = Convert.ToBoolean(args[2]);
+            Events.CallRemote("server:SwapItem", item1_dbid, item2_dbid, inuse);
+        }
 
         private void AddItemToClothing(object[] args)
         {
@@ -231,7 +246,6 @@ namespace Client.Inventory
 
         private void ReloadItemList(object[] args)
         {
-            ClearInventory();
             itemList = RAGE.Util.Json.Deserialize<Entry[]>(args[0].ToString());
         }
 
@@ -258,7 +272,7 @@ namespace Client.Inventory
         private void AddItemToInventory(object[] args)
         {
             Item item = RAGE.Util.Json.Deserialize<Item>(args[0].ToString());
-            InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\")");
+            InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToString(item.InUse)}\")");
         }
 
         private void InventoryToCEF(List<Item> inv)
