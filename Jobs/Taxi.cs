@@ -23,7 +23,7 @@ namespace Client.Jobs
 
         private void CallTaxi(object[] args)
         {
-           
+
             var position = RAGE.Elements.Player.LocalPlayer.Position;
             var tempStreet = 0;
             var tempCrossing = 0;
@@ -35,5 +35,6 @@ namespace Client.Jobs
             string zone = Ui.GetLabelText(tempZone);
             Chat.Output("Taxi hívás kliens oldalon " + street + " - " + zone);
             Events.CallRemote("server:CallTaxi", street, zone);
+        }
     }
 }

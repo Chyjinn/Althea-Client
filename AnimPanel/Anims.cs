@@ -9,28 +9,27 @@ using System.Text;
 
 namespace Client.AnimPanel
 {
-    internal class Anims
+    internal class Anims : Events.Script
     {
         private string dict { get; set; }
         private string name { get; set; }
         private float speed { get; set; }
         private int flag { get; set; }
         private string Category { get; set; }
+        HtmlWindow animPanel;
 
         public Anims()
         {
-            getAndSortAllAnimation();
+            getAndSortAllAnimation();            
+            Events.Add("toggleAnimPanel", toggleAnimPanel);
             animPanel = new HtmlWindow("package://frontend/animpanel/animpanel.html");
             animPanel.Active = false;
-            Events.Add("toggleAnimPanel", toggleAnimPanel);
         }
-
         private void toggleAnimPanel(object[] args)
-        {
+        {           
+            Chat.Output("Animpanel");
             animPanel.Active = !animPanel.Active;
-        }
-
-        HtmlWindow animPanel;
+        }        
 
         private void getAndSortAllAnimation()
         {
