@@ -114,9 +114,7 @@ namespace Client.Inventory
         {
             Item item = RAGE.Util.Json.Deserialize<Item>(Convert.ToString(args[0]));
             
-            int item_slot = Convert.ToInt32(args[1]);
-
-            InventoryCEF.ExecuteJs($"addItemToSlot(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToInt32(item_slot)}\")");
+            InventoryCEF.ExecuteJs($"addItemToSlot(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\")");
             //InventoryCEF.ExecuteJs($"addItemToSlot(1,1,\"Kesztyű\",\"\",500,50,\"https://pngimg.com/d/mma_gloves_PNG25.png\",5,0)");
             //addItemToSlot(1,1,"Kesztyű","",500,50,"https://pngimg.com/d/mma_gloves_PNG25.png",5,0)
         }
@@ -290,11 +288,69 @@ namespace Client.Inventory
         {
             foreach (var item in inv)
             {
+                InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\")");
+                /*              
+                                if (item.ItemID >= 1 && item.ItemID <= 12 && item.InUse)//ruha itemid és használatban van
+                                {
+                                    int target_id = -1;
+                                    switch (item.ItemID)
+                                    {
+                                        case 1://kalap
+                                            target_id = 0;
+                                            break;
+                                        case 2://maszk
+                                            target_id = 6;
+                                            break;
+                                        case 3://nyaklánc
+                                            target_id = 1;
+                                            break;
+                                        case 4://szemüveg
+                                            target_id = 7;
+                                            break;
+                                        case 5://póló
+                                            target_id = 2;
+                                            break;
+                                        case 6://fülbevaló
+                                            target_id = 8;
+                                            break;
+                                        case 7://nadrág
+                                            target_id = 3;
+                                            break;
+                                        case 8://karkötő
+                                            target_id = 9;
+                                            break;
+                                        case 9://cipő
+                                            target_id = 4;
+                                            break;
+                                        case 10://óra
+                                            target_id = 10;
+                                            break;
+                                        case 11://táska
+                                            target_id = 5;
+                                            break;
+                                        case 12://páncél
+                                            target_id = 11;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    if (target_id != -1)
+                                    {
+                                        Events.CallRemote("server:MoveItemToClothing", item.DBID, target_id);
+                                        RAGE.Game.Utils.Wait(250);
+                                        Chat.Output("EQUIP: " + item.DBID + ", " + target_id);
+                                    }
+                                }
+                                else*/
+
+
+
+                
                 //dbid,itemid, itemname, itemdescription, weight, amount, itempicture, priority){
                 //Chat.Output(GetItemSection(item.ItemID) + ", " + item.ItemSlot + ", " + item.ItemID + ", " + item.ItemAmount + ", " + GetItemPicture(item.ItemID));
-                InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\")");
-            }
 
+            }
+            Events.CallRemote("server:SetWornClothing");
             //HudCEF.ExecuteJs($"RefreshHealth(\"{hp - 100}\",\"{armor}\")");
             //\"{Convert.ToInt32(r.Next(0, 101))}\"
             //InventoryCEF.ExecuteJs($"loadInventory()");
@@ -328,6 +384,7 @@ namespace Client.Inventory
             }
             return "Nem létező item.";
         }
+
         public static string GetItemDescriptionById(uint itemid)
         {
             foreach (var item in itemList)
