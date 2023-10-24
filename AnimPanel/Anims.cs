@@ -17,6 +17,7 @@ namespace Client.AnimPanel
         private int flag { get; set; }
         private string Category { get; set; }
         HtmlWindow animPanel;
+        private Dictionary<string, List<string>> animsDictionary;
 
         public Anims()
         {
@@ -28,22 +29,140 @@ namespace Client.AnimPanel
         private void toggleAnimPanel(object[] args)
         {           
             Chat.Output("Animpanel");
+            giveAnimtoJs();
             animPanel.Active = !animPanel.Active;
-        }        
+        }
+        //InventoryCEF.ExecuteJs($"RemoveItem(\"{Convert.ToUInt32(args[0])}\")");
+        private void giveAnimtoJs()
+        {                   
+            List<string> animNameList = new List<string>();
+            foreach (var anim in animsDictionary)
+            {
+                foreach (var animName in anim.Value)
+                {
+                    animPanel.ExecuteJs($"addAnimToContent(\"{animName}\",\"{anim.Key}\")");                    
+                }
+                
+            }
+        }
 
+        private List<string> sortAllAnimsByCategory(string category)
+        {
+            List<string> weaponAnims = new List<string>();
+            List<string> vehAnims = new List<string>();
+            List<string> danceAnims = new List<string>();
+            List<string> drugAnims = new List<string>();
+            List<string> sitAnims = new List<string>();
+            List<string> layAnims = new List<string>();
+            List<string> drinkAndFoodAnims = new List<string>();
+            List<string> leoAnims = new List<string>();
+            List<string> jobAnims = new List<string>();
+            List<string> handSignAnims = new List<string>();
+            List<string> otherAnims = new List<string>();
+            List<string> sharedAnims = new List<string>();
+            List<string> propAnims = new List<string>();
+
+
+            foreach (var item in AllAnimations)
+            {
+                if (item.Contains("weapon") || item.Contains("rifle") || item.Contains("gun") || item.Contains("weapon") && !item.Contains("prop") && !item.Contains("special"))
+                {
+                    weaponAnims.Add(item);
+                }
+                else if (item.Contains("veh") || item.Contains("veh") || item.Contains("car") || item.Contains("drive") && !item.Contains("prop") && !item.Contains("special"))
+                {
+                    vehAnims.Add(item);
+                }
+                else if (item.Contains("strip") || item.Contains("dance") && !item.Contains("prop") && !item.Contains("special"))
+                {
+                    danceAnims.Add(item);
+                }
+                else if (item.Contains("drug") || item.Contains("meth") || item.Contains("smoke") || item.Contains("smoking") && !item.Contains("prop") && !item.Contains("special"))
+                {
+                    drugAnims.Add(item);
+                }
+                else if (item.Contains("sit") || item.Contains("seat") && !item.Contains("car") && !item.Contains("drive") && !item.Contains("special") && !item.Contains("prop"))
+                {
+                    sitAnims.Add(item);
+                }
+                else if (item.Contains("sleep") || item.Contains("lay") && !item.Contains("prop") && !item.Contains("special"))
+                {
+                    layAnims.Add(item);
+                }
+                else if (item.Contains("drunk") || item.Contains("drink") || item.Contains("eat") || item.Contains("food") || item.Contains("snack") && item.Contains("special"))
+                {
+                    drinkAndFoodAnims.Add(item);
+                }
+                else if (item.Contains("swat") || item.Contains("police") || item.Contains("medic") || item.Contains("cpr") && !item.Contains("prop") && !item.Contains("special"))
+                {
+                    leoAnims.Add(item);
+                }
+                else if (item.Contains("job") && !item.Contains("prop") && !item.Contains("special"))
+                {
+                    jobAnims.Add(item);
+                }
+                else if (item.Contains("upper") || item.Contains("handsign") && !item.Contains("prop") && item.Contains("special"))
+                {
+                    handSignAnims.Add(item);
+                }
+                else if (item.Contains("other") || item.Contains("mask") || item.Contains("cuff") && !item.Contains("prop") && !item.Contains("special"))
+                {
+                    otherAnims.Add(item);
+                }
+                else if (item.Contains("shared") && !item.Contains("special") && !item.Contains("prop"))
+                {
+                    sharedAnims.Add(item);
+                }
+                else if (item.Contains("prop") && !item.Contains("special"))
+                {
+                    propAnims.Add(item);
+                }                
+            }
+            switch (category)
+            {
+                case "prop":
+                    return propAnims;                    
+                case "shared":
+                    return sharedAnims;                    
+                case "other":
+                    return otherAnims;                    
+                case "handSign":
+                    return handSignAnims;                    
+                case "job":
+                    return jobAnims;                   
+                case "leo":
+                    return leoAnims;                    
+                case "drinkAndFood":
+                    return drinkAndFoodAnims;                    
+                case "lay":
+                    return layAnims;                    
+                case "sit":
+                    return sitAnims;                    
+                case "drug":
+                    return drugAnims;                    
+                case "dance":
+                    return drugAnims;                    
+                case "veh":
+                    return vehAnims;                    
+                case "weapon":
+                    return weaponAnims;                    
+                default: return null;
+            }
+
+        }
         private void getAndSortAllAnimation()
         {
-            Dictionary<string, List<string>> animsDictionary = new Dictionary<string, List<string>>();
-            string[] animDictionaryArr;
+            Dictionary<string, List<string>> tempAnimsDictionary = new Dictionary<string, List<string>>();            
             foreach (string anim in AllAnimations) 
             {
-                if (animsDictionary.ContainsKey(anim.Split(' ')[0]))
+                if (tempAnimsDictionary.ContainsKey(anim.Split(' ')[0]))
                 {
                     List<string> animNames = new List<string>
                     {
                         anim.Split(' ')[1]
                     };
-                    animsDictionary[anim.Split(' ')[0]] = animNames;
+                    tempAnimsDictionary[anim.Split(' ')[0]] = animNames;
+                    animsDictionary = tempAnimsDictionary;
                 }
                 else
                 {
@@ -51,7 +170,8 @@ namespace Client.AnimPanel
                     {
                         anim.Split(' ')[1]
                     };
-                    animsDictionary.Add(anim.Split(' ')[0], animNames);
+                    tempAnimsDictionary.Add(anim.Split(' ')[0], animNames);
+                    animsDictionary = tempAnimsDictionary;
                 }
             }
         }
