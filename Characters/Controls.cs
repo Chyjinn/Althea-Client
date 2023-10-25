@@ -61,7 +61,7 @@ namespace Client.Characters
             float heading = Cam.GetGameplayCamRelativeHeading() + percent;
             float pitch = Cam.GetGameplayCamRelativePitch() + percent;
             //RAGE.Game.Cam.SetGameplayCamShakeAmplitude(100f);
-            RAGE.Game.Cam.ShakeGameplayCam("SMALL_EXPLOSION_SHAKE", 0.3f);
+            RAGE.Game.Cam.ShakeGameplayCam("SMALL_EXPLOSION_SHAKE", 0.07f);
             RAGE.Game.Cam.SetGameplayCamRelativeHeading(heading);
             RAGE.Game.Cam.SetGameplayCamRelativePitch(pitch, 1f);
             //Cam.SetGameplayCamRawYaw

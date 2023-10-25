@@ -34,8 +34,7 @@ namespace Client.AnimPanel
         }
         //InventoryCEF.ExecuteJs($"RemoveItem(\"{Convert.ToUInt32(args[0])}\")");
         private void giveAnimtoJs()
-        {                   
-            List<string> animNameList = new List<string>();
+        {                               
             foreach (var anim in animsDictionary)
             {
                 foreach (var animName in anim.Value)
@@ -174,6 +173,10 @@ namespace Client.AnimPanel
                     animsDictionary = tempAnimsDictionary;
                 }
             }
+        }
+        public List<string> getAllAnims()
+        {
+            return AllAnimations;
         }
         public static List<string> AllAnimations = new List<string>
         {
