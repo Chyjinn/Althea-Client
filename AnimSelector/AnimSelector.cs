@@ -20,9 +20,15 @@ namespace Client.AnimSelector
             Events.Add("returnAnimtoJs", returnAnimtoJs);
             Events.Add("getFlagAndIdFromJs", getFlagAndIdFromJs);
             Events.Add("cefTest", cefTest);
+            Events.Add("client:playAnim", playAnim);
             animSelectorWindow = new HtmlWindow("package://frontend/animselector/animselector.html");
             animSelectorWindow.Active = false;
             
+        }
+
+        private void playAnim(object[] args)
+        {
+            throw new NotImplementedException();
         }
 
         private void cefTest(object[] args)
@@ -33,23 +39,25 @@ namespace Client.AnimSelector
         private void getFlagAndIdFromJs(object[] args)
         {
             animIndex = Convert.ToInt32(args[0]);
-            animFlag = Convert.ToInt32(args[1]);
-            Chat.Output(args[0] + " " + args[1]);
-            Chat.Output("animIndex: " + animIndex + " animFlag: " + animFlag);
+            animFlag = Convert.ToInt32(args[1]);                        
 
         }
 
         private void returnAnimtoJs(object[] args)
-        {
+        {            
             Dictionary<string, List<string>> animsDictionary = loadAndSortAllAnims();
-            foreach (var anim in animsDictionary)
+            for (int i = 0; i < animsDictionary.Count; i++)
             {
-                foreach (var animName in anim.Value)
-                {
-                    animSelectorWindow.ExecuteJs($"addAnimToContent(\"{animName}\",\"{anim.Key}\")");
-                }
-
+                
             }
+             /*foreach (var anim in animsDictionary)
+             {
+                 foreach (var animName in anim.Value)
+                 {
+                     animSelectorWindow.ExecuteJs($"addAnimToContent(\"{animName}\",\"{anim.Key}\")");
+                 }
+
+             }*/            
         }
 
 
