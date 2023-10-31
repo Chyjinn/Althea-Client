@@ -3,6 +3,7 @@ using RAGE;
 using RAGE.Ui;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Client.AnimSelector
@@ -20,7 +21,7 @@ namespace Client.AnimSelector
             Events.Add("returnAnimtoJs", returnAnimtoJs);
             Events.Add("getFlagAndIdFromJs", getFlagAndIdFromJs);
             Events.Add("cefTest", cefTest);
-            Events.Add("client:playAnim", playAnim);
+            Events.Add("client:playAnim", playAnim);            
             animSelectorWindow = new HtmlWindow("package://frontend/animselector/animselector.html");
             animSelectorWindow.Active = false;
             
@@ -28,7 +29,12 @@ namespace Client.AnimSelector
 
         private void playAnim(object[] args)
         {
-            throw new NotImplementedException();
+            string animDictPlay = Convert.ToString(args[0]);
+            string animNamePlay = Convert.ToString(args[1]);
+            int flag = Convert.ToInt32(args[2]);
+            bool playPause = Convert.ToBoolean(args[3]);
+            Events.CallRemote("server:playAnimation", animDictPlay, animNamePlay, flag, playPause);
+            
         }
 
         private void cefTest(object[] args)
@@ -45,21 +51,21 @@ namespace Client.AnimSelector
 
         private void returnAnimtoJs(object[] args)
         {            
-            Dictionary<string, List<string>> animsDictionary = loadAndSortAllAnims();
-            for (int i = 0; i < animsDictionary.Count; i++)
-            {
-                
-            }
-             /*foreach (var anim in animsDictionary)
-             {
-                 foreach (var animName in anim.Value)
-                 {
-                     animSelectorWindow.ExecuteJs($"addAnimToContent(\"{animName}\",\"{anim.Key}\")");
-                 }
-
-             }*/            
+            int animIndex = 0;
+            int animFlag = 0;
+            animIndex = Convert.ToInt32(args[0]);
+            animFlag = Convert.ToInt32(args[1]);
+            string animDictionary = "Faszomat";            
+            string animName = "Bele";                                    
+            List<string> animList = animsClass.getAllAnims();
+            string[] animsArr = animList[animIndex].Split(' ');
+            animDictionary = animsArr[0];
+            animName = animsArr[1];
+            Chat.Output("AnimIndex " + animIndex + " AnimFlag: " + animFlag);
+            Chat.Output("AnimDictionary: " + animDictionary + " AnimName: " + animName);
+            animSelectorWindow.ExecuteJs($"getAnimNameAndDictionary(\"{animDictionary}\", \"{animName}\")");
+            
         }
-
 
         private void toggleSelectorWindow(object[] args)
         {
