@@ -46,6 +46,8 @@ namespace Client.Hud
             ChatCEF = new HtmlWindow("package://frontend/chat/index.html");
             ChatCEF.Active = false;
 
+
+
             VersionCEF = new HtmlWindow("package://frontend/version/ver.html");
             VersionCEF.Active = true;
             ChatCEF.MarkAsChat();
@@ -96,7 +98,7 @@ namespace Client.Hud
 
         private static void Render(List<Events.TickNametagData> nametags)
         {
-            
+
             if (nametags != null)
             {
                 foreach (var item in nametags)

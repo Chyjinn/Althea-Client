@@ -9,14 +9,17 @@ namespace Client.Binds
     internal static class Binds
     {
         static int mouseBind;
+        static int inventoryBind;
         public static void bindKeys()
         {
             mouseBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.M, true, ToggleCursor);
+            inventoryBind = RAGE.Input.Bind(73, true, Inventory.Items.ToggleInventory);
         }
 
         public static void unbindKeys()
         {
             RAGE.Input.Unbind(mouseBind);
+            RAGE.Input.Unbind(inventoryBind);
         }
 
         public static void toggleRecording()

@@ -11,24 +11,26 @@ namespace Client.Hud
     internal class HealthBar : Events.Script
     {
        RAGE.Ui.HtmlWindow CEF;
-        static HtmlWindow HudCEF;
+        //static HtmlWindow HudCEF;
+        static HtmlWindow Speedo;
         int MapScaleform;
         public HealthBar()
         {
             Minimap();
             Events.Add("client:HUD", SetHudVisible);
 
-            
-            HudCEF = new RAGE.Ui.HtmlWindow("package://frontend/hud/hud.html");
-            HudCEF.Active = false;
+            Speedo = new HtmlWindow("package://frontend/speedo/speedo.html");
+            Speedo.Active = false;
+            //HudCEF = new RAGE.Ui.HtmlWindow("package://frontend/hud/hud.html");
+            //HudCEF.Active = false;
             Events.OnPlayerEnterVehicle += PlayerEnterVehicle;
             Events.OnPlayerLeaveVehicle += PlayerLeaveVehicle;
-            Events.AddDataHandler("vehicle:IndicatorRight", ToggleIndicator);
-            Events.AddDataHandler("vehicle:IndicatorLeft", ToggleIndicator);
+            //Events.AddDataHandler("vehicle:IndicatorRight", ToggleIndicator);
+            //Events.AddDataHandler("vehicle:IndicatorLeft", ToggleIndicator);
             Events.Tick += UpdateHealth;
         }
 
-        private void ToggleIndicator(Entity entity, object arg, object oldArg)
+       /* private void ToggleIndicator(Entity entity, object arg, object oldArg)
         {
             if (entity == RAGE.Elements.Player.LocalPlayer.Vehicle)
             {
@@ -41,16 +43,16 @@ namespace Client.Hud
                     HudCEF.ExecuteJs($"ToggleBlinker(0)");
                 }
             }
-        }
+        }*/
 
         private void PlayerLeaveVehicle(Vehicle vehicle, int seatId)
         {
-            HudCEF.ExecuteJs($"EnableVehicleGauges(0)");
+            Speedo.Active = false;
         }
 
         private void PlayerEnterVehicle(Vehicle vehicle, int seatId)
         {
-            HudCEF.ExecuteJs($"EnableVehicleGauges(1)");
+            Speedo.Active = true;
         }
 
         public static Minimap GetMinimapAnchor()
@@ -102,40 +104,57 @@ namespace Client.Hud
 
             if (state)
             {
-                HudCEF.Active = true;
+                //Speedo.Active = true;
             }
             else
             {
-                HudCEF.Active = false;
+                //Speedo.Active = false;
             }
         }
-        Random r = new Random();
-        DateTime nextUpdate = DateTime.Now;
-
-
-
 
 
 
         private void UpdateHealth(List<Events.TickNametagData> nametags)
         {
-            if (RAGE.Elements.Player.LocalPlayer.Vehicle != null)
+            if (RAGE.Elements.Player.LocalPlayer.Vehicle != null && Speedo.Active)
             {
                 float speed = RAGE.Elements.Player.LocalPlayer.Vehicle.GetSpeed();
                 int gear = RAGE.Elements.Player.LocalPlayer.Vehicle.Gear;
-                int mph = Convert.ToInt32(speed * 2.236936);
+                int kmph = Convert.ToInt32(speed * 3.6);
                 float rpm = RAGE.Elements.Player.LocalPlayer.Vehicle.Rpm;
-                HudCEF.ExecuteJs($"RefreshSpeed(\"{Convert.ToInt32(mph)}\",\"{Math.Round(rpm*100,0)}\",\"{gear}\")");
-
-                if (DateTime.Now > nextUpdate)
+                Vector3 direction = RAGE.Elements.Player.LocalPlayer.Vehicle.GetSpeedVector(true);
+                if(kmph > 1 && direction.Y > 0f)//1-nél többel megy és előre
                 {
-                    TimeSpan span = new TimeSpan(5000000);
-                    nextUpdate = DateTime.Now + span;
-                    HudCEF.ExecuteJs($"RefreshFuel(\"{Convert.ToInt32(r.Next(0, 101))}\")");
+                    Speedo.ExecuteJs($"setGear(\"{gear}\")");
                 }
+                else if(kmph == 0 && rpm < 0.25f)//áll a kocsi, üresben van és nincs fordulat
+                {
+                    Speedo.ExecuteJs($"setGear(\"{0}\")");
+                }
+                else if(direction.Y <= -0.08f)//valamennyivel megy a kocsi és hátrafelé
+                {
+                    Speedo.ExecuteJs($"setGear(\"{-1}\")");
+                }  
+                else
+                {
+                    Speedo.ExecuteJs($"setGear(\"{gear}\")");
+                }
+                Speedo.ExecuteJs($"setSpeed(\"{Convert.ToInt32(kmph)}\")");
+                if(RAGE.Elements.Player.LocalPlayer.Vehicle.GetIsEngineRunning())
+                {
+                    Speedo.ExecuteJs($"setRpm(\"{Convert.ToInt32(rpm * 100)}\")");
+                }    
+                else
+                {
+                    Speedo.ExecuteJs($"setRpm(\"{0}\")");
+                    Speedo.ExecuteJs($"setGear(\"{0}\")");
+                }
+
+                
                 
                 //Chat.Output(speed + " m/s -  " + mph + " mph - " + rpm + " rpm");
             }
+
             Minimap map = GetMinimapAnchor();
             //Chat.Output(map.Width + "," + map.Height + "," + map.LeftX + "," + map.RightX + "," + map.TopY + "," + map.BottomY);
             RAGE.Game.Player.SetPlayerHealthRechargeMultiplier(0f);
@@ -149,7 +168,7 @@ namespace Client.Hud
             RAGE.Game.Graphics.PopScaleformMovieFunction();
             int hp = RAGE.Elements.Player.LocalPlayer.GetHealth();
             int armor = RAGE.Elements.Player.LocalPlayer.GetArmour();
-            HudCEF.ExecuteJs($"RefreshHealth(\"{hp - 100}\",\"{armor}\")");
+            //HudCEF.ExecuteJs($"RefreshHealth(\"{hp - 100}\",\"{armor}\")");
 
 
             //HudCEF.ExecuteJs($" RefreshHealthBarPosition(\"{Convert.ToInt32(map.Width)}\", \"{Convert.ToInt32(map.Height)}\", \"{Convert.ToInt32(map.LeftX)}\", \"{Convert.ToInt32(map.RightX+20)}\", \"{Convert.ToInt32(map.TopY+10)}\", \"{Convert.ToInt32(map.BottomY)}\")");
