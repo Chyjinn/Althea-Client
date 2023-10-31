@@ -21,9 +21,15 @@ namespace Client.AnimSelector
             Events.Add("returnAnimtoJs", returnAnimtoJs);
             Events.Add("getFlagAndIdFromJs", getFlagAndIdFromJs);
             Events.Add("cefTest", cefTest);
-            Events.Add("client:playAnim", playAnim);            
+            Events.Add("client:playAnim", playAnim);
+            Events.Add("client:uploadAnim", uploadAnim);
             animSelectorWindow = new HtmlWindow("package://frontend/animselector/animselector.html");
             animSelectorWindow.Active = false;
+            
+        }
+
+        private void uploadAnim(object[] args)
+        {
             
         }
 
