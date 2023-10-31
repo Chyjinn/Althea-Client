@@ -19,8 +19,7 @@ namespace Client.AnimSelector
             loadAndSortAllAnims();
             Events.Add("toggleSelectorWindow", toggleSelectorWindow);
             Events.Add("returnAnimtoJs", returnAnimtoJs);
-            Events.Add("getFlagAndIdFromJs", getFlagAndIdFromJs);
-            Events.Add("cefTest", cefTest);
+            Events.Add("getFlagAndIdFromJs", getFlagAndIdFromJs);            
             Events.Add("client:playAnim", playAnim);
             Events.Add("client:uploadAnim", uploadAnim);
             animSelectorWindow = new HtmlWindow("package://frontend/animselector/animselector.html");
@@ -30,7 +29,13 @@ namespace Client.AnimSelector
 
         private void uploadAnim(object[] args)
         {
-            
+            //Player player, string cmd, string dict, string anim, int flag, string category
+            string cmd = Convert.ToString(args[0]);
+            string dict = Convert.ToString(args[1]);
+            string anim = Convert.ToString(args[2]);
+            int flag = Convert.ToInt32(args[3]);
+            string category = Convert.ToString(args[4]);
+            Events.CallRemote("server:AddAnimToDB", cmd, dict, anim, flag, category);
         }
 
         private void playAnim(object[] args)
@@ -41,11 +46,6 @@ namespace Client.AnimSelector
             bool playPause = Convert.ToBoolean(args[3]);
             Events.CallRemote("server:playAnimation", animDictPlay, animNamePlay, flag, playPause);
             
-        }
-
-        private void cefTest(object[] args)
-        {
-            Chat.Output("Működik");
         }
 
         private void getFlagAndIdFromJs(object[] args)
@@ -67,16 +67,14 @@ namespace Client.AnimSelector
             string[] animsArr = animList[animIndex].Split(' ');
             animDictionary = animsArr[0];
             animName = animsArr[1];
-            Chat.Output("AnimIndex " + animIndex + " AnimFlag: " + animFlag);
-            Chat.Output("AnimDictionary: " + animDictionary + " AnimName: " + animName);
             animSelectorWindow.ExecuteJs($"getAnimNameAndDictionary(\"{animDictionary}\", \"{animName}\")");
             
         }
 
         private void toggleSelectorWindow(object[] args)
-        {
-            Chat.Output("animSelector");
+        {            
             animSelectorWindow.Active = !animSelectorWindow.Active;
+            Hud.NameTag.ChatCEF.Active = !Hud.NameTag.ChatCEF.Active;
         }
         public Dictionary<string, List<string>> loadAndSortAllAnims()
         {
