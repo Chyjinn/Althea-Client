@@ -15,7 +15,7 @@ namespace Client.Cameras
         float camHeightOffset = 0f;
         Vector3 camStartPositions;
         float camZoom = 65f;
-
+        float revs = -1f;
         public Cam() {
             Events.Add("client:SkyCam", SkyCam);
             Events.Add("client:SetCamera", SetCamera);
@@ -23,6 +23,49 @@ namespace Client.Cameras
             Events.Add("client:DeleteCamera", DeleteCamera);
 
             Events.Add("client:InfrontCamera", InfrontCamera);
+
+            Events.Add("client:DealershipCamera", DealershipCamera);
+            Events.Add("client:rev", RevVehicle);
+        }
+
+        private void RevVehicle(object[] args)
+        {
+            revs = Convert.ToSingle(args[0]);
+            if (revs != -1f)
+            {
+                Events.Tick += Rev;
+            }
+            else
+            {
+                Events.Tick -= Rev;
+            }
+            
+        }
+
+        private void Rev(List<Events.TickNametagData> nametags)
+        {
+            if (revs != -1f)
+            {
+                Player.LocalPlayer.Vehicle.Rpm = revs;
+            }
+        }
+
+        private void DealershipCamera(object[] args)
+        {
+            Vector3 pos = Player.LocalPlayer.Vehicle.Position;
+            camHeightOffset = 0f;
+            camZoom = 65f;
+
+            float radians = -Player.LocalPlayer.GetHeading() * (float)Math.PI / 180f;
+            float nx = pos.X + (7f * (float)Math.Sin(radians));
+            float ny = pos.Y + (7f * (float)Math.Cos(radians));
+
+            camera = RAGE.Game.Cam.CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", nx, ny, pos.Z + 0.8f, 0f, 0f, 0f, 60f, true, 2);
+            RAGE.Game.Cam.PointCamAtCoord(camera, pos.X, pos.Y, pos.Z);
+            RAGE.Game.Cam.SetCamActive(camera, true);
+            RAGE.Game.Cam.RenderScriptCams(true, true, 500, true, false, 0);
+            camStartPositions = new Vector3(nx, ny, pos.Z + 0.8f);
+            Events.Tick += TickDealership;
         }
 
         private void SkyCam(object[] args)
@@ -91,8 +134,8 @@ namespace Client.Cameras
             camZoom = 80f;
 
             float radians = -Player.LocalPlayer.GetHeading() * (float)Math.PI / 180f;
-            float nx = pos.X + (3f * (float)Math.Sin(radians));
-            float ny = pos.Y + (3f * (float)Math.Cos(radians));
+            float nx = pos.X + (2f * (float)Math.Sin(radians));
+            float ny = pos.Y + (2f * (float)Math.Cos(radians));
 
             camera = RAGE.Game.Cam.CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", nx, ny, pos.Z + 0.3f, 0f, 0f, 0f, 60f, true, 2);
             RAGE.Game.Cam.PointCamAtCoord(camera, pos.X, pos.Y, pos.Z);
@@ -108,6 +151,55 @@ namespace Client.Cameras
             RAGE.Game.Cam.RenderScriptCams(false, true, 500, true, false, 0);
             Events.Tick -= Tick;
         }
+
+        private void TickDealership(List<Events.TickNametagData> nametags)
+        {
+            if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.D))
+            {
+                RotateVehicleLeft();
+            }
+            else if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.A))
+            {
+                RotateVehicleRight();
+            }
+
+            if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.W))
+            {
+                if (camHeightOffset < 1f)
+                {
+                    camHeightOffset += 0.01f;
+                }
+
+            }
+
+            else if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.S))
+            {
+                if (camHeightOffset > -0.6f)
+                {
+                    camHeightOffset -= 0.01f;
+                }
+            }
+
+            if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.E))
+            {
+                if (camZoom > 10f)
+                {
+                    camZoom -= 0.3f;
+                }
+
+            }
+            else if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.Q))
+            {
+                if (camZoom < 90f)
+                {
+                    camZoom += 0.3f;
+                }
+            }
+            SetCamToVehicle();
+        }
+
+
+
         private void Tick(List<Events.TickNametagData> nametags)
         {
             if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.D))
@@ -165,6 +257,16 @@ namespace Client.Cameras
             Vector3 rot = Player.LocalPlayer.GetRotation(0);
             Player.LocalPlayer.SetRotation(rot.X, rot.Y, rot.Z - 1f, 0, true);
         }*/
+        private void RotateVehicleRight()
+        {
+            Events.CallRemote("server:RotateVehicleRight");
+        }
+
+        private void RotateVehicleLeft()
+        {
+
+            Events.CallRemote("server:RotateVehicleLeft");
+        }
 
 
         private void RotateCharRight()
@@ -176,6 +278,18 @@ namespace Client.Cameras
         {
 
             Events.CallRemote("server:RotateCharLeft");
+        }
+
+        private void SetCamToVehicle()
+        {
+            Vector3 pos = Player.LocalPlayer.Vehicle.Position;
+            RAGE.Game.Cam.PointCamAtCoord(camera, pos.X, pos.Y, pos.Z + camHeightOffset);
+
+
+            Vector3 campos = RAGE.Game.Cam.GetCamCoord(camera);
+            RAGE.Game.Cam.SetCamCoord(camera, camStartPositions.X, camStartPositions.Y, camStartPositions.Z + camHeightOffset);
+
+            RAGE.Game.Cam.SetCamFov(camera, camZoom);
         }
 
         private void SetCamPosition()

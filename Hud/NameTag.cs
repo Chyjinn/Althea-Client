@@ -115,19 +115,24 @@ namespace Client.Hud
         private static void Render(List<Events.TickNametagData> nametags)
         {
             NametagCEF.ExecuteJs($"clearNametags()");
-            foreach (var item in peds)
+            
+            if (nametags != null)
             {
-                int screenX = 2560;
-                int screenY = 1440;
-                float x = 0;
-                float y = 0;
-
-                RAGE.Game.Graphics.GetScreenCoordFromWorldCoord(item.Position.X, item.Position.Y, item.Position.Z, ref x, ref y);
-                //Chat.Output(item.Id+" X:" + x + " Y:" + y);
-                if (x > -1f && x < 1f && y > -1f && y < 1f)
+                foreach (var item in nametags)
                 {
-                    NametagCEF.ExecuteJs($"renderNametag(\"{item.Id}\",\"{item.Id}\",\"{Convert.ToInt32(screenX * x)}\",\"{Convert.ToInt32(screenY * y)}\",\"{0.6f}\")");
+                    int screenX = 2560;
+                    int screenY = 1440;
+                    float x = 0;
+                    float y = 0;
+
+                    //RAGE.Game.Graphics.GetScreenCoordFromWorldCoord(item.Position.X, item.Position.Y, item.Position.Z, ref x, ref y);
+                    //Chat.Output(item.Id+" X:" + x + " Y:" + y);
+                    if (x > -1f && x < 1f && y > -1f && y < 1f)
+                    {
+                        NametagCEF.ExecuteJs($"renderNametag(\"{item.Player.Name}\",\"{item.Player.Id}\",\"{Convert.ToInt32(item.ScreenX)}\",\"{Convert.ToInt32(item.ScreenY)}\",\"{0.6f}\")");
+                    }
                 }
+
 
                     //string name = Convert.ToString(p.GetSharedData("player:VisibleName"));
                     //name = name.Replace('_', ' ');

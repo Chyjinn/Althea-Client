@@ -50,6 +50,26 @@ namespace Client.Characters
             Events.AddDataHandler("player:Ragdoll", PlayerRagdoll);
             Events.OnEntityStreamIn += OnEntityStreamIn;
             Events.OnPlayerWeaponShot += WeaponShot;
+            Events.OnIncomingDamage += Damage;
+        }
+
+        private void Damage(RAGE.Elements.Player sourcePlayer, RAGE.Elements.Entity sourceEntity, RAGE.Elements.Entity targetEntity, ulong weaponHash, ulong boneIdx, int damage, Events.CancelEventArgs cancel)
+        {
+            
+            if (sourcePlayer != null)
+            {
+                //Chat.Output(sourcePlayer.Name + " megsebzett " + damage + " (" + boneIdx + ")");
+                /*
+                if (boneIdx == 12844 || boneIdx == 31086)//fejbe lőttek
+                {
+                    RAGE.Elements.Player.LocalPlayer.SetToRagdoll(500, 1000, 2, false, false, false);
+                }
+                */
+                if (damage > 25)
+                {
+                    RAGE.Elements.Player.LocalPlayer.SetToRagdoll(1000, 2000, 2, false, false, false);
+                }
+            }
         }
 
         private void WeaponShot(Vector3 targetPos, RAGE.Elements.Player target, Events.CancelEventArgs cancel)
@@ -61,7 +81,7 @@ namespace Client.Characters
             float heading = Cam.GetGameplayCamRelativeHeading() + percent;
             float pitch = Cam.GetGameplayCamRelativePitch() + percent;
             //RAGE.Game.Cam.SetGameplayCamShakeAmplitude(100f);
-            RAGE.Game.Cam.ShakeGameplayCam("SMALL_EXPLOSION_SHAKE", 0.3f);
+            RAGE.Game.Cam.ShakeGameplayCam("SMALL_EXPLOSION_SHAKE", 0.07f);
             RAGE.Game.Cam.SetGameplayCamRelativeHeading(heading);
             RAGE.Game.Cam.SetGameplayCamRelativePitch(pitch, 1f);
             //Cam.SetGameplayCamRawYaw

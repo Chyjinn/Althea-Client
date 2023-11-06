@@ -91,7 +91,60 @@ namespace Client.Inventory
             Events.Add("client:MoveItemToContainer", MoveItemToContainer);
 
             Events.Add("client:ItemUseToCEF", ItemUseToCEF);
-            RAGE.Input.Bind(73, true, ToggleInventory);
+            Events.OnClickWithRaycast += WorldClickToContainer;
+        }
+
+        private void WorldClickToContainer(int x, int y, bool up, bool right, float relativeX, float relativeY, Vector3 worldPos, int entityHandle)
+        {
+            if (!up && right)
+            {
+                RAGE.Elements.Entity e = GetEntityFromRaycast(RAGE.Game.Cam.GetGameplayCamCoord(), worldPos, 0, -1);
+                if(e.Type == RAGE.Elements.Type.Vehicle)
+                {
+                    Chat.Output("Típus: " + RAGE.Game.Vehicle.GetDisplayNameFromVehicleModel(e.Model));
+                }
+            } 
+        }
+
+        public static RAGE.Elements.Entity GetEntityFromRaycast(Vector3 fromCoords, Vector3 toCoords, int ignoreEntity, int flags)
+        {
+            bool hit = false;
+            Vector3 endCoords = new Vector3();
+            Vector3 surfaceNormal = new Vector3();
+            RAGE.Elements.Entity EntityHit = null;
+            int materialHash = -1;
+            int elementHitHandle = -1;
+            RAGE.Elements.Entity entityHit = null;
+            int ray = RAGE.Game.Shapetest.StartShapeTestRay(fromCoords.X, fromCoords.Y, fromCoords.Z, toCoords.X, toCoords.Y, toCoords.Z, flags, ignoreEntity, 0);
+
+            int curTemp = 0;
+
+            int shapeResult = RAGE.Game.Shapetest.GetShapeTestResultEx(ray, ref curTemp, endCoords, surfaceNormal, ref materialHash, ref elementHitHandle);
+
+            // I think GetAtHandle is still broken so:
+
+            if (elementHitHandle > 0)
+            {
+                int entityType = RAGE.Game.Entity.GetEntityType(elementHitHandle);
+                // 0 = nothing, probably something in the world.
+                // 1 = Ped or Player.
+                // 2 = Vehicle
+                // 3 = Object
+                if (entityType == 1)
+                {
+                    entityHit = RAGE.Elements.Entities.Players.All.FirstOrDefault(x => x.Handle == elementHitHandle);
+                }
+                else if (entityType == 2)
+                {
+                    entityHit = RAGE.Elements.Entities.Vehicles.All.FirstOrDefault(x => x.Handle == elementHitHandle);
+                }
+                else if (entityType == 3)
+                {
+                    entityHit = RAGE.Elements.Entities.Objects.All.FirstOrDefault(x => x.Handle == elementHitHandle);
+                }
+            }
+
+            return entityHit;
         }
 
         private void MoveItem(object[] args)
@@ -167,8 +220,8 @@ namespace Client.Inventory
             int slot = Convert.ToInt32(args[1]);
             Events.CallRemote("server:UseItem", section, slot);
         }
-        int hashClone = -1;
-        public void ToggleInventory()
+        static int hashClone = -1;
+        public static void ToggleInventory()
         {
             if (!InventoryCEF.Active && !RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat)
             {
@@ -193,7 +246,11 @@ namespace Client.Inventory
                         RAGE.Game.Invoker.Invoke(0x98215325A695E78A, false);
                         RAGE.Ui.Cursor.ShowCursor(true, true);
                         InventoryCEF.Active = true;
+                        RAGE.Game.Invoker.Invoke(Natives.DisablePedPainAudio, hashClone, true);
+                        RAGE.Game.Invoker.Invoke(Natives.SetBlockingOfNonTemporaryEvents, hashClone, true);
+                        RAGE.Game.Invoker.Invoke(Natives.StopPedSpeaking, hashClone, true);
                         RAGE.Game.Entity.SetPedAsNoLongerNeeded(ref hashClone);
+
                         RAGE.Game.Entity.DeleteEntity(ref hashClone);
                     }, 100);
 

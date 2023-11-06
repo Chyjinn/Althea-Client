@@ -23,7 +23,9 @@ namespace Client.Vehicles
             int leftbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Left, true, IndicatorLeft);
             int rightbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Right, true, IndicatorRight);
             Events.OnEntityStreamIn += OnEntityStreamIn;
+            Events.Add("client:SetHandling", SetTune);
         }
+
         public void IndicatorLeft()
         {
             Events.CallRemote("server:VehicleIndicator", false);
@@ -66,6 +68,16 @@ namespace Client.Vehicles
             }
         }
 
+        private void SetTune(object[] args)
+        {
+            float torque = Convert.ToSingle(args[0]);
+            float power = Convert.ToSingle(args[1]);
+            bool drift = Convert.ToBoolean(args[2]);
+            RAGE.Elements.Player.LocalPlayer.Vehicle.SetEngineTorqueMultiplier(torque);
+            RAGE.Elements.Player.LocalPlayer.Vehicle.SetEnginePowerMultiplier(power);
+            RAGE.Elements.Player.LocalPlayer.Vehicle.SetReduceGrip(drift);
+        }
+
         private void Tick(List<Events.TickNametagData> nametags)
         {
             int endEntity = -1;
@@ -97,7 +109,7 @@ namespace Client.Vehicles
 
 
                     float dist = RAGE.Game.Misc.GetDistanceBetweenCoords(ppos.X, ppos.Y, ppos.Z, vpos.X, vpos.Y, vpos.Z, true);
-                    string speedres = mph.ToString();
+                    string speedres = kmh.ToString();
                     string speedpadded = speedres.PadLeft(3, '0');
 
 
