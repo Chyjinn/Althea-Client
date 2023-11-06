@@ -30,7 +30,7 @@ namespace Client.Hud
         const float border = 0.001f;
 
         
-        HtmlWindow ChatCEF;
+        public static HtmlWindow ChatCEF;
         HtmlWindow VersionCEF;
 
         public NameTag() {

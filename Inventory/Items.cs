@@ -147,8 +147,6 @@ namespace Client.Inventory
             return entityHit;
         }
 
-
-
         private void MoveItem(object[] args)
         {
             uint item1_dbid = Convert.ToUInt32(args[0]);
@@ -248,7 +246,11 @@ namespace Client.Inventory
                         RAGE.Game.Invoker.Invoke(0x98215325A695E78A, false);
                         RAGE.Ui.Cursor.ShowCursor(true, true);
                         InventoryCEF.Active = true;
+                        RAGE.Game.Invoker.Invoke(Natives.DisablePedPainAudio, hashClone, true);
+                        RAGE.Game.Invoker.Invoke(Natives.SetBlockingOfNonTemporaryEvents, hashClone, true);
+                        RAGE.Game.Invoker.Invoke(Natives.StopPedSpeaking, hashClone, true);
                         RAGE.Game.Entity.SetPedAsNoLongerNeeded(ref hashClone);
+
                         RAGE.Game.Entity.DeleteEntity(ref hashClone);
                     }, 100);
 

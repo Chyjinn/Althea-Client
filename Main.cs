@@ -29,6 +29,17 @@ namespace Client
             Interior.RefreshInterior(166657);
             Events.Add("client:YTtest", YoutubeTest);
             Events.Add("client:LoadIPL", LoadIPL);
+            Events.Add("client:SetWind", SetWind);
+        }
+        
+        private void SetWind(object[] args)
+        {
+            float dir = Convert.ToSingle(args[0]);
+            float speed = Convert.ToSingle(args[1]);
+            RAGE.Game.Misc.SetWindDirection(dir);
+            //RAGE.Game.Misc.SetWindSpeed(speed);
+            RAGE.Game.Misc.SetWind(speed);
+
         }
 
         private void YoutubeTest(object[] args)
