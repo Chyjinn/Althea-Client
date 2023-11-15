@@ -354,6 +354,7 @@ namespace Client.Characters
                 EditorCEF = new RAGE.Ui.HtmlWindow("package://frontend/editor/charedit.html");
                 EditorCEF.Active = true;
                 RAGE.Ui.Cursor.ShowCursor(true, true);
+                RAGE.Game.Graphics.TransitionFromBlurred(200);
                 //itt le kell kezelni még a karakter változását majd
                 //szerver beállította a karakter kinézetét, nekünk azt le kell kérni és menteni kliens oldalra
 

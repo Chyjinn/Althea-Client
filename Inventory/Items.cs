@@ -45,9 +45,8 @@ namespace Client.Inventory
         public int ItemType { get; set; }//felhasználás kezeléséhez kell majd, pl Weapon akkor úgy kezeljük
         public string ItemImage { get; set; }//lehet local, pl. src/img.png, vagy url
         public uint ItemWeight { get; set; }
-        public byte Container { get; set; }//ha 0, akkor nem tároló, ha 1 vagy több akkor igen
         public bool Stackable { get; set; }
-        public Entry(uint id, string name, string desc, int type, uint weight, string itemimage, byte container, bool stack)
+        public Entry(uint id, string name, string desc, int type, uint weight, string itemimage, bool stack)
         {
             ItemID = id;
             Name = name;
@@ -55,7 +54,6 @@ namespace Client.Inventory
             ItemType = type;
             ItemWeight = weight;
             ItemImage = itemimage;
-            Container = container;
             Stackable = stack;
         }
 
@@ -158,8 +156,7 @@ namespace Client.Inventory
         {
             uint item1_dbid = Convert.ToUInt32(args[0]);
             uint item2_dbid = Convert.ToUInt32(args[1]);
-            bool inuse = Convert.ToBoolean(args[2]);
-            Events.CallRemote("server:SwapItem", item1_dbid, item2_dbid, inuse);
+            Events.CallRemote("server:SwapItem", item1_dbid, item2_dbid);
         }
 
         private void AddItemToClothing(object[] args)
@@ -184,7 +181,7 @@ namespace Client.Inventory
         private void MoveItemToClothing(object[] args)
         {
             uint db_id = Convert.ToUInt32(args[0]);
-            uint target_id = Convert.ToUInt32(args[1]);
+            int target_id = Convert.ToInt32(args[1]);
             Events.CallRemote("server:MoveItemToClothing", db_id,target_id);
         }
 
@@ -215,10 +212,11 @@ namespace Client.Inventory
 
         private void UseItem(object[] args)
         {
-            int section = Convert.ToInt32(args[0]);
-            int slot = Convert.ToInt32(args[1]);
-            Events.CallRemote("server:UseItem", section, slot);
+            uint target_item_dbid = Convert.ToUInt32(args[0]);
+            Events.CallRemote("server:UseItem", target_item_dbid);
         }
+
+
         static int hashClone = -1;
         static DateTime timeout = DateTime.Now;
         static TimeSpan span = TimeSpan.FromMilliseconds(500);
@@ -290,7 +288,7 @@ namespace Client.Inventory
             RAGE.Task.Run(() =>
             {
                 RAGE.Game.Ui.GivePedToPauseMenu(hashClone, 1);
-            }, 100);
+            }, 250);
 
         }
 
@@ -305,7 +303,7 @@ namespace Client.Inventory
             RAGE.Task.Run(() =>
             {
                 RAGE.Game.Ui.GivePedToPauseMenu(hashClone, 1);
-            }, 100);
+            }, 250);
 
         }
 
@@ -340,7 +338,7 @@ namespace Client.Inventory
         {
             InventoryCEF.ExecuteJs($"ClearInventory()");
             List<Item> inventory = RAGE.Util.Json.Deserialize<Item[]>(args[0].ToString()).ToList();
-            Chat.Output(args[0].ToString());
+
             //Chat.Output("OWNER: " + inventory[0].OwnerID.ToString());
             InventoryToCEF(inventory);
             //megkaptuk szervertől az inventory-t, át kell küldeni CEF-re.
@@ -356,7 +354,7 @@ namespace Client.Inventory
         {
             foreach (var item in inv)
             {
-                InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\")");
+                InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToString(item.InUse)}\")");
                 /*              
                                 if (item.ItemID >= 1 && item.ItemID <= 12 && item.InUse)//ruha itemid és használatban van
                                 {
