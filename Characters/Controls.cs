@@ -48,16 +48,43 @@ namespace Client.Characters
             Events.AddDataHandler("player:Frozen", PlayerFrozen);
             Events.AddDataHandler("player:Invisible", PlayerInvisible);
             Events.AddDataHandler("player:Ragdoll", PlayerRagdoll);
+            Events.AddDataHandler("player:WeaponTint", WeaponTint);
+
             Events.OnEntityStreamIn += OnEntityStreamIn;
             Events.OnPlayerWeaponShot += WeaponShot;
             Events.OnIncomingDamage += Damage;
+            Events.OnOutgoingDamage += OutDamage;
+        }
+
+        private void OutDamage(RAGE.Elements.Entity sourceEntity, RAGE.Elements.Entity targetEntity, RAGE.Elements.Player sourcePlayer, ulong weaponHash, ulong boneIdx, int damage, Events.CancelEventArgs cancel)
+        {
+            if (weaponHash == RAGE.Util.Joaat.Hash("weapon_beanbag"))//ha beanbag talált el
+            {
+                RAGE.Game.Graphics.StartParticleFxNonLoopedOnEntity("water_boat_wash", targetEntity.Id, 0f, 0f, 0f, 0f, 0f, 0f, 2f, true, true, true);
+            }
+        }
+
+        private void WeaponTint(RAGE.Elements.Entity entity, object arg, object oldArg)
+        {
+            if (entity.Type == RAGE.Elements.Type.Player)
+            {
+                RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
+                p.SetWeaponTintIndex(RAGE.Util.Joaat.Hash("weapon_beanbag"), Convert.ToInt32(arg));
+            }
         }
 
         private void Damage(RAGE.Elements.Player sourcePlayer, RAGE.Elements.Entity sourceEntity, RAGE.Elements.Entity targetEntity, ulong weaponHash, ulong boneIdx, int damage, Events.CancelEventArgs cancel)
         {
+            Chat.Output("Damage: " + damage);
             
             if (sourcePlayer != null)
             {
+                if (weaponHash == RAGE.Util.Joaat.Hash("weapon_beanbag"))//ha beanbag talált el
+                {
+                    RAGE.Elements.Player.LocalPlayer.SetToRagdoll(5000, 10000, 0, false, false, false);
+                    Events.CallRemote("server:BeanBagHit");
+                }
+                
                 //Chat.Output(sourcePlayer.Name + " megsebzett " + damage + " (" + boneIdx + ")");
                 /*
                 if (boneIdx == 12844 || boneIdx == 31086)//fejbe lőttek
@@ -65,10 +92,7 @@ namespace Client.Characters
                     RAGE.Elements.Player.LocalPlayer.SetToRagdoll(500, 1000, 2, false, false, false);
                 }
                 */
-                if (damage > 25)
-                {
-                    RAGE.Elements.Player.LocalPlayer.SetToRagdoll(1000, 2000, 2, false, false, false);
-                }
+
             }
         }
 

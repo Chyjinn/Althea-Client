@@ -134,8 +134,8 @@ namespace Client.Cameras
             camZoom = 80f;
 
             float radians = -Player.LocalPlayer.GetHeading() * (float)Math.PI / 180f;
-            float nx = pos.X + (2f * (float)Math.Sin(radians));
-            float ny = pos.Y + (2f * (float)Math.Cos(radians));
+            float nx = pos.X + (2.5f * (float)Math.Sin(radians));
+            float ny = pos.Y + (2.5f * (float)Math.Cos(radians));
 
             camera = RAGE.Game.Cam.CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", nx, ny, pos.Z + 0.3f, 0f, 0f, 0f, 60f, true, 2);
             RAGE.Game.Cam.PointCamAtCoord(camera, pos.X, pos.Y, pos.Z);

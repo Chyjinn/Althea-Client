@@ -45,8 +45,9 @@ namespace Client.Inventory
         public int ItemType { get; set; }//felhasználás kezeléséhez kell majd, pl Weapon akkor úgy kezeljük
         public string ItemImage { get; set; }//lehet local, pl. src/img.png, vagy url
         public uint ItemWeight { get; set; }
+        public byte Container { get; set; }//ha 0, akkor nem tároló, ha 1 vagy több akkor igen
         public bool Stackable { get; set; }
-        public Entry(uint id, string name, string desc, int type, uint weight, string itemimage, bool stack)
+        public Entry(uint id, string name, string desc, int type, uint weight, string itemimage, byte container, bool stack)
         {
             ItemID = id;
             Name = name;
@@ -54,13 +55,11 @@ namespace Client.Inventory
             ItemType = type;
             ItemWeight = weight;
             ItemImage = itemimage;
+            Container = container;
             Stackable = stack;
         }
 
-        
     }
-
-
 
     public class Items : Events.Script
     {
@@ -221,51 +220,63 @@ namespace Client.Inventory
             Events.CallRemote("server:UseItem", section, slot);
         }
         static int hashClone = -1;
+        static DateTime timeout = DateTime.Now;
+        static TimeSpan span = TimeSpan.FromMilliseconds(500);
         public static void ToggleInventory()
         {
-            if (!InventoryCEF.Active && !RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat)
+            if(DateTime.Now > timeout+span)
             {
-                float heading = RAGE.Elements.Player.LocalPlayer.GetHeading();
-
-                hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
-                RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z+15f,true, true, false, false);
-                RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.FreezeEntityPosition, hashClone, true);
-                RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityVisible, hashClone, false, false);
-
-                RAGE.Task.Run(() =>
+                if (!InventoryCEF.Active && !RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat)
                 {
-                    RAGE.Game.Graphics.TransitionToBlurred(500);
-                    RAGE.Game.Ui.SetFrontendActive(true);
-                    RAGE.Game.Ui.ActivateFrontendMenu(RAGE.Game.Misc.GetHashKey("FE_MENU_VERSION_RAGEBEAST"), true, -1);
+                    float heading = RAGE.Elements.Player.LocalPlayer.GetHeading();
+
+                    hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
+                    RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z+15f,true, true, false, false);
+                    RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.FreezeEntityPosition, hashClone, true);
+                    RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityVisible, hashClone, false, false);
 
                     RAGE.Task.Run(() =>
                     {
-                        RAGE.Game.Ui.GivePedToPauseMenu(hashClone, 1);
-                        RAGE.Game.Invoker.Invoke(0x3CA6050692BC61B0, true);
-                        RAGE.Game.Invoker.Invoke(0xECF128344E9FF9F1, true);
-                        RAGE.Game.Invoker.Invoke(0x98215325A695E78A, false);
-                        RAGE.Ui.Cursor.ShowCursor(true, true);
-                        InventoryCEF.Active = true;
-                        RAGE.Game.Invoker.Invoke(Natives.DisablePedPainAudio, hashClone, true);
-                        RAGE.Game.Invoker.Invoke(Natives.SetBlockingOfNonTemporaryEvents, hashClone, true);
-                        RAGE.Game.Invoker.Invoke(Natives.StopPedSpeaking, hashClone, true);
-                        RAGE.Game.Entity.SetPedAsNoLongerNeeded(ref hashClone);
+                        RAGE.Game.Graphics.TransitionToBlurred(300);
+                        RAGE.Game.Ui.SetFrontendActive(true);
+                        RAGE.Game.Ui.ActivateFrontendMenu(RAGE.Game.Misc.GetHashKey("FE_MENU_VERSION_RAGEBEAST"), true, -1);
 
-                        RAGE.Game.Entity.DeleteEntity(ref hashClone);
+                        RAGE.Task.Run(() =>
+                        {
+                            RAGE.Game.Ui.GivePedToPauseMenu(hashClone, 1);
+                            RAGE.Game.Invoker.Invoke(0x3CA6050692BC61B0, true);
+                            RAGE.Game.Invoker.Invoke(0xECF128344E9FF9F1, true);
+                            RAGE.Game.Invoker.Invoke(0x98215325A695E78A, false);
+                            RAGE.Ui.Cursor.ShowCursor(true, true);
+                            InventoryCEF.Active = true;
+                            RAGE.Game.Invoker.Invoke(Natives.DisablePedPainAudio, hashClone, true);
+                            RAGE.Game.Invoker.Invoke(Natives.SetBlockingOfNonTemporaryEvents, hashClone, true);
+                            RAGE.Game.Invoker.Invoke(Natives.StopPedSpeaking, hashClone, true);
+                            RAGE.Game.Entity.SetPedAsNoLongerNeeded(ref hashClone);
+                            RAGE.Game.Entity.DeleteEntity(ref hashClone);
+                            Events.Tick += DisablePauseMenu;
+                        }, 100);
+
                     }, 100);
 
-                }, 100);
-
+                }
+                else
+                {
+                    RAGE.Game.Graphics.TransitionFromBlurred(300);
+                    InventoryCEF.Active = false;
+                    RAGE.Game.Ui.SetFrontendActive(false);
+                    RAGE.Ui.Cursor.ShowCursor(false, false);
+                    RAGE.Game.Entity.DeleteEntity(ref hashClone);
+                    Events.Tick -= DisablePauseMenu;
+                }
+                timeout = DateTime.Now;
             }
-            else
-            {
-                RAGE.Game.Graphics.TransitionFromBlurred(500);
-                InventoryCEF.Active = false;
-                RAGE.Game.Ui.SetFrontendActive(false);
-                RAGE.Ui.Cursor.ShowCursor(false, false);
-                RAGE.Game.Entity.DeleteEntity(ref hashClone);
-            }
 
+        }
+
+        private static void DisablePauseMenu(List<Events.TickNametagData> nametags)
+        {
+            RAGE.Game.Pad.DisableControlAction(32, 200, true);
         }
 
         private void RefreshInventoryPreview()

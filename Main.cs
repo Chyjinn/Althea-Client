@@ -19,7 +19,6 @@ namespace Client
         public Main() 
         {
             RAGE.Game.Misc.SetFadeOutAfterDeath(false);
-
             //Events.Tick += OnTick;
             Interior.EnableInteriorProp(166657, "V_Michael_bed_tidy");
             Interior.EnableInteriorProp(166657, "V_Michael_M_items");
@@ -31,7 +30,8 @@ namespace Client
             Events.Add("client:LoadIPL", LoadIPL);
             Events.Add("client:SetWind", SetWind);
         }
-        
+
+
         private void SetWind(object[] args)
         {
             float dir = Convert.ToSingle(args[0]);

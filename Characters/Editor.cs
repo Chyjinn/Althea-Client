@@ -258,7 +258,7 @@ namespace Client.Characters
 
         public void HandleCharacterAppearance()
         {
-            
+            Events.CallRemote("server:PlayTPose");
             if (character.Appearance.Gender)//férfi
             {
                 RAGE.Elements.Player.LocalPlayer.Model = 0x705E61F2;
