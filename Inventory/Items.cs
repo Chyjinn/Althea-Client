@@ -82,13 +82,21 @@ namespace Client.Inventory
             Events.Add("client:RefreshInventoryPreview", RefreshInventoryPreview);
 
 
-            Events.Add("client:UseItemToServer", UseItem);
+            Events.Add("client:UseItem", UseItem);
+            Events.Add("client:ChangeItemInUse", ChangeItemInUse);
 
             Events.Add("client:MoveItemInInventory", MoveItemInInventory);
             Events.Add("client:MoveItemToContainer", MoveItemToContainer);
 
             Events.Add("client:ItemUseToCEF", ItemUseToCEF);
             Events.OnClickWithRaycast += WorldClickToContainer;
+        }
+
+        private void ChangeItemInUse(object[] args)
+        {
+            uint dbid = Convert.ToUInt32(args[0]);
+            string state = Convert.ToString(args[1]);
+            InventoryCEF.ExecuteJs($"setItemUse(\"{dbid}\",\"{state}\")");
         }
 
         private void WorldClickToContainer(int x, int y, bool up, bool right, float relativeX, float relativeY, Vector3 worldPos, int entityHandle)
@@ -247,11 +255,11 @@ namespace Client.Inventory
                             RAGE.Game.Invoker.Invoke(0x98215325A695E78A, false);
                             RAGE.Ui.Cursor.ShowCursor(true, true);
                             InventoryCEF.Active = true;
-                            RAGE.Game.Invoker.Invoke(Natives.DisablePedPainAudio, hashClone, true);
-                            RAGE.Game.Invoker.Invoke(Natives.SetBlockingOfNonTemporaryEvents, hashClone, true);
-                            RAGE.Game.Invoker.Invoke(Natives.StopPedSpeaking, hashClone, true);
-                            RAGE.Game.Entity.SetPedAsNoLongerNeeded(ref hashClone);
-                            RAGE.Game.Entity.DeleteEntity(ref hashClone);
+                            RAGE.Game.Invoker.Invoke(Natives.DisablePedPainAudio, hashClone, 1);
+                            RAGE.Game.Invoker.Invoke(Natives.SetBlockingOfNonTemporaryEvents, hashClone, 1);
+                            RAGE.Game.Invoker.Invoke(Natives.StopPedSpeaking, hashClone, 1);
+                            //RAGE.Game.Entity.SetPedAsNoLongerNeeded(ref hashClone);
+                            //RAGE.Game.Entity.DeleteEntity(ref hashClone);
                             Events.Tick += DisablePauseMenu;
                         }, 100);
 
@@ -264,7 +272,10 @@ namespace Client.Inventory
                     InventoryCEF.Active = false;
                     RAGE.Game.Ui.SetFrontendActive(false);
                     RAGE.Ui.Cursor.ShowCursor(false, false);
+                    
+                    RAGE.Game.Entity.SetPedAsNoLongerNeeded(ref hashClone);
                     RAGE.Game.Entity.DeleteEntity(ref hashClone);
+                    //RAGE.Game.Entity.DeleteEntity(ref hashClone);
                     Events.Tick -= DisablePauseMenu;
                 }
                 timeout = DateTime.Now;
