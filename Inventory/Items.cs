@@ -83,6 +83,9 @@ namespace Client.Inventory
 
 
             Events.Add("client:UseItem", UseItem);
+            Events.Add("client:GetItemPriorities", GetItemPriorities);
+
+
             Events.Add("client:ChangeItemInUse", ChangeItemInUse);
 
             Events.Add("client:MoveItemInInventory", MoveItemInInventory);
@@ -90,6 +93,13 @@ namespace Client.Inventory
 
             Events.Add("client:ItemUseToCEF", ItemUseToCEF);
             Events.OnClickWithRaycast += WorldClickToContainer;
+        }
+
+        private void GetItemPriorities(object[] args)
+        {
+
+            Dictionary<uint, uint> priorities = new Dictionary<uint, uint>();
+            throw new NotImplementedException();
         }
 
         private void ChangeItemInUse(object[] args)
