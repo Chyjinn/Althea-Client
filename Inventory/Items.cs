@@ -34,6 +34,17 @@ namespace Client.Inventory
             Priority = priority;
             InUse = inuse;
         }
+
+        public bool IsContainer()
+        {
+            bool state = false;
+            if (ItemID == 11)
+            {
+                state = true;
+            }
+            return state;
+        }
+
     }
 
 
@@ -67,6 +78,8 @@ namespace Client.Inventory
             InventoryCEF = new RAGE.Ui.HtmlWindow("package://frontend/inventory/inventory.html");
             InventoryCEF.Active = false;
             Events.Add("client:InventoryFromServer", ReloadInventory);
+            Events.Add("client:ContainerFromServer", ReloadContainer);
+
             Events.Add("client:ItemListFromServer", ReloadItemList);
 
             Events.Add("client:MoveItemToClothing", MoveItemToClothing);
@@ -88,24 +101,46 @@ namespace Client.Inventory
 
             Events.Add("client:ChangeItemInUse", ChangeItemInUse);
 
-            Events.Add("client:MoveItemInInventory", MoveItemInInventory);
-            Events.Add("client:MoveItemToContainer", MoveItemToContainer);
 
             Events.Add("client:ItemUseToCEF", ItemUseToCEF);
             Events.OnClickWithRaycast += WorldClickToContainer;
         }
 
+        private void ReloadContainer(object[] args)
+        {
+            List<Item> container = RAGE.Util.Json.Deserialize<List<Item>>(args[0].ToString());
+            ContainerToCEF(container);
+        }
+
+        private void ContainerToCEF(List<Item> inv)
+        {
+            foreach (var item in inv)
+            {
+                InventoryCEF.ExecuteJs($"addItemToContainer(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{item.InUse}\")");
+            }
+            InventoryCEF.ExecuteJs($"ShowContainer()");
+            ToggleInventory();
+        }
+
+
+
         private void GetItemPriorities(object[] args)
         {
+            string json = Convert.ToString(args[0]);
+            
+            Dictionary<uint, int> priorities = RAGE.Util.Json.Deserialize<Dictionary<uint, int>>(json);
 
-            Dictionary<uint, uint> priorities = new Dictionary<uint, uint>();
-            throw new NotImplementedException();
+            foreach (var item in priorities)
+            {
+                InventoryCEF.ExecuteJs($"setItemPrio(\"{item.Key}\",\"{item.Value}\")");//DB_ID és priority-t átküldjük minden létező itemre
+            }
         }
 
         private void ChangeItemInUse(object[] args)
         {
             uint dbid = Convert.ToUInt32(args[0]);
-            string state = Convert.ToString(args[1]);
+            bool state = Convert.ToBoolean(args[1]);
+            Chat.Output(dbid + " use: " + state);
             InventoryCEF.ExecuteJs($"setItemUse(\"{dbid}\",\"{state}\")");
         }
 
@@ -114,10 +149,17 @@ namespace Client.Inventory
             if (!up && right)
             {
                 RAGE.Elements.Entity e = GetEntityFromRaycast(RAGE.Game.Cam.GetGameplayCamCoord(), worldPos, 0, -1);
-                if(e.Type == RAGE.Elements.Type.Vehicle)
+                if (e != null)//entity-re klikkeltünk
                 {
-                    Chat.Output("Típus: " + RAGE.Game.Vehicle.GetDisplayNameFromVehicleModel(e.Model));
+                    if (e.Type == RAGE.Elements.Type.Vehicle && RAGE.Elements.Player.LocalPlayer.Vehicle == null)//járműre klikkeltünk és nem ülünk járműben
+                    {
+                        //megnyitjuk a jármű inventory-ját -> szerver oldali kérés
+
+                        Events.CallRemote("server:OpenVehicleTrunk", e.RemoteId);
+                        Chat.Output("Trunk: " + RAGE.Game.Vehicle.GetDisplayNameFromVehicleModel(e.Model));
+                    }
                 }
+
             } 
         }
 
@@ -247,7 +289,7 @@ namespace Client.Inventory
                     float heading = RAGE.Elements.Player.LocalPlayer.GetHeading();
 
                     hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
-                    RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z+15f,true, true, false, false);
+                    RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z+30f,true, true, false, false);
                     RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.FreezeEntityPosition, hashClone, true);
                     RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityVisible, hashClone, false, false);
 
@@ -278,14 +320,15 @@ namespace Client.Inventory
                 }
                 else
                 {
+                    InventoryCEF.ExecuteJs($"HideContainer()");
                     RAGE.Game.Graphics.TransitionFromBlurred(300);
-                    InventoryCEF.Active = false;
+                   
                     RAGE.Game.Ui.SetFrontendActive(false);
-                    RAGE.Ui.Cursor.ShowCursor(false, false);
                     
                     RAGE.Game.Entity.SetPedAsNoLongerNeeded(ref hashClone);
                     RAGE.Game.Entity.DeleteEntity(ref hashClone);
                     //RAGE.Game.Entity.DeleteEntity(ref hashClone);
+                    InventoryCEF.Active = false;
                     Events.Tick -= DisablePauseMenu;
                 }
                 timeout = DateTime.Now;
@@ -358,7 +401,7 @@ namespace Client.Inventory
         public void ReloadInventory(object[] args)
         {
             InventoryCEF.ExecuteJs($"ClearInventory()");
-            List<Item> inventory = RAGE.Util.Json.Deserialize<Item[]>(args[0].ToString()).ToList();
+            List<Item> inventory = RAGE.Util.Json.Deserialize<List<Item>>(args[0].ToString());
 
             //Chat.Output("OWNER: " + inventory[0].OwnerID.ToString());
             InventoryToCEF(inventory);
@@ -368,79 +411,16 @@ namespace Client.Inventory
         private void AddItemToInventory(object[] args)
         {
             Item item = RAGE.Util.Json.Deserialize<Item>(args[0].ToString());
-            InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToString(item.InUse)}\")");
+            InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{item.InUse}\")");
         }
 
         private void InventoryToCEF(List<Item> inv)
         {
             foreach (var item in inv)
             {
-                InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToString(item.InUse)}\")");
-                /*              
-                                if (item.ItemID >= 1 && item.ItemID <= 12 && item.InUse)//ruha itemid és használatban van
-                                {
-                                    int target_id = -1;
-                                    switch (item.ItemID)
-                                    {
-                                        case 1://kalap
-                                            target_id = 0;
-                                            break;
-                                        case 2://maszk
-                                            target_id = 6;
-                                            break;
-                                        case 3://nyaklánc
-                                            target_id = 1;
-                                            break;
-                                        case 4://szemüveg
-                                            target_id = 7;
-                                            break;
-                                        case 5://póló
-                                            target_id = 2;
-                                            break;
-                                        case 6://fülbevaló
-                                            target_id = 8;
-                                            break;
-                                        case 7://nadrág
-                                            target_id = 3;
-                                            break;
-                                        case 8://karkötő
-                                            target_id = 9;
-                                            break;
-                                        case 9://cipő
-                                            target_id = 4;
-                                            break;
-                                        case 10://óra
-                                            target_id = 10;
-                                            break;
-                                        case 11://táska
-                                            target_id = 5;
-                                            break;
-                                        case 12://páncél
-                                            target_id = 11;
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                    if (target_id != -1)
-                                    {
-                                        Events.CallRemote("server:MoveItemToClothing", item.DBID, target_id);
-                                        RAGE.Game.Utils.Wait(250);
-                                        Chat.Output("EQUIP: " + item.DBID + ", " + target_id);
-                                    }
-                                }
-                                else*/
-
-
-
-                
-                //dbid,itemid, itemname, itemdescription, weight, amount, itempicture, priority){
-                //Chat.Output(GetItemSection(item.ItemID) + ", " + item.ItemSlot + ", " + item.ItemID + ", " + item.ItemAmount + ", " + GetItemPicture(item.ItemID));
-
+                InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{item.InUse}\")");
             }
             Events.CallRemote("server:SetWornClothing");
-            //HudCEF.ExecuteJs($"RefreshHealth(\"{hp - 100}\",\"{armor}\")");
-            //\"{Convert.ToInt32(r.Next(0, 101))}\"
-            //InventoryCEF.ExecuteJs($"loadInventory()");
         }
 
 
