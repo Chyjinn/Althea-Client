@@ -20,10 +20,19 @@ namespace Client.Vehicles
             Events.AddDataHandler("vehicle:Siren", VehicleSiren);
             Events.AddDataHandler("vehicle:IndicatorLeft", IndicatorsLeft);
             Events.AddDataHandler("vehicle:IndicatorRight", IndicatorsRight);
+            Events.AddDataHandler("vehicle:Doors", SetVehicleDoors);
+
+
             int leftbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Left, true, IndicatorLeft);
             int rightbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Right, true, IndicatorRight);
             Events.OnEntityStreamIn += OnEntityStreamIn;
             Events.Add("client:SetHandling", SetTune);
+        }
+
+        private void SetVehicleDoors(RAGE.Elements.Entity entity, object arg, object oldArg)
+        {
+            //8 indexes tömb, megfeltetve az értékeknek
+            throw new NotImplementedException();
         }
 
         public void IndicatorLeft()
