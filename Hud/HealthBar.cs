@@ -54,6 +54,8 @@ namespace Client.Hud
         {
             Speedo.Active = true;
             float maxSpeed = RAGE.Game.Vehicle.GetVehicleModelMaxSpeed(vehicle.Model);
+            RAGE.Game.Vehicle.GetVehicleAcceleration(vehicle.Handle);
+            //RAGE.Game.Vehicle.GetVehicleClass
             string name = RAGE.Game.Vehicle.GetDisplayNameFromVehicleModel(vehicle.Model);
             Chat.Output(name + " TOP SPEED: ~" + Math.Round(maxSpeed*3.75,0) +" km/h");
         }

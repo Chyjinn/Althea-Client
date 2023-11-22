@@ -17,6 +17,8 @@ namespace Client.Vehicles
         public VehControls()
         {
             Events.Add("client:RadarGun", ToggleRadarGun);
+            Events.Add("client:SpeedCam", ToggleSpeedCam);
+
             Events.AddDataHandler("vehicle:Siren", VehicleSiren);
             Events.AddDataHandler("vehicle:IndicatorLeft", IndicatorsLeft);
             Events.AddDataHandler("vehicle:IndicatorRight", IndicatorsRight);
@@ -27,6 +29,112 @@ namespace Client.Vehicles
             int rightbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Right, true, IndicatorRight);
             Events.OnEntityStreamIn += OnEntityStreamIn;
             Events.Add("client:SetHandling", SetTune);
+        }
+
+        private void ToggleSpeedCam(object[] args)
+        {
+            bool state = Convert.ToBoolean(args[0]);
+
+            if (state)
+            {
+                Events.Tick += Tick2;
+                //SpeedCam = new RAGE.Ui.HtmlWindow("package://frontend/radar-gun/radar.html");
+                //SpeedCam.Active = true;
+            }
+            else
+            {
+                Events.Tick -= Tick2;
+                //SpeedCam.Active = false;
+                //SpeedCam.Destroy();
+            }
+        }
+        private static RAGE.Elements.Entity GetEntityFromRaycast(Vector3 fromCoords, Vector3 toCoords, int ignoreEntity, int flags)
+        {
+            bool hit = false;
+            Vector3 endCoords = new Vector3();
+            Vector3 surfaceNormal = new Vector3();
+            RAGE.Elements.Entity EntityHit = null;
+            int materialHash = -1;
+            int elementHitHandle = -1;
+            RAGE.Elements.Entity entityHit = null;
+            int ray = RAGE.Game.Shapetest.StartShapeTestCapsule(fromCoords.X, fromCoords.Y, fromCoords.Z, toCoords.X, toCoords.Y, toCoords.Z, 3f, flags, ignoreEntity, 0);
+
+            int curTemp = 0;
+
+            int shapeResult = RAGE.Game.Shapetest.GetShapeTestResultEx(ray, ref curTemp, endCoords, surfaceNormal, ref materialHash, ref elementHitHandle);
+
+            // I think GetAtHandle is still broken so:
+
+            if (elementHitHandle > 0)
+            {
+                int entityType = RAGE.Game.Entity.GetEntityType(elementHitHandle);
+                // 0 = nothing, probably something in the world.
+                // 1 = Ped or Player.
+                // 2 = Vehicle
+                // 3 = Object
+                if (entityType == 2)
+                {
+                    entityHit = RAGE.Elements.Entities.Vehicles.All.FirstOrDefault(x => x.Handle == elementHitHandle);
+                }
+            }
+
+            return entityHit;
+        }
+        float FrontMaxSpeed = 0f;
+        float BackMaxSpeed = 0f;
+        RAGE.Elements.Vehicle LastVehFront = null;
+        RAGE.Elements.Vehicle LastVehBack = null;
+        private void Tick2(List<Events.TickNametagData> nametags)
+        {
+            Vector3 Forward = RAGE.Elements.Player.LocalPlayer.Vehicle.GetOffsetFromInWorldCoords(0f,16f,0f);
+            Vector3 Backward = RAGE.Elements.Player.LocalPlayer.Vehicle.GetOffsetFromInWorldCoords(0f, -16f, 0f);
+
+            RAGE.Elements.Entity fw = GetEntityFromRaycast(RAGE.Elements.Player.LocalPlayer.Vehicle.Position, Forward, RAGE.Elements.Player.LocalPlayer.Vehicle.Handle, 10);
+            RAGE.Elements.Entity back = GetEntityFromRaycast(RAGE.Elements.Player.LocalPlayer.Vehicle.Position, Backward, RAGE.Elements.Player.LocalPlayer.Vehicle.Handle, 10);
+            if (fw != null)
+            {
+                if (fw.Type == RAGE.Elements.Type.Vehicle)
+                {
+                    RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(fw.RemoteId);
+                    if (v != LastVehFront)
+                    {
+                        RAGE.Game.Audio.PlaySoundFrontend(-1, "Beep_Red", "DLC_HEIST_HACKING_SNAKE_SOUNDS", true);
+                        LastVehFront = v;
+                        TopSpeed = 0f;
+                    }
+                    float speed = v.GetSpeed();
+                    if (speed > FrontMaxSpeed)
+                    {
+                        FrontMaxSpeed = speed;
+                    }
+                    int kmh = Convert.ToInt32(FrontMaxSpeed * 3.6);
+                    //frissítjük a frontendet
+                    Chat.Output("FRONT: " + v.GetNumberPlateText() + " TOP SPEED: " + FrontMaxSpeed);
+                }
+            }
+
+            if (back != null)
+            {
+                if (back.Type == RAGE.Elements.Type.Vehicle)
+                {
+                    RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(back.RemoteId);
+                    if (v != LastVehBack)
+                    {
+                        RAGE.Game.Audio.PlaySoundFrontend(-1, "Beep_Red", "DLC_HEIST_HACKING_SNAKE_SOUNDS", true);
+                        LastVehBack = v;
+                        TopSpeed = 0f;
+                    }
+                    float speed = v.GetSpeed();
+                    if (speed > BackMaxSpeed)
+                    {
+                        BackMaxSpeed = speed;
+                    }
+                    int kmh = Convert.ToInt32(BackMaxSpeed * 3.6);
+                    //frissítjük a frontendet
+                    Chat.Output("BACK: " + v.GetNumberPlateText() + " TOP SPEED: " + BackMaxSpeed);
+                }
+            }
+
         }
 
         private void SetVehicleDoors(RAGE.Elements.Entity entity, object arg, object oldArg)
@@ -87,7 +195,9 @@ namespace Client.Vehicles
             RAGE.Elements.Player.LocalPlayer.Vehicle.SetReduceGrip(drift);
         }
 
-        private void Tick(List<Events.TickNametagData> nametags)
+
+
+            private void Tick(List<Events.TickNametagData> nametags)
         {
             int endEntity = -1;
             RAGE.Game.Player.GetEntityPlayerIsFreeAimingAt(ref endEntity);
@@ -230,6 +340,7 @@ namespace Client.Vehicles
             RAGE.Chat.Output("SZIRÉNA: " + siren);
 
             RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(entity.RemoteId);
+            
             //bool state = Convert.ToBoolean(arg);
             if (siren != "-")
                 {

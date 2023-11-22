@@ -23,8 +23,6 @@ namespace Client.Characters
             Events.Add("client:NewCharToServer", NewCharToServer);
             Events.Add("client:CharEditToServer", CharEditToServer);
             Events.Add("client:SelectCharacter", CharSelected);
-            CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
-            CharCEF.Active = false;
         }
 
         private void CharSelected(object[] args)
@@ -85,23 +83,21 @@ namespace Client.Characters
 
         private async void ShowCharScreen(object[] args)
         {
-            RAGE.Game.Graphics.TransitionFromBlurred(1000);
-            RAGE.Game.Ui.DisplayHud(false);
-            CharCEF.Destroy();
-            RAGE.Ui.Cursor.ShowCursor(true, true);
-            CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
-            CharCEF.Active = false;
+            RAGE.Game.Graphics.TransitionFromBlurred(2000);
             if (Cameras.Cam.CheckSkyCam())//ha a levegőben van még a kamera várunk 1 másodpercet és meghívjuk újra ezt a függvényt
             {
                 RAGE.Task.Run(() =>
                 {
                     ShowCharScreen(args);
-
                 }, 1000);
             }
             else//már nincs a levegőben a kamera, megnyithatjuk a menüt
             {
-
+                
+                RAGE.Game.Ui.DisplayHud(false);
+                RAGE.Ui.Cursor.ShowCursor(true, true);
+                CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
+                CharCEF.Active = false;
                 characters = RAGE.Util.Json.Deserialize<Character[]>(args[0].ToString());
                 for (int i = 0; i < characters.Length; i++)
                 {

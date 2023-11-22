@@ -126,6 +126,7 @@ namespace Client.Inventory
 
         private void ContainerToCEF(List<Item> inv)
         {
+            InventoryCEF.ExecuteJs($"ClearContainer()");
             foreach (var item in inv)
             {
                 InventoryCEF.ExecuteJs($"addItemToContainer(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{item.InUse}\")");
@@ -157,7 +158,7 @@ namespace Client.Inventory
 
         private void WorldClickToContainer(int x, int y, bool up, bool right, float relativeX, float relativeY, Vector3 worldPos, int entityHandle)
         {
-            if (!up && right)
+            if (!up && right && !InventoryCEF.Active)//jobb klikket lenyomta és zárva van az inventory
             {
                 RAGE.Elements.Entity e = GetEntityFromRaycast(RAGE.Game.Cam.GetGameplayCamCoord(), worldPos, 0, -1);
                 if (e != null)//entity-re klikkeltünk
@@ -184,7 +185,7 @@ namespace Client.Inventory
             } 
         }
 
-        public static RAGE.Elements.Entity GetEntityFromRaycast(Vector3 fromCoords, Vector3 toCoords, int ignoreEntity, int flags)
+        private static RAGE.Elements.Entity GetEntityFromRaycast(Vector3 fromCoords, Vector3 toCoords, int ignoreEntity, int flags)
         {
             bool hit = false;
             Vector3 endCoords = new Vector3();
@@ -309,16 +310,15 @@ namespace Client.Inventory
                     float heading = RAGE.Elements.Player.LocalPlayer.GetHeading();
 
                     hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
-                    RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z+30f,true, true, false, false);
-                    RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.FreezeEntityPosition, hashClone, true);
+                    RAGE.Game.Graphics.TransitionToBlurred(300);
+                    RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, 2170f, 715f, 265f, true, true, false, false);
                     RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityVisible, hashClone, false, false);
-
                     RAGE.Task.Run(() =>
                     {
-                        RAGE.Game.Graphics.TransitionToBlurred(300);
+                        RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.FreezeEntityPosition, hashClone, true);                        
                         RAGE.Game.Ui.SetFrontendActive(true);
                         RAGE.Game.Ui.ActivateFrontendMenu(RAGE.Game.Misc.GetHashKey("FE_MENU_VERSION_RAGEBEAST"), true, -1);
-
+                        
                         RAGE.Task.Run(() =>
                         {
                             RAGE.Game.Ui.GivePedToPauseMenu(hashClone, 1);
@@ -326,16 +326,15 @@ namespace Client.Inventory
                             RAGE.Game.Invoker.Invoke(0xECF128344E9FF9F1, true);
                             RAGE.Game.Invoker.Invoke(0x98215325A695E78A, false);
                             RAGE.Ui.Cursor.ShowCursor(true, true);
-                            InventoryCEF.Active = true;
-                            RAGE.Game.Invoker.Invoke(Natives.DisablePedPainAudio, hashClone, 1);
-                            RAGE.Game.Invoker.Invoke(Natives.SetBlockingOfNonTemporaryEvents, hashClone, 1);
-                            RAGE.Game.Invoker.Invoke(Natives.StopPedSpeaking, hashClone, 1);
+                            RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, 2170f, 715f, 265f, true, true, false, false);
+
                             //RAGE.Game.Entity.SetPedAsNoLongerNeeded(ref hashClone);
                             //RAGE.Game.Entity.DeleteEntity(ref hashClone);
+                            InventoryCEF.Active = true;
                             Events.Tick += DisablePauseMenu;
                         }, 100);
 
-                    }, 100);
+                    }, 50);
 
                 }
                 else
@@ -364,37 +363,35 @@ namespace Client.Inventory
                 {
                     if (!InventoryCEF.Active)
                     {
-                        float heading = RAGE.Elements.Player.LocalPlayer.GetHeading();
+                    float heading = RAGE.Elements.Player.LocalPlayer.GetHeading();
 
-                        hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
-                        RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z + 30f, true, true, false, false);
+                    hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
+                    RAGE.Game.Graphics.TransitionToBlurred(300);
+                    RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, 2170f, 715f, 265f, true, true, false, false);
+                    RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityVisible, hashClone, false, false);
+                    RAGE.Task.Run(() =>
+                    {
                         RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.FreezeEntityPosition, hashClone, true);
-                        RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityVisible, hashClone, false, false);
+                        RAGE.Game.Ui.SetFrontendActive(true);
+                        RAGE.Game.Ui.ActivateFrontendMenu(RAGE.Game.Misc.GetHashKey("FE_MENU_VERSION_RAGEBEAST"), true, -1);
 
                         RAGE.Task.Run(() =>
                         {
-                            RAGE.Game.Graphics.TransitionToBlurred(300);
-                            RAGE.Game.Ui.SetFrontendActive(true);
-                            RAGE.Game.Ui.ActivateFrontendMenu(RAGE.Game.Misc.GetHashKey("FE_MENU_VERSION_RAGEBEAST"), true, -1);
+                            RAGE.Game.Ui.GivePedToPauseMenu(hashClone, 1);
+                            RAGE.Game.Invoker.Invoke(0x3CA6050692BC61B0, true);
+                            RAGE.Game.Invoker.Invoke(0xECF128344E9FF9F1, true);
+                            RAGE.Game.Invoker.Invoke(0x98215325A695E78A, false);
+                            RAGE.Ui.Cursor.ShowCursor(true, true);
+                            RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, 2170f, 715f, 265f, true, true, false, false);
 
-                            RAGE.Task.Run(() =>
-                            {
-                                RAGE.Game.Ui.GivePedToPauseMenu(hashClone, 1);
-                                RAGE.Game.Invoker.Invoke(0x3CA6050692BC61B0, true);
-                                RAGE.Game.Invoker.Invoke(0xECF128344E9FF9F1, true);
-                                RAGE.Game.Invoker.Invoke(0x98215325A695E78A, false);
-                                RAGE.Ui.Cursor.ShowCursor(true, true);
-                                InventoryCEF.Active = true;
-                                RAGE.Game.Invoker.Invoke(Natives.DisablePedPainAudio, hashClone, 1);
-                                RAGE.Game.Invoker.Invoke(Natives.SetBlockingOfNonTemporaryEvents, hashClone, 1);
-                                RAGE.Game.Invoker.Invoke(Natives.StopPedSpeaking, hashClone, 1);
-                                //RAGE.Game.Entity.SetPedAsNoLongerNeeded(ref hashClone);
-                                //RAGE.Game.Entity.DeleteEntity(ref hashClone);
-                                Events.Tick += DisablePauseMenu;
-                            }, 100);
-
+                            //RAGE.Game.Entity.SetPedAsNoLongerNeeded(ref hashClone);
+                            //RAGE.Game.Entity.DeleteEntity(ref hashClone);
+                            InventoryCEF.Active = true;
+                            Events.Tick += DisablePauseMenu;
                         }, 100);
-                    }
+
+                    }, 50);
+                }
                 }
                 else
                 {
@@ -402,9 +399,9 @@ namespace Client.Inventory
                     {
                         InventoryCEF.ExecuteJs($"HideContainer()");
                         RAGE.Game.Graphics.TransitionFromBlurred(300);
-
+                   
                         RAGE.Game.Ui.SetFrontendActive(false);
-
+                    
                         RAGE.Game.Entity.SetPedAsNoLongerNeeded(ref hashClone);
                         RAGE.Game.Entity.DeleteEntity(ref hashClone);
                         //RAGE.Game.Entity.DeleteEntity(ref hashClone);
