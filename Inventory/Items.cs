@@ -104,8 +104,139 @@ namespace Client.Inventory
             Events.Add("client:ChangeItemInUse", ChangeItemInUse);
 
             Events.Add("client:ItemUseToCEF", ItemUseToCEF);
+            Events.Add("client:TakeItemPictures", TakeItemPictures);
+            Events.Add("client:TakeIDPicture", TakeIDPicture);
+            Events.OnPlayerQuit += Quit;
+
+            Events.Add("client:IDbase64toServer", Base64ToServer);
+
             Events.OnClickWithRaycast += WorldClickToContainer;
         }
+
+        private void Base64ToServer(object[] args)
+        {
+            Chat.Output(args[0].ToString());
+        }
+
+        private void TakeIDPicture(object[] args)
+        {
+            RAGE.Game.Ui.DisplayRadar(false);
+            RAGE.Elements.Player.LocalPlayer.SetComponentVariation(6, 1, 0, 0);//cipő beállítása a magassarkúk miatt
+            RAGE.Task.Run(() =>
+            {
+
+                InfrontCamera(0.65f, 13f);
+                Vector3 toLook = RAGE.Game.Cam.GetCamCoord(camera);
+                
+                RAGE.Elements.Player.LocalPlayer.TaskLookAtCoord(toLook.X,toLook.Y,toLook.Z,-1,0,0);
+                RAGE.Task.Run(() =>
+                {
+                    RAGE.Input.TakeScreenshot("idpicture.png", 1, 100, 0);
+                }, 200);
+            }, 200);
+        }
+
+        int greenscreen;
+        private void Quit(RAGE.Elements.Player player)
+        {
+            if (player == RAGE.Elements.Player.LocalPlayer)
+            {
+                RAGE.Game.Object.DeleteObject(ref greenscreen);
+            }
+        }
+
+        public void InfrontCamera(float heightoffset, float fov)
+        {
+            DeleteCamera();
+            Vector3 pos = RAGE.Elements.Player.LocalPlayer.Position;
+
+            float radians = -RAGE.Elements.Player.LocalPlayer.GetHeading() * (float)Math.PI / 180f;
+            float nx = pos.X + (2f * (float)Math.Sin(radians));
+            float ny = pos.Y + (2f * (float)Math.Cos(radians));
+
+            camera = RAGE.Game.Cam.CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", nx, ny, pos.Z + heightoffset, 0f, 0f, 0f, fov, true, 2);
+             RAGE.Game.Cam.PointCamAtCoord(camera, pos.X, pos.Y, pos.Z + heightoffset);
+            RAGE.Game.Cam.SetCamActive(camera, true);
+            RAGE.Game.Cam.RenderScriptCams(true, true, 200, true, false, 0);
+        }
+
+
+        private void TakeItemPictures(object[] args)
+        {
+            RAGE.Game.Ui.DisplayRadar(false);
+            greenscreen = RAGE.Game.Object.CreateObject(RAGE.Util.Joaat.Hash("prop_ld_greenscreen_01"), 228.55f, -992f, -100.3f, false, false, false);
+            RAGE.Task.Run(() =>
+            {
+                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(1, 0, 0, 0);
+                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(2, 0, 0, 0);
+                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(3, 3, 0, 0);
+                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(4, 11, 0, 0);
+                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(5, 0, 0, 0);
+                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(6, 33, 0, 0);
+                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(7, 0, 0, 0);
+                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(8, 15, 0, 0);
+                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(9, 0, 0, 0);
+                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(10, 0, 0, 0);
+                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(11, 15, 0, 0);
+                InfrontCamera(Convert.ToSingle(args[0]), Convert.ToSingle(args[1]));
+                RAGE.Task.Run(() =>
+                {
+                    RAGE.Input.TakeScreenshot("egyes.png", 1, 100, 0);
+                }, 500);
+            }, 2000);
+            //férfi TORSO: 0.225 20
+            //férfi nadrág: -0.45 30
+            //férfi cipő: -1 15
+            
+            
+            //FÉRFI TORSO: 3
+            //NŐI TORSO: 8
+            //FÉRFI LEG: 11
+            //NŐI LEG: 13
+            //FÉRFI CIPŐ: 33
+            //NŐI CIPŐ: 34
+
+            //SetCamera(228.35f, -986.3f, -99f, 0f, 0f, 180f, 50f);
+            /*
+            for (int i = 1; i <= 1; i++)//végigmegyünk az összes ruha itemen
+            {
+                int numofdrawables = RAGE.Elements.Player.LocalPlayer.GetNumberOfDrawableVariations(i);
+                //itt beállítjuk a megfelelő kamerát és a többi ruhadarabot a képekhez
+
+                
+                for (int j = 0; j < numofdrawables; j++)//végigmegyünk az összes drawable-n
+                {
+                    int numoftextures = RAGE.Elements.Player.LocalPlayer.GetNumberOfTextureVariations(i, j);
+                    for (int y = 0; y < numoftextures; y++)//végigmegyünk az adott drawable összes textúráján
+                    {
+                        RAGE.Elements.Player.LocalPlayer.SetComponentVariation(i, j, y, 0);
+                        //lefényképezzük, várakoztatunk picit
+                        RAGE.Game.Utils.Wait(250);
+                    }
+                    
+                }
+            }
+            */
+
+
+        }
+
+        int camera = 2;
+
+        public void SetCamera(float posX, float posY, float posZ, float rotX, float rotY, float rotZ, float fov)
+        {
+            camera = RAGE.Game.Cam.CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", posX, posY, posZ, rotX, rotY, rotZ, fov, true, 2);
+            RAGE.Game.Cam.SetCamActive(camera, true);
+            RAGE.Game.Cam.RenderScriptCams(true, false, 0, true, false, 0);
+        }
+
+        public void DeleteCamera()
+        {
+            RAGE.Game.Cam.SetCamActive(camera, false);
+            RAGE.Game.Cam.DestroyCam(camera, true);
+            RAGE.Game.Cam.RenderScriptCams(false, true, 500, true, false, 0);
+        }
+
 
         private void CloseContainer(object[] args)
         {
@@ -243,7 +374,7 @@ namespace Client.Inventory
         private void AddItemToClothing(object[] args)
         {
             Item item = RAGE.Util.Json.Deserialize<Item>(Convert.ToString(args[0]));
-            
+
             InventoryCEF.ExecuteJs($"addItemToSlot(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\")");
             //InventoryCEF.ExecuteJs($"addItemToSlot(1,1,\"Kesztyű\",\"\",500,50,\"https://pngimg.com/d/mma_gloves_PNG25.png\",5,0)");
             //addItemToSlot(1,1,"Kesztyű","",500,50,"https://pngimg.com/d/mma_gloves_PNG25.png",5,0)
@@ -265,23 +396,6 @@ namespace Client.Inventory
             int target_id = Convert.ToInt32(args[1]);
             Events.CallRemote("server:MoveItemToClothing", db_id,target_id);
         }
-
-        private void MoveItemToContainer(object[] args)
-        {
-            int source_dbid = Convert.ToInt32(args[0]);
-            int target_id = Convert.ToInt32(args[1]);
-            int target_dbid = Convert.ToInt32(args[2]);
-            Events.CallRemote("server:MoveItemToContainer", source_dbid, target_id, target_dbid);
-        }
-
-        private void MoveItemInInventory(object[] args)
-        {
-            uint source_dbid = Convert.ToUInt32(args[0]);
-            uint target_dbid = Convert.ToUInt32(args[1]);
-            Events.CallRemote("server:MoveItemInInventory",source_dbid,target_dbid);
-        }
-
-
 
         private void ItemUseToCEF(object[] args)
         {
@@ -311,7 +425,7 @@ namespace Client.Inventory
 
                     hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
                     RAGE.Game.Graphics.TransitionToBlurred(300);
-                    RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, 2170f, 715f, 265f, true, true, false, false);
+                    RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, 2170f, 715f, 240f, true, true, false, false);
                     RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityVisible, hashClone, false, false);
                     RAGE.Task.Run(() =>
                     {
@@ -367,7 +481,7 @@ namespace Client.Inventory
 
                     hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
                     RAGE.Game.Graphics.TransitionToBlurred(300);
-                    RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, 2170f, 715f, 265f, true, true, false, false);
+                    RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, 2170f, 715f, 240f, true, true, false, false);
                     RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityVisible, hashClone, false, false);
                     RAGE.Task.Run(() =>
                     {
@@ -426,14 +540,14 @@ namespace Client.Inventory
             float heading = RAGE.Elements.Player.LocalPlayer.GetHeading();
 
             hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
-            RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z - 10f, true, true, false, false);
-            RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.FreezeEntityPosition, hashClone, true);
+            RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, 2170f, 715f, 240f, true, true, false, false);
             RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityVisible, hashClone, false, false);
+            RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.FreezeEntityPosition, hashClone, true);
             RAGE.Task.Run(() =>
             {
                 RAGE.Game.Ui.GivePedToPauseMenu(hashClone, 1);
             }, 250);
-
+            
         }
 
         private void RefreshInventoryPreview(object[] args)
@@ -441,14 +555,13 @@ namespace Client.Inventory
             float heading = RAGE.Elements.Player.LocalPlayer.GetHeading();
 
             hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
-            RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z - 10f, true, true, false, false);
-            RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.FreezeEntityPosition, hashClone, true);
+            RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, 2170f, 715f, 240f, true, true, false, false);
             RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityVisible, hashClone, false, false);
+            RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.FreezeEntityPosition, hashClone, true);
             RAGE.Task.Run(() =>
             {
                 RAGE.Game.Ui.GivePedToPauseMenu(hashClone, 1);
             }, 250);
-
         }
 
         public string GetItemPicture(uint itemid)

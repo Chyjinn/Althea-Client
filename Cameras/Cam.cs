@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using RAGE.NUI;
 
 namespace Client.Cameras
 {
@@ -26,6 +27,15 @@ namespace Client.Cameras
 
             Events.Add("client:DealershipCamera", DealershipCamera);
             Events.Add("client:rev", RevVehicle);
+            Events.Add("client:SetDOF", SetDOF);
+        }
+
+        private void SetDOF(object[] args)
+        {
+            RAGE.Game.Cam.SetCamUseShallowDofMode(camera, Convert.ToBoolean(args[0]));
+            RAGE.Game.Cam.SetCamNearDof(camera, Convert.ToSingle(args[1]));
+            RAGE.Game.Cam.SetCamFarDof(camera, Convert.ToSingle(args[2]));
+            RAGE.Game.Cam.SetCamDofStrength(camera, 1); 
         }
 
         private void RevVehicle(object[] args)
@@ -96,6 +106,8 @@ namespace Client.Cameras
             }
         }
 
+
+
         public void SetCamera(object[] args)
         {
             float posX = Convert.ToSingle(args[0]);
@@ -109,6 +121,7 @@ namespace Client.Cameras
             RAGE.Game.Cam.SetCamActive(camera, true);
             RAGE.Game.Cam.RenderScriptCams(true, false, 0, true, false, 0);
         }
+
         public void EditorCamera(object[] args)
         {
             Vector3 pos = Player.LocalPlayer.Position;
@@ -123,7 +136,14 @@ namespace Client.Cameras
             RAGE.Game.Cam.PointCamAtCoord(camera, pos.X, pos.Y, pos.Z);
             RAGE.Game.Cam.SetCamActive(camera, true);
             RAGE.Game.Cam.RenderScriptCams(true, true, 500, true, false, 0);
+
             camStartPositions = new Vector3(nx, ny, pos.Z + 0.3f);
+
+            RAGE.Game.Cam.SetCamUseShallowDofMode(camera, true);
+            RAGE.Game.Cam.SetCamNearDof(camera, 0.3f);
+            RAGE.Game.Cam.SetCamFarDof(camera, 1.7f);
+            RAGE.Game.Cam.SetCamDofStrength(camera, 1);
+            RAGE.Elements.Player.LocalPlayer.TaskLookAtCoord(nx, ny, pos.Z + 0.3f, -1, 0, 2);
             Events.Tick += Tick;
         }
 
@@ -132,17 +152,33 @@ namespace Client.Cameras
             Vector3 pos = Player.LocalPlayer.Position;
             camHeightOffset = 0f;
             camZoom = 80f;
-
+ 
             float radians = -Player.LocalPlayer.GetHeading() * (float)Math.PI / 180f;
-            float nx = pos.X + (2.5f * (float)Math.Sin(radians));
-            float ny = pos.Y + (2.5f * (float)Math.Cos(radians));
+            float nx = pos.X + (2.7f * (float)Math.Sin(radians));
+            float ny = pos.Y + (2.7f * (float)Math.Cos(radians));
 
-            camera = RAGE.Game.Cam.CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", nx, ny, pos.Z + 0.3f, 0f, 0f, 0f, 60f, true, 2);
+            camera = RAGE.Game.Cam.CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", nx, ny, pos.Z + 0.1f, 0f, 0f, 0f, 50f, true, 2);
             RAGE.Game.Cam.PointCamAtCoord(camera, pos.X, pos.Y, pos.Z);
             RAGE.Game.Cam.SetCamActive(camera, true);
             RAGE.Game.Cam.RenderScriptCams(true, true, 500, true, false, 0);
             camStartPositions = new Vector3(nx, ny, pos.Z + 0.3f);
+
+            RAGE.Game.Cam.SetCamUseShallowDofMode(camera, true);
+            RAGE.Game.Cam.SetCamNearDof(camera, 0.5f);
+            RAGE.Game.Cam.SetCamFarDof(camera, 2.8f);
+            RAGE.Game.Cam.SetCamDofStrength(camera, 1f);
+
+            
+            Events.Tick += SetDOF;
         }
+
+        private void SetDOF(List<Events.TickNametagData> nametags)
+        {
+            RAGE.Game.Cam.SetUseHiDof();
+        }
+
+
+
 
         public void DeleteCamera(object[] args)
         {
@@ -150,6 +186,8 @@ namespace Client.Cameras
             RAGE.Game.Cam.DestroyCam(camera, true);
             RAGE.Game.Cam.RenderScriptCams(false, true, 500, true, false, 0);
             Events.Tick -= Tick;
+            Events.Tick -= SetDOF;
+            RAGE.Elements.Player.LocalPlayer.ClearTasks();
         }
 
         private void TickDealership(List<Events.TickNametagData> nametags)
@@ -202,6 +240,7 @@ namespace Client.Cameras
 
         private void Tick(List<Events.TickNametagData> nametags)
         {
+            RAGE.Game.Cam.SetUseHiDof();
             if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.D))
             {
                 RotateCharRight();
@@ -213,11 +252,10 @@ namespace Client.Cameras
 
             if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.W))
             {
-                if (camHeightOffset < 1f)
+                if (camHeightOffset < 0.8f)
                 {
                     camHeightOffset += 0.005f;
                 }
-
             }
 
             else if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.S))
@@ -243,6 +281,7 @@ namespace Client.Cameras
                     camZoom += 0.3f;
                 }
             }
+            
             SetCamPosition();
         }
 
@@ -297,8 +336,8 @@ namespace Client.Cameras
             Vector3 pos = Player.LocalPlayer.Position;
             RAGE.Game.Cam.PointCamAtCoord(camera, pos.X, pos.Y, pos.Z + camHeightOffset);
 
-
             Vector3 campos = RAGE.Game.Cam.GetCamCoord(camera);
+            
             RAGE.Game.Cam.SetCamCoord(camera, camStartPositions.X, camStartPositions.Y, camStartPositions.Z + camHeightOffset);
 
             RAGE.Game.Cam.SetCamFov(camera, camZoom);

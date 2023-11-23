@@ -131,7 +131,7 @@ namespace Client.Hud
                 // 3 = Object
                 if (entityType == 1)
                 {
-                    entityHit = RAGE.Elements.Entities.Peds.All.FirstOrDefault(x => x.Handle == elementHitHandle);
+                    entityHit = RAGE.Elements.Entities.Players.All.FirstOrDefault(x => x.Handle == elementHitHandle);
                 }
                 else if (entityType == 2)
                 {
@@ -180,12 +180,12 @@ namespace Client.Hud
         {
             NametagCEF.ExecuteJs($"clearNametags()");
             Vector3 Cam = RAGE.Game.Cam.GetGameplayCamCoord();
-            foreach (var item in pedtest)
+            foreach (var item in streamedPlayers)
             {
                 RAGE.Elements.Entity e = GetEntityFromRaycast(Cam, item.Position, 0, -1);
                 if (e != null)//sikeres raycast
                 {
-                    if (e.Type == RAGE.Elements.Type.Ped)//ped
+                    if (e.Type == RAGE.Elements.Type.Player)//ped
                     {
                         int screenX = 1920;
                         int screenY = 1080;
@@ -205,7 +205,7 @@ namespace Client.Hud
                             if (x > -1f && x < 1f && y > -1f && y < 1f)
                             {
                                 //Chat.Output("render X: " + Convert.ToInt32(screenX * x) + " Y: " + Convert.ToInt32(screenY * y) + " SCALE: " + scale);
-                                NametagCEF.ExecuteJs($"renderNametag(\"{item.Model}\",\"{item.Id}\",\"{Convert.ToInt32(screenX * x)}\",\"{Convert.ToInt32(screenY * y)}\",\"{scale}\")");
+                                NametagCEF.ExecuteJs($"renderNametag(\"{item.Id}\",\"{item.Name}\",\"{Convert.ToInt32(screenX * x)}\",\"{Convert.ToInt32(screenY * y)}\",\"{scale}\")");
                             }
                         }
                     }

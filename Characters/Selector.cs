@@ -84,6 +84,7 @@ namespace Client.Characters
         private async void ShowCharScreen(object[] args)
         {
             RAGE.Game.Graphics.TransitionFromBlurred(2000);
+            RAGE.Game.Ui.DisplayRadar(false);
             if (Cameras.Cam.CheckSkyCam())//ha a levegőben van még a kamera várunk 1 másodpercet és meghívjuk újra ezt a függvényt
             {
                 RAGE.Task.Run(() =>
@@ -93,8 +94,6 @@ namespace Client.Characters
             }
             else//már nincs a levegőben a kamera, megnyithatjuk a menüt
             {
-                
-                RAGE.Game.Ui.DisplayHud(false);
                 RAGE.Ui.Cursor.ShowCursor(true, true);
                 CharCEF = new RAGE.Ui.HtmlWindow("package://frontend/character/char.html");
                 CharCEF.Active = false;
@@ -110,19 +109,17 @@ namespace Client.Characters
                 CharCEF.ExecuteJs($"SetFirstCharId(\"{characters[0].Id}\")");
                 CharCEF.ExecuteJs($"RefreshCharData(\"{characters[0].Name}\", \"{location}\", \"{pob}\", \"{dob}\")");
                 CharCEF.Active = true;
+
             }
-
-
         }
-
-
+        
         private void HideCharScreen(object[] args)
         {
             CharCEF.Active = false;
             CharCEF.Destroy();
             RAGE.Ui.Cursor.ShowCursor(false, false);
             RAGE.Game.Ui.DisplayHud(true);
-            Compass.DrawCompass(true);
+            RAGE.Game.Ui.DisplayRadar(true);
         }
     }
 }

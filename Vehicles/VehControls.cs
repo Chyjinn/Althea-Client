@@ -169,6 +169,41 @@ namespace Client.Vehicles
 
         private void ToggleRadarGun(object[] args)
         {
+            Dictionary<int, int> drawables = new Dictionary<int, int>();//drawable - lehetséges textúrák száma
+            Dictionary<int, int> props = new Dictionary<int, int>();//drawable - lehetséges textúrák száma
+
+
+            for (int i = 0; i <= 11; i++)
+            {
+                drawables[i] = RAGE.Elements.Player.LocalPlayer.GetNumberOfDrawableVariations(i);//lekérjük a drawable-k számát
+
+                for (int j = 0; j < drawables[i]; j++)
+                {
+                    int textura = RAGE.Elements.Player.LocalPlayer.GetNumberOfTextureVariations(i, j);
+                    if (textura <= 1)
+                    {
+                        RAGE.Elements.Player.LocalPlayer.SetComponentVariation(i, drawables[i], textura, 0);
+                        RAGE.Game.Utils.Wait(250);
+                        Chat.Output("COMPONENT: " + i + " DRAWABLE: " + drawables[i] + " TEXTURE: " + textura);
+                    }
+                }
+                
+
+            }
+            /*
+            Chat.Output("KALAP DRAWABLE NUMBER: " + );
+            Chat.Output("SZEMÜVEG DRAWABLE NUMBER: " + RAGE.Elements.Player.LocalPlayer.GetNumberOfPropDrawableVariations(1));
+            Chat.Output("FÜLBEVALÓ DRAWABLE NUMBER: " + RAGE.Elements.Player.LocalPlayer.GetNumberOfPropDrawableVariations(2));
+            Chat.Output("ÓRA DRAWABLE NUMBER: " + RAGE.Elements.Player.LocalPlayer.GetNumberOfPropDrawableVariations(6));
+            Chat.Output("KARKÖTŐ DRAWABLE NUMBER: " + RAGE.Elements.Player.LocalPlayer.GetNumberOfPropDrawableVariations(8));
+            
+            //9 - ARMOR - 26 -> 9 db textúra
+            Chat.Output("JÓ ARMOR TEXTÚRA: " + RAGE.Elements.Player.LocalPlayer.GetNumberOfTextureVariations(9, 26));
+            Chat.Output("ROSSZ (MODOLT - NEM LÉTEZŐ) ARMOR TEXTÚRA: " + RAGE.Elements.Player.LocalPlayer.GetNumberOfTextureVariations(9, 35));
+
+            Chat.Output("JÓ HAJ TEXTÚRA: " + RAGE.Elements.Player.LocalPlayer.GetNumberOfTextureVariations(2, 5));
+            Chat.Output("ROSSZ (LÉTEZŐ MODOLT) HAJ TEXTÚRA: " + RAGE.Elements.Player.LocalPlayer.GetNumberOfTextureVariations(2, 159));
+            */
             bool state = Convert.ToBoolean(args[0]);
 
             if (state)

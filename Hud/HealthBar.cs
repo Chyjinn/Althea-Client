@@ -27,7 +27,7 @@ namespace Client.Hud
             Events.OnPlayerLeaveVehicle += PlayerLeaveVehicle;
             //Events.AddDataHandler("vehicle:IndicatorRight", ToggleIndicator);
             //Events.AddDataHandler("vehicle:IndicatorLeft", ToggleIndicator);
-            Events.Tick += UpdateHealth;
+            //Events.Tick += UpdateHealth;
         }
 
        /* private void ToggleIndicator(Entity entity, object arg, object oldArg)
@@ -154,25 +154,29 @@ namespace Client.Hud
                     Speedo.ExecuteJs($"setRpm(\"{0}\")");
                     Speedo.ExecuteJs($"setGear(\"{0}\")");
                 }
-
-                
-                
                 //Chat.Output(speed + " m/s -  " + mph + " mph - " + rpm + " rpm");
             }
 
             Minimap map = GetMinimapAnchor();
             //Chat.Output(map.Width + "," + map.Height + "," + map.LeftX + "," + map.RightX + "," + map.TopY + "," + map.BottomY);
             RAGE.Game.Player.SetPlayerHealthRechargeMultiplier(0f);
+            RAGE.Game.Ui.HideHudComponentThisFrame(1);
+            RAGE.Game.Ui.HideHudComponentThisFrame(2);
+            RAGE.Game.Ui.HideHudComponentThisFrame(3);
+            RAGE.Game.Ui.HideHudComponentThisFrame(4);
             RAGE.Game.Ui.HideHudComponentThisFrame(6);
             RAGE.Game.Ui.HideHudComponentThisFrame(7);
             RAGE.Game.Ui.HideHudComponentThisFrame(8);
             RAGE.Game.Ui.HideHudComponentThisFrame(9);
+            RAGE.Game.Ui.HideHudComponentThisFrame(19);
             RAGE.Game.Ui.HideHudComponentThisFrame(20);
+           /*
             RAGE.Game.Graphics.PushScaleformMovieFunction(MapScaleform, "SETUP_HEALTH_ARMOUR");
             RAGE.Game.Graphics.PushScaleformMovieFunctionParameterInt(3);
             RAGE.Game.Graphics.PopScaleformMovieFunction();
             int hp = RAGE.Elements.Player.LocalPlayer.GetHealth();
             int armor = RAGE.Elements.Player.LocalPlayer.GetArmour();
+           */
             //HudCEF.ExecuteJs($"RefreshHealth(\"{hp - 100}\",\"{armor}\")");
 
 
