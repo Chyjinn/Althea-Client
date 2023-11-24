@@ -8,6 +8,7 @@ using Client.Characters;
 using System.Linq;
 using static System.Collections.Specialized.BitVector32;
 using RAGE.Game;
+using System.Security.Principal;
 
 namespace Client.Inventory
 {
@@ -98,11 +99,13 @@ namespace Client.Inventory
 
 
             Events.Add("client:UseItem", UseItem);
+            Events.Add("client:DropItem", DropItem);
+
             Events.Add("client:GetItemPriorities", GetItemPriorities);
 
 
             Events.Add("client:ChangeItemInUse", ChangeItemInUse);
-
+            Events.Add("client:SetContainerName", SetContainerName);
             Events.Add("client:ItemUseToCEF", ItemUseToCEF);
             Events.Add("client:TakeItemPictures", TakeItemPictures);
             Events.Add("client:TakeIDPicture", TakeIDPicture);
@@ -246,7 +249,7 @@ namespace Client.Inventory
         private void AddItemToContainer(object[] args)
         {
             Item item = RAGE.Util.Json.Deserialize<Item>(args[0].ToString());
-            InventoryCEF.ExecuteJs($"addItemToContainer(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{item.InUse}\")");
+            InventoryCEF.ExecuteJs($"addItemToContainer(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToString(item.InUse)}\",\"{GetItemTypeById(item.ItemID)}\")");
         }
 
         private void ReloadContainer(object[] args)
@@ -260,12 +263,18 @@ namespace Client.Inventory
             InventoryCEF.ExecuteJs($"ClearContainer()");
             foreach (var item in inv)
             {
-                InventoryCEF.ExecuteJs($"addItemToContainer(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{item.InUse}\")");
+                InventoryCEF.ExecuteJs($"addItemToContainer(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToString(item.InUse)}\",\"{GetItemTypeById(item.ItemID)}\")");
             }
             InventoryCEF.ExecuteJs($"ShowContainer()");
+
             ToggleInventory(true);
         }
 
+        private void SetContainerName(object[] args)
+        {
+            string containername = Convert.ToString(args[0]);
+            InventoryCEF.ExecuteJs($"setContainerName(\"{containername}\")");//tároló neve
+        }
 
 
         private void GetItemPriorities(object[] args)
@@ -286,6 +295,7 @@ namespace Client.Inventory
             bool state = Convert.ToBoolean(args[1]);
             InventoryCEF.ExecuteJs($"setItemUse(\"{dbid}\",\"{state}\")");
         }
+        RAGE.Elements.Vehicle lastVehicle = null;
 
         private void WorldClickToContainer(int x, int y, bool up, bool right, float relativeX, float relativeY, Vector3 worldPos, int entityHandle)
         {
@@ -303,6 +313,7 @@ namespace Client.Inventory
                         if(distance < 3f)
                         {
                             Events.CallRemote("server:OpenVehicleTrunk", e.RemoteId);
+                            lastVehicle = RAGE.Elements.Entities.Vehicles.GetAt(e.Id);
                         }
                     }
                     else if(e.Type == RAGE.Elements.Type.Vehicle && RAGE.Elements.Player.LocalPlayer.Vehicle != null)
@@ -310,6 +321,7 @@ namespace Client.Inventory
                         if (e == RAGE.Elements.Player.LocalPlayer.Vehicle)
                         {
                             Events.CallRemote("server:OpenVehicleGloveBox");
+                            lastVehicle = RAGE.Elements.Entities.Vehicles.GetAt(e.Id);
                         }
                     }
                 }
@@ -411,6 +423,22 @@ namespace Client.Inventory
             Events.CallRemote("server:UseItem", target_item_dbid);
         }
 
+        private void DropItem(object[] args)
+        {
+            uint target_item_dbid = Convert.ToUInt32(args[0]);
+            float groundZ = -1000f;
+            RAGE.Game.Misc.GetGroundZFor3dCoord(RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z, ref groundZ, false);
+
+            if (groundZ != 0f || groundZ != -1000f)//talált földet
+            {
+                Events.CallRemote("server:DropItem", target_item_dbid, groundZ+0.05f);
+            }
+            else
+            {
+                Chat.Output("Itt nem dobhatsz el tárgyat.");
+            }
+            
+        }
 
         static int hashClone = -1;
         static DateTime timeout = DateTime.Now;
@@ -604,15 +632,16 @@ namespace Client.Inventory
         private void AddItemToInventory(object[] args)
         {
             Item item = RAGE.Util.Json.Deserialize<Item>(args[0].ToString());
-            InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToString(item.InUse)}\")");
+            InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToString(item.InUse)}\",\"{GetItemTypeById(item.ItemID)}\")");
         }
 
         private void InventoryToCEF(List<Item> inv)
         {
             foreach (var item in inv)
             {
-                InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToString(item.InUse)}\")");
+                InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToString(item.InUse)}\",\"{GetItemTypeById(item.ItemID)}\")");
             }
+            InventoryCEF.ExecuteJs($"setInventoryName(\"{RAGE.Elements.Player.LocalPlayer.Name}\")");//karakternév
             Events.CallRemote("server:SetWornClothing");
         }
 
@@ -643,6 +672,19 @@ namespace Client.Inventory
                 }
             }
             return "Nem létező item.";
+        }
+
+
+        public static int GetItemTypeById(uint itemid)
+        {
+            foreach (var item in itemList)
+            {
+                if (item.ItemID == itemid)
+                {
+                    return item.ItemType;
+                }
+            }
+            return -1;
         }
 
         public static string GetItemDescriptionById(uint itemid)
