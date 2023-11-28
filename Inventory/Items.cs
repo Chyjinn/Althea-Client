@@ -109,11 +109,51 @@ namespace Client.Inventory
             Events.Add("client:ItemUseToCEF", ItemUseToCEF);
             Events.Add("client:TakeItemPictures", TakeItemPictures);
             Events.Add("client:TakeIDPicture", TakeIDPicture);
+            Events.Add("client:GiveItemMenu", OpenGiveMenu);
+            Events.Add("client:GiveItem", GiveItemToServer);
+
             Events.OnPlayerQuit += Quit;
 
             Events.Add("client:IDbase64toServer", Base64ToServer);
 
             Events.OnClickWithRaycast += WorldClickToContainer;
+            ToggleInventory(false);
+        }
+
+        private void GiveItemToServer(object[] args)
+        {
+            uint item_dbid = Convert.ToUInt32(args[0]);
+            int playerid = Convert.ToInt32(args[1]);
+            uint amount = Convert.ToUInt32(args[2]);
+            Events.CallRemote("server:GiveItemToPlayer", item_dbid,playerid,amount);
+        }
+
+        private void OpenGiveMenu(object[] args)
+        {
+            var players = RAGE.Elements.Entities.Players.Streamed.ToList();
+            var player = RAGE.Elements.Player.LocalPlayer;
+            List<RAGE.Elements.Player> closePlayers = new List<RAGE.Elements.Player>();
+            foreach (var item in players)
+            {
+                float dist = Vector3.Distance(item.Position, player.Position);
+                if (dist < 5f && item != player)
+                {
+                    closePlayers.Add(item);
+                }
+            }
+
+            InventoryCEF.ExecuteJs($"closeGiveMenu()");
+            
+            foreach (var item in closePlayers)
+            {
+                Chat.Output(item.Name);
+                InventoryCEF.ExecuteJs($"AddNameToGivemenu(\"{item.Name}\",\"{item.RemoteId}\")");
+            }
+            InventoryCEF.ExecuteJs($"openGiveMenu()");
+
+
+
+
         }
 
         private void Base64ToServer(object[] args)
@@ -429,7 +469,7 @@ namespace Client.Inventory
             float groundZ = -1000f;
             RAGE.Game.Misc.GetGroundZFor3dCoord(RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z, ref groundZ, false);
 
-            if (groundZ != 0f || groundZ != -1000f)//talált földet
+            if (groundZ != 0f && groundZ != -1000f)//talált földet
             {
                 Events.CallRemote("server:DropItem", target_item_dbid, groundZ+0.05f);
             }
