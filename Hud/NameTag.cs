@@ -182,7 +182,8 @@ namespace Client.Hud
             Vector3 Cam = RAGE.Game.Cam.GetGameplayCamCoord();
             foreach (var item in streamedPlayers)
             {
-                RAGE.Elements.Entity e = GetEntityFromRaycast(Cam, item.Position, 0, -1);
+                
+                RAGE.Elements.Entity e = GetEntityFromRaycast(Cam, item.Position, item.Vehicle.Handle, -1);
                 if (e != null)//sikeres raycast
                 {
                     if (e.Type == RAGE.Elements.Type.Player)//ped

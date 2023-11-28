@@ -122,10 +122,10 @@ namespace Client.Inventory
 
         private void GiveItemToServer(object[] args)
         {
-            uint item_dbid = Convert.ToUInt32(args[0]);
+            uint item_dbid = Convert.ToUInt32(args[0]); 
             int playerid = Convert.ToInt32(args[1]);
             uint amount = Convert.ToUInt32(args[2]);
-            Events.CallRemote("server:GiveItemToPlayer", item_dbid,playerid,amount);
+            Events.CallRemote("server:GiveItemToPlayer", item_dbid, playerid, amount);
         }
 
         private void OpenGiveMenu(object[] args)
