@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.CompilerServices;
+using System.Security.Principal;
 
 namespace Client.Characters
 {
@@ -49,12 +50,88 @@ namespace Client.Characters
             Events.AddDataHandler("player:Invisible", PlayerInvisible);
             Events.AddDataHandler("player:Ragdoll", PlayerRagdoll);
             Events.AddDataHandler("player:WeaponTint", WeaponTint);
+            Events.AddDataHandler("player:Crouching", PlayerCrouch);
+
 
             Events.OnEntityStreamIn += OnEntityStreamIn;
             Events.OnPlayerWeaponShot += WeaponShot;
             Events.OnIncomingDamage += Damage;
             Events.OnOutgoingDamage += OutDamage;
+            Events.Tick += Tick;
+
+            RAGE.Game.Streaming.RequestClipSet(crouchClipset);
+            RAGE.Game.Streaming.RequestClipSet(strafeClipSet);
+            RAGE.Game.Streaming.RequestAnimDict("move_crawlprone2crawlfront");
+            RAGE.Game.Streaming.RequestAnimDict("move_crawl");
         }
+
+
+        string crouchClipset = "move_ped_crouched";
+        string strafeClipSet = "move_ped_crouched_strafing";
+        float clipSetSwitchTime = 0.25f;
+        public static bool crawling = false;
+
+        private void PlayerCrouch(RAGE.Elements.Entity entity, object arg, object oldArg)
+        {
+            if (entity.Type == RAGE.Elements.Type.Player)
+            {
+                RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
+                if (Convert.ToBoolean(arg))//guggolás
+                {
+                    p.SetMovementClipset(crouchClipset, clipSetSwitchTime);
+                    p.SetStrafeClipset(strafeClipSet);
+                }
+                else//kiszállni
+                {
+                    p.ResetMovementClipset(clipSetSwitchTime);
+                    p.ResetStrafeClipset();
+                }
+            }
+        }
+        string crawlAnim = "";
+        private void Tick(List<Events.TickNametagData> nametags)
+        {
+            if (RAGE.Game.Ped.IsPedInCover(RAGE.Elements.Player.LocalPlayer.Handle,false) && !RAGE.Game.Ped.IsPedAimingFromCover(RAGE.Elements.Player.LocalPlayer.Handle))//fedezékben van és nem céloz
+            {
+                Pad.DisableControlAction(2, 24, true);
+                Pad.DisableControlAction(2, 142, true);
+                Pad.DisableControlAction(2, 257, true);
+                //kikapcsoljuk hogy ne tudjon lőni
+            }
+            /*
+            if (crawling)//ha be van kapcsolva a kúszás
+            {
+                Vector3 rot = RAGE.Elements.Player.LocalPlayer.GetRotation(2);
+                Pad.DisableControlAction(0, 32, true);
+                Pad.DisableControlAction(0, 33, true);
+                Pad.DisableControlAction(0, 34, true);
+                Pad.DisableControlAction(0, 35, true);
+                if (Pad.IsDisabledControlPressed(0,34))
+                {
+                    RAGE.Elements.Player.LocalPlayer.SetRotation(rot.X, rot.Y, rot.Z + 0.2f, 2, true);
+                }
+                if (Pad.IsDisabledControlPressed(0, 354))
+                {
+                    RAGE.Elements.Player.LocalPlayer.SetRotation(rot.X, rot.Y, rot.Z - 0.2f, 2, true);
+                }
+
+                if (Pad.IsDisabledControlPressed(0, 32))
+                {
+                    if (crawlAnim == "onfront_fwd" || crawlAnim == "onfront_bwd")
+                    {
+                        return;
+                    }
+                    crawlAnim = "onfront_fwd";
+
+
+                    RAGE.Elements.Player.LocalPlayer.SetRotation(rot.X, rot.Y, rot.Z + 0.2f, 2, true);
+                }
+
+            }
+            */
+        }
+
+
 
         private void OutDamage(RAGE.Elements.Entity sourceEntity, RAGE.Elements.Entity targetEntity, RAGE.Elements.Player sourcePlayer, ulong weaponHash, ulong boneIdx, int damage, Events.CancelEventArgs cancel)
         {
@@ -190,6 +267,16 @@ namespace Client.Characters
                         p.SetToRagdoll(1000000, 0, 0, true, true, false);
                     }
                     
+                }
+
+                if (p.HasData("player:Crouching"))
+                {
+                    bool crouching = (bool)p.GetSharedData("player:Crouching");
+                    if (crouching)
+                    {
+                        p.SetMovementClipset(crouchClipset, clipSetSwitchTime);
+                        p.SetStrafeClipset(strafeClipSet);
+                    }
                 }
 
                 if (p.HasData("player:Invisible"))

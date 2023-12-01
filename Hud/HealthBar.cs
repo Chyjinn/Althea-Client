@@ -27,7 +27,7 @@ namespace Client.Hud
             Events.OnPlayerLeaveVehicle += PlayerLeaveVehicle;
             //Events.AddDataHandler("vehicle:IndicatorRight", ToggleIndicator);
             //Events.AddDataHandler("vehicle:IndicatorLeft", ToggleIndicator);
-            //Events.Tick += UpdateHealth;
+            
         }
 
        /* private void ToggleIndicator(Entity entity, object arg, object oldArg)
@@ -48,6 +48,7 @@ namespace Client.Hud
         private void PlayerLeaveVehicle(Vehicle vehicle, int seatId)
         {
             Speedo.Active = false;
+            Events.Tick -= UpdateHealth;
         }
 
         private void PlayerEnterVehicle(Vehicle vehicle, int seatId)
@@ -58,6 +59,7 @@ namespace Client.Hud
             //RAGE.Game.Vehicle.GetVehicleClass
             string name = RAGE.Game.Vehicle.GetDisplayNameFromVehicleModel(vehicle.Model);
             Chat.Output(name + " TOP SPEED: ~" + Math.Round(maxSpeed*3.75,0) +" km/h");
+            Events.Tick += UpdateHealth;
         }
 
         public static Minimap GetMinimapAnchor()
@@ -106,15 +108,17 @@ namespace Client.Hud
         private void SetHudVisible(object[] args)
         {
             bool state = (bool)args[0];
-
+            /*
             if (state)
             {
-                //Speedo.Active = true;
+                Speedo.Active = true;
+                Events.Tick += UpdateHealth;
             }
             else
             {
-                //Speedo.Active = false;
-            }
+                Speedo.Active = false;
+                Events.Tick -= UpdateHealth;
+            }*/
         }
 
 
@@ -159,6 +163,7 @@ namespace Client.Hud
 
             Minimap map = GetMinimapAnchor();
             //Chat.Output(map.Width + "," + map.Height + "," + map.LeftX + "," + map.RightX + "," + map.TopY + "," + map.BottomY);
+            /*
             RAGE.Game.Player.SetPlayerHealthRechargeMultiplier(0f);
             RAGE.Game.Ui.HideHudComponentThisFrame(1);
             RAGE.Game.Ui.HideHudComponentThisFrame(2);
@@ -170,6 +175,7 @@ namespace Client.Hud
             RAGE.Game.Ui.HideHudComponentThisFrame(9);
             RAGE.Game.Ui.HideHudComponentThisFrame(19);
             RAGE.Game.Ui.HideHudComponentThisFrame(20);
+            */
            /*
             RAGE.Game.Graphics.PushScaleformMovieFunction(MapScaleform, "SETUP_HEALTH_ARMOUR");
             RAGE.Game.Graphics.PushScaleformMovieFunctionParameterInt(3);

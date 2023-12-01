@@ -1,6 +1,4 @@
-﻿using Client.Inventory;
-using Microsoft.VisualBasic;
-using RAGE;
+﻿using RAGE;
 using RAGE.Elements;
 using RAGE.Ui;
 using System;
@@ -40,7 +38,7 @@ namespace Client.Hud
             Events.Add("client:Chat", ShowChat);
             Events.Add("client:BindKeys", BindKeys);
             Events.Add("client:NametagTest", NametagTest);
-
+            Events.Add("client:LogMessage", LogMessage);
             RAGE.Chat.Show(false);
             ChatCEF = new HtmlWindow("package://frontend/chat/index.html");
             ChatCEF.Active = false;
@@ -54,6 +52,11 @@ namespace Client.Hud
             Events.OnEntityStreamIn += StreamIn;
             Events.OnEntityStreamOut += StreamOut;
             Events.Tick += Render;
+        }
+
+        private void LogMessage(object[] args)
+        {
+            RAGE.Ui.Console.LogLine(ConsoleVerbosity.Info, args[0].ToString(), true, true);
         }
 
         private void StreamOut(Entity entity)
@@ -72,7 +75,7 @@ namespace Client.Hud
         {
             if (entity.Type == RAGE.Elements.Type.Player)//ha játékos
             {
-                Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
+                Player p = RAGE.Elements.Entities.Players.GetAt(entity.Id);
                 streamedPlayers.Add(p);
             }
         }
@@ -149,6 +152,7 @@ namespace Client.Hud
 
         public static void SetNameTagEnabled(bool status)
         {
+            
             if (status)
             {
                 Events.Tick += Render;
@@ -182,8 +186,16 @@ namespace Client.Hud
             Vector3 Cam = RAGE.Game.Cam.GetGameplayCamCoord();
             foreach (var item in streamedPlayers)
             {
-                
-                RAGE.Elements.Entity e = GetEntityFromRaycast(Cam, item.Position, item.Vehicle.Handle, -1);
+                RAGE.Elements.Entity e;
+                if (item.Vehicle != null)
+                {
+                    e = GetEntityFromRaycast(Cam, item.Position, item.Vehicle.Handle, -1);
+                }
+                else
+                {
+                    e = GetEntityFromRaycast(Cam, item.Position, 0, -1);
+                }
+               
                 if (e != null)//sikeres raycast
                 {
                     if (e.Type == RAGE.Elements.Type.Player)//ped

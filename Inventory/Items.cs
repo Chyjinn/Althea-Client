@@ -57,8 +57,9 @@ namespace Client.Inventory
         public int ItemType { get; set; }//felhasználás kezeléséhez kell majd, pl Weapon akkor úgy kezeljük
         public string ItemImage { get; set; }//lehet local, pl. src/img.png, vagy url
         public uint ItemWeight { get; set; }
+        public string Object { get; set; }
         public bool Stackable { get; set; }
-        public Entry(uint id, string name, string desc, int type, uint weight, string itemimage, bool stack)
+        public Entry(uint id, string name, string desc, int type, uint weight, string itemimage, string obj, bool stack)
         {
             ItemID = id;
             Name = name;
@@ -66,6 +67,7 @@ namespace Client.Inventory
             ItemType = type;
             ItemWeight = weight;
             ItemImage = itemimage;
+            Object = obj;
             Stackable = stack;
         }
 
@@ -115,9 +117,25 @@ namespace Client.Inventory
             Events.OnPlayerQuit += Quit;
 
             Events.Add("client:IDbase64toServer", Base64ToServer);
-
             Events.OnClickWithRaycast += WorldClickToContainer;
             ToggleInventory(false);
+            RAGE.Game.Streaming.RequestNamedPtfxAsset("scr_bike_adversary");
+            ObjectGlows();
+        }
+
+        private void ObjectGlows()
+        {
+            List<MapObject> all = RAGE.Elements.Entities.Objects.All;
+            foreach (var item in all)
+            {
+                if (item.HasData("object:ID"))//van object ID, tehát lerakott item
+                {
+                    RAGE.Game.Graphics.UseParticleFxAssetNextCall("scr_bike_adversary");
+                    Chat.Output("ENTITY ID: " + item.GetData<uint>("object:ID").ToString());
+                    int particle = RAGE.Game.Graphics.StartParticleFxLoopedOnEntity("scr_adversary_ped_light_good", item.Handle, 0f, 0f, 0f, 0f, 0f, 0f, 1f, false, false, false);
+                    RAGE.Game.Graphics.SetParticleFxLoopedColour(particle, 1f, 0f, 0f, false);
+                }
+            }
         }
 
         private void GiveItemToServer(object[] args)
@@ -146,7 +164,6 @@ namespace Client.Inventory
             
             foreach (var item in closePlayers)
             {
-                Chat.Output(item.Name);
                 InventoryCEF.ExecuteJs($"AddNameToGivemenu(\"{item.Name}\",\"{item.RemoteId}\")");
             }
             InventoryCEF.ExecuteJs($"openGiveMenu()");
@@ -185,6 +202,7 @@ namespace Client.Inventory
             if (player == RAGE.Elements.Player.LocalPlayer)
             {
                 RAGE.Game.Object.DeleteObject(ref greenscreen);
+                RAGE.Game.Graphics.StopParticleFxLooped(particle, false);
             }
         }
 
@@ -336,7 +354,7 @@ namespace Client.Inventory
             InventoryCEF.ExecuteJs($"setItemUse(\"{dbid}\",\"{state}\")");
         }
         RAGE.Elements.Vehicle lastVehicle = null;
-
+        int particle;
         private void WorldClickToContainer(int x, int y, bool up, bool right, float relativeX, float relativeY, Vector3 worldPos, int entityHandle)
         {
             if (!up && right && !InventoryCEF.Active)//jobb klikket lenyomta és zárva van az inventory
@@ -364,9 +382,26 @@ namespace Client.Inventory
                             lastVehicle = RAGE.Elements.Entities.Vehicles.GetAt(e.Id);
                         }
                     }
+                    else if(e.Type == RAGE.Elements.Type.Object)
+                    {
+                        if (e.GetSharedData("object:ID") != null)//van object ID, tehát lerakott item
+                        {
+                            //RAGE.Game.Graphics.SetParticleFxLoopedScale(particle, 0f);
+                            RAGE.Game.Graphics.StopParticleFxLooped(particle, false);
+                            MapObject obj = RAGE.Elements.Entities.Objects.GetAt(e.Id);
+                            RAGE.Game.Graphics.UseParticleFxAssetNextCall("scr_bike_adversary");
+                            Chat.Output("ENTITY ID: " + e.GetSharedData("object:ID").ToString());
+                            particle = RAGE.Game.Graphics.StartParticleFxLoopedOnEntity("scr_adversary_ped_light_good", obj.Handle, 0f, 0f, 0.5f, 0f, 0f, 0f, 0.1f, false, false, false);
+                            RAGE.Game.Graphics.SetParticleFxLoopedColour(particle, 0.3f, 0f, 0f, false);
+                            //RAGE.Game.Graphics.SetParticleFxLoopedRange(particle, 5f);
+                        }
+                    }
                 }
-            } 
+            }
+            
         }
+
+
 
         private static RAGE.Elements.Entity GetEntityFromRaycast(Vector3 fromCoords, Vector3 toCoords, int ignoreEntity, int flags)
         {
@@ -466,18 +501,18 @@ namespace Client.Inventory
         private void DropItem(object[] args)
         {
             uint target_item_dbid = Convert.ToUInt32(args[0]);
-            float groundZ = -1000f;
-            RAGE.Game.Misc.GetGroundZFor3dCoord(RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z, ref groundZ, false);
+            uint target_item_itemid = Convert.ToUInt32(args[1]);
+            //float groundZ = -1000f;
+            //RAGE.Game.Misc.GetGroundZFor3dCoord(RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z, ref groundZ, false);
 
-            if (groundZ != 0f && groundZ != -1000f)//talált földet
-            {
-                Events.CallRemote("server:DropItem", target_item_dbid, groundZ+0.05f);
-            }
-            else
-            {
-                Chat.Output("Itt nem dobhatsz el tárgyat.");
-            }
-            
+            int obj = RAGE.Game.Object.CreateObject(RAGE.Util.Joaat.Hash(GetItemObjectById(target_item_itemid)), RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z, false, false, false);
+            RAGE.Game.Object.PlaceObjectOnGroundProperly(obj);
+
+            Vector3 objCoords = RAGE.Game.Entity.GetEntityCoords(obj, true);
+            Vector3 objRot = RAGE.Game.Entity.GetEntityRotation(obj, 2);
+
+            Events.CallRemote("server:DropItem", target_item_dbid, objCoords.Z, objRot.X,objRot.Y,objRot.Z);
+            RAGE.Game.Object.DeleteObject(ref obj);
         }
 
         static int hashClone = -1;
@@ -713,6 +748,19 @@ namespace Client.Inventory
             }
             return "Nem létező item.";
         }
+
+        public static string GetItemObjectById(uint itemid)
+        {
+            foreach (var item in itemList)
+            {
+                if (item.ItemID == itemid)
+                {
+                    return item.Object;
+                }
+            }
+            return "-1";
+        }
+
 
 
         public static int GetItemTypeById(uint itemid)
