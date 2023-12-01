@@ -123,17 +123,36 @@ namespace Client.Inventory
             ObjectGlows();
         }
 
+        Dictionary<int, int> HotKeys = new Dictionary<int, int>
+        {
+            //HOTKEY, ITEM_DBID az item használat meghívásához
+            //átadásnál kell valami check hogy hotkey-en van-e csak akkor maradjon hotkeyen ha a saját inventorydban marad
+            { 0, 0 },
+            { 1, 1 },
+            { 2, 2 },
+            { 3, 3 },
+            { 4, 4 },
+            { 5, 5 },
+            { 6, 6 },
+            { 7, 7 },
+            { 8, 8 },
+            { 9, 9 },
+        };
+
         private void ObjectGlows()
         {
             List<MapObject> all = RAGE.Elements.Entities.Objects.All;
             foreach (var item in all)
             {
-                if (item.HasData("object:ID"))//van object ID, tehát lerakott item
+                if (item.GetSharedData("object:ID") != null)//van object ID, tehát lerakott item
                 {
+                    item.SetCollision(false, false);
+                    /*
                     RAGE.Game.Graphics.UseParticleFxAssetNextCall("scr_bike_adversary");
                     Chat.Output("ENTITY ID: " + item.GetData<uint>("object:ID").ToString());
                     int particle = RAGE.Game.Graphics.StartParticleFxLoopedOnEntity("scr_adversary_ped_light_good", item.Handle, 0f, 0f, 0f, 0f, 0f, 0f, 1f, false, false, false);
                     RAGE.Game.Graphics.SetParticleFxLoopedColour(particle, 1f, 0f, 0f, false);
+                    */
                 }
             }
         }
@@ -167,10 +186,6 @@ namespace Client.Inventory
                 InventoryCEF.ExecuteJs($"AddNameToGivemenu(\"{item.Name}\",\"{item.RemoteId}\")");
             }
             InventoryCEF.ExecuteJs($"openGiveMenu()");
-
-
-
-
         }
 
         private void Base64ToServer(object[] args)
@@ -386,14 +401,24 @@ namespace Client.Inventory
                     {
                         if (e.GetSharedData("object:ID") != null)//van object ID, tehát lerakott item
                         {
+                            if (Vector3.Distance(RAGE.Elements.Player.LocalPlayer.Position,e.Position) < 2.5f)
+                            {
+                                Chat.Output("ENTITY ID: " + e.GetSharedData("object:ID").ToString());
+                                uint item_id = Convert.ToUInt32(e.GetSharedData("object:ID"));
+                                Events.CallRemote("server:PickUpItem", item_id);
+                            }
+
+
+                            /*
                             //RAGE.Game.Graphics.SetParticleFxLoopedScale(particle, 0f);
                             RAGE.Game.Graphics.StopParticleFxLooped(particle, false);
                             MapObject obj = RAGE.Elements.Entities.Objects.GetAt(e.Id);
                             RAGE.Game.Graphics.UseParticleFxAssetNextCall("scr_bike_adversary");
-                            Chat.Output("ENTITY ID: " + e.GetSharedData("object:ID").ToString());
+                            
                             particle = RAGE.Game.Graphics.StartParticleFxLoopedOnEntity("scr_adversary_ped_light_good", obj.Handle, 0f, 0f, 0.5f, 0f, 0f, 0f, 0.1f, false, false, false);
                             RAGE.Game.Graphics.SetParticleFxLoopedColour(particle, 0.3f, 0f, 0f, false);
                             //RAGE.Game.Graphics.SetParticleFxLoopedRange(particle, 5f);
+                            */
                         }
                     }
                 }

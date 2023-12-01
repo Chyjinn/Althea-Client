@@ -18,7 +18,7 @@ namespace Client
 
         public Main() 
         {
-            RAGE.Game.Misc.SetFadeOutAfterDeath(false);
+
             //Events.Tick += OnTick;
             Interior.EnableInteriorProp(166657, "V_Michael_bed_tidy");
             Interior.EnableInteriorProp(166657, "V_Michael_M_items");

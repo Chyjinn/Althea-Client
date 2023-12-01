@@ -56,7 +56,8 @@ namespace Client.Hud
 
         private void LogMessage(object[] args)
         {
-            RAGE.Ui.Console.LogLine(ConsoleVerbosity.Info, args[0].ToString(), true, true);
+            DateTime dt = DateTime.Now;
+            RAGE.Ui.Console.LogLine(ConsoleVerbosity.Info, "["+dt.ToString("yyyy.MM.dd. HH:mm:ss")+"] " +args[0].ToString(), true, true);
         }
 
         private void StreamOut(Entity entity)

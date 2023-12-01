@@ -20,7 +20,7 @@ namespace Client.Binds
             recordBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.F3, true, toggleRecording);
             crouchBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.X, true, ToggleCrouching);
             crawlBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Z, true, ToggleCrawl);
-
+            RAGE.Game.Misc.SetFadeOutAfterDeath(false);
             Events.CallRemote("server:SendWind");//lekérjük a szélsebességet a szerverről
         }
 
