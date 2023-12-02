@@ -54,6 +54,10 @@ namespace Client.Binds
             if (!RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat)
             {
                 RAGE.Ui.Cursor.ShowCursor(!RAGE.Ui.Cursor.Visible, !RAGE.Ui.Cursor.Visible);
+                if (!RAGE.Ui.Cursor.Visible)
+                {
+                    Inventory.Items.HideTooltip();
+                }
             }
         }
 
@@ -62,6 +66,10 @@ namespace Client.Binds
             if (!RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat)
             {
                 RAGE.Ui.Cursor.ShowCursor(flag, flag);
+                if (!RAGE.Ui.Cursor.Visible)
+                {
+                    Inventory.Items.HideTooltip();
+                }
             }
            
         }

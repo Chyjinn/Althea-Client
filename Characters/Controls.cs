@@ -284,11 +284,11 @@ namespace Client.Characters
                     bool invisible = (bool)p.GetSharedData("player:Invisible");
                     if (invisible)
                     {
-                        p.SetAlpha(0, false);
+                        p.SetAlpha(0, true);
                     }
                     else
                     {
-                        p.SetAlpha(255, false);
+                        p.SetAlpha(255, true);
                     }
                 }
             }

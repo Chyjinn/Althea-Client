@@ -1,20 +1,49 @@
-﻿using RAGE;
+﻿using Client.Inventory;
+using RAGE;
 using RAGE.Elements;
 using System;
 using System.Collections.Generic;
 
 namespace Client.Characters
 {
+    class ClothingItem
+    {
+        public uint ID { get; set; }
+        public bool Gender { get; set; }
+        public uint Component { get; set; }
+        public uint Category { get; set; }
+        public string ItemValue { get; set; }
+        public uint Price { get; set; }
+        public ClothingItem(uint id, bool gender, uint component, uint category, string itemValue, uint price)
+        {
+            ID = id;
+            Gender = gender;
+            Component = component;
+            Category = category;
+            ItemValue = itemValue;
+            Price = price;
+        }
+    }
+
     internal class Clothing : Events.Script
     {
         RAGE.Ui.HtmlWindow ClothesCEF;
 
         public Clothing()
         {
+            Events.Add("client:LoadClothingShop", LoadClothingShop);
+
+            //
             Events.Add("client:DrawableToServer", DrawableToServer);
             Events.Add("client:TextureToServer", TextureToServer);
             Events.Add("client:ClothingShop", OpenClothingShop);
             Events.Add("client:CloseClothingShop", CloseClothingShop);
+        }
+
+        private void LoadClothingShop(object[] args)
+        {
+            List<ClothingItem> items = RAGE.Util.Json.Deserialize<List<ClothingItem>>(args[0].ToString());
+
         }
 
         private void CloseClothingShop(object[] args)

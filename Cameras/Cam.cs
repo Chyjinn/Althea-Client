@@ -60,10 +60,6 @@ namespace Client.Cameras
                 RAGE.Game.Cam.SetCamCoord(camera, cam.X, cam.Y, cam.Z+0.01f);
                 RAGE.Game.Cam.SetCamRot(camera, camrot.X, camrot.Y, camrot.Z, 2);
                 RAGE.Elements.Player.LocalPlayer.SetRotation(0f, 0f, camrot.Z, 2, false);
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(0, -1, 0, 0);
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(2, 0, 0, 0);
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(3, 3, 0, 0);
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(11, 15, 0, 0);
             }
             else//nem first person vagy nem aktív a kamera
             {

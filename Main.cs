@@ -29,8 +29,20 @@ namespace Client
             Events.Add("client:YTtest", YoutubeTest);
             Events.Add("client:LoadIPL", LoadIPL);
             Events.Add("client:SetWind", SetWind);
+            Events.Add("client:SetRunning", SetRunning);
+            Events.Tick += Tick;
         }
 
+        private void SetRunning(object[] args)
+        {
+            RAGE.Elements.Player.LocalPlayer.SetAlpha(0, true);
+            //RAGE.Game.Player.SetRunSprintMultiplierForPlayer(Convert.ToSingle(args[0]));
+        }
+
+        private void Tick(List<Events.TickNametagData> nametags)
+        {
+            RAGE.Game.Player.SetPlayerHealthRechargeMultiplier(0f);
+        }
 
         private void SetWind(object[] args)
         {

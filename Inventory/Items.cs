@@ -114,6 +114,10 @@ namespace Client.Inventory
             Events.Add("client:GiveItemMenu", OpenGiveMenu);
             Events.Add("client:GiveItem", GiveItemToServer);
 
+            Events.Add("client:SetInventoryWeights", SetInventoryWeights);
+            Events.Add("client:SetContainerWeights", SetContainerWeights);
+
+
             Events.OnPlayerQuit += Quit;
 
             Events.Add("client:IDbase64toServer", Base64ToServer);
@@ -121,6 +125,20 @@ namespace Client.Inventory
             ToggleInventory(false);
             RAGE.Game.Streaming.RequestNamedPtfxAsset("scr_bike_adversary");
             ObjectGlows();
+        }
+
+        private void SetInventoryWeights(object[] args)
+        {
+            uint weight = Convert.ToUInt32(args[0]);
+            uint capacity = Convert.ToUInt32(args[1]);
+            InventoryCEF.ExecuteJs($"setInventoryWeights(\"{weight}\",\"{capacity}\")");
+        }
+
+        private void SetContainerWeights(object[] args)
+        {
+            uint weight = Convert.ToUInt32(args[0]);
+            uint capacity = Convert.ToUInt32(args[1]);
+            InventoryCEF.ExecuteJs($"setContainerWeights(\"{weight}\",\"{capacity}\")");
         }
 
         Dictionary<int, int> HotKeys = new Dictionary<int, int>
@@ -243,23 +261,58 @@ namespace Client.Inventory
             greenscreen = RAGE.Game.Object.CreateObject(RAGE.Util.Joaat.Hash("prop_ld_greenscreen_01"), 228.55f, -992f, -100.3f, false, false, false);
             RAGE.Task.Run(() =>
             {
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(1, 0, 0, 0);
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(2, 0, 0, 0);
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(3, 3, 0, 0);
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(4, 11, 0, 0);
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(5, 0, 0, 0);
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(6, 33, 0, 0);
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(7, 0, 0, 0);
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(8, 15, 0, 0);
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(9, 0, 0, 0);
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(10, 0, 0, 0);
-                RAGE.Elements.Player.LocalPlayer.SetComponentVariation(11, 15, 0, 0);
-                InfrontCamera(Convert.ToSingle(args[0]), Convert.ToSingle(args[1]));
-                RAGE.Task.Run(() =>
+                string gender = "semmi";
+                if (RAGE.Elements.Player.LocalPlayer.Model == RAGE.Game.Misc.GetHashKey("mp_f_freemode_01"))//nő
                 {
-                    RAGE.Input.TakeScreenshot("egyes.png", 1, 100, 0);
-                }, 500);
-            }, 2000);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(1, 0, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(2, 0, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(3, 10, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(4, 13, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(5, 0, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(6, 12, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(7, 0, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(8, 2, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(9, 0, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(10, 0, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(11, 82, 0, 0);
+                    gender = "female";
+                }
+                else if (RAGE.Elements.Player.LocalPlayer.Model == RAGE.Game.Misc.GetHashKey("mp_m_freemode_01"))//férfi
+                {
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(1, 0, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(2, 0, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(3, 3, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(4, 11, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(5, 0, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(6, 13, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(7, 0, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(8, 15, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(9, 0, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(10, 0, 0, 0);
+                    RAGE.Elements.Player.LocalPlayer.SetComponentVariation(11, 15, 0, 0);
+                    gender = "male";
+                }
+
+                if (gender != "semmi")
+                {
+                    InfrontCamera(Convert.ToSingle(args[0]), Convert.ToSingle(args[1]));
+                    RAGE.Task.Run(() =>
+                    {
+                        for (int i = 1; i < 11; i++)//összes komponensen végigmegyünk
+                        {
+                            int numofdrawables = RAGE.Elements.Player.LocalPlayer.GetNumberOfDrawableVariations(i);
+                            for (int j = 0; j < numofdrawables; j++)//összes drawable
+                            {
+                                RAGE.Input.TakeScreenshot(gender+"_"+i+"_"+j+".png", 1, 100, 0);
+                                Chat.Output("Screenshot létrehozva! " + gender + "_" + i + "_" + j + ".png");
+                                RAGE.Task.WaitAsync(1000);
+                            }
+                        }
+
+                    }, 10000);
+                }
+
+            }, 5000);
             //férfi TORSO: 0.225 20
             //férfi nadrág: -0.45 30
             //férfi cipő: -1 15
@@ -323,6 +376,11 @@ namespace Client.Inventory
         {
             Item item = RAGE.Util.Json.Deserialize<Item>(args[0].ToString());
             InventoryCEF.ExecuteJs($"addItemToContainer(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToString(item.InUse)}\",\"{GetItemTypeById(item.ItemID)}\")");
+            RAGE.Task.Run(() =>
+            {
+                Events.CallRemote("server:RequestInventoryWeight");
+                Events.CallRemote("server:RequestContainerWeight");
+            }, 250);
         }
 
         private void ReloadContainer(object[] args)
@@ -338,9 +396,14 @@ namespace Client.Inventory
             {
                 InventoryCEF.ExecuteJs($"addItemToContainer(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToString(item.InUse)}\",\"{GetItemTypeById(item.ItemID)}\")");
             }
+            RAGE.Task.Run(() =>
+            {
+                Events.CallRemote("server:RequestContainerWeight");
+            }, 250);
             InventoryCEF.ExecuteJs($"ShowContainer()");
 
             ToggleInventory(true);
+            
         }
 
         private void SetContainerName(object[] args)
@@ -372,53 +435,90 @@ namespace Client.Inventory
         int particle;
         private void WorldClickToContainer(int x, int y, bool up, bool right, float relativeX, float relativeY, Vector3 worldPos, int entityHandle)
         {
-            if (!up && right && !InventoryCEF.Active)//jobb klikket lenyomta és zárva van az inventory
+            if (!up && !InventoryCEF.Active)//jobb klikket lenyomta és zárva van az inventory
             {
                 RAGE.Elements.Entity e = GetEntityFromRaycast(RAGE.Game.Cam.GetGameplayCamCoord(), worldPos, 0, -1);
+
+                MapObject mapobj = RAGE.Elements.Entities.Objects.All.FirstOrDefault(x => x.Handle == entityHandle);
+
+                if (mapobj != null)
+                {
+                    Chat.Output("MAPOBJ: " + mapobj.Model.ToString());
+                }
+                Chat.Output(e.Type.ToString());
                 if (e != null)//entity-re klikkeltünk
                 {
-                    if (e.Type == RAGE.Elements.Type.Vehicle && RAGE.Elements.Player.LocalPlayer.Vehicle == null)//járműre klikkeltünk és nem ülünk járműben
+                    if (right)//jobb klikk -> inventory megnyitás
                     {
-                        //megnyitjuk a jármű inventory-ját -> szerver oldali kérés
-                        Vector3 playerpos = RAGE.Elements.Player.LocalPlayer.Position;
-                        Vector3 vehiclepos = e.Position;
-                        float distance = RAGE.Game.Misc.GetDistanceBetweenCoords(playerpos.X, playerpos.Y, playerpos.Z, vehiclepos.X, vehiclepos.Y, vehiclepos.Z, true);
-                        if(distance < 3f)
+                        if (e.Type == RAGE.Elements.Type.Vehicle && RAGE.Elements.Player.LocalPlayer.Vehicle == null)//járműre klikkeltünk és nem ülünk járműben
                         {
-                            Events.CallRemote("server:OpenVehicleTrunk", e.RemoteId);
-                            lastVehicle = RAGE.Elements.Entities.Vehicles.GetAt(e.Id);
-                        }
-                    }
-                    else if(e.Type == RAGE.Elements.Type.Vehicle && RAGE.Elements.Player.LocalPlayer.Vehicle != null)
-                    {
-                        if (e == RAGE.Elements.Player.LocalPlayer.Vehicle)
-                        {
-                            Events.CallRemote("server:OpenVehicleGloveBox");
-                            lastVehicle = RAGE.Elements.Entities.Vehicles.GetAt(e.Id);
-                        }
-                    }
-                    else if(e.Type == RAGE.Elements.Type.Object)
-                    {
-                        if (e.GetSharedData("object:ID") != null)//van object ID, tehát lerakott item
-                        {
-                            if (Vector3.Distance(RAGE.Elements.Player.LocalPlayer.Position,e.Position) < 2.5f)
+                            //megnyitjuk a jármű inventory-ját -> szerver oldali kérés
+                            Vector3 playerpos = RAGE.Elements.Player.LocalPlayer.Position;
+                            Vector3 vehiclepos = e.Position;
+                            float distance = RAGE.Game.Misc.GetDistanceBetweenCoords(playerpos.X, playerpos.Y, playerpos.Z, vehiclepos.X, vehiclepos.Y, vehiclepos.Z, true);
+                            if (distance < 3f)
                             {
-                                Chat.Output("ENTITY ID: " + e.GetSharedData("object:ID").ToString());
-                                uint item_id = Convert.ToUInt32(e.GetSharedData("object:ID"));
-                                Events.CallRemote("server:PickUpItem", item_id);
+                                Events.CallRemote("server:OpenVehicleTrunk", e.RemoteId);
+                                lastVehicle = RAGE.Elements.Entities.Vehicles.GetAt(e.Id);
                             }
+                        }
+                        else if (e.Type == RAGE.Elements.Type.Vehicle && RAGE.Elements.Player.LocalPlayer.Vehicle != null)
+                        {
+                            if (e == RAGE.Elements.Player.LocalPlayer.Vehicle)
+                            {
+                                Events.CallRemote("server:OpenVehicleGloveBox");
+                                lastVehicle = RAGE.Elements.Entities.Vehicles.GetAt(e.Id);
+                            }
+                        }
+                        else if (e.Type == RAGE.Elements.Type.Object)
+                        {
+                            if (e.GetSharedData("object:ID") != null)//van object ID, tehát lerakott item
+                            {
+                                if (Vector3.Distance(RAGE.Elements.Player.LocalPlayer.Position, e.Position) < 2.5f)
+                                {
+                                    uint item_id = Convert.ToUInt32(e.GetSharedData("object:ID"));
+                                    //eldobott object megnyitását meghívni
+                                    Events.CallRemote("server:OpenGroundItem", item_id);
+                                }
 
 
-                            /*
-                            //RAGE.Game.Graphics.SetParticleFxLoopedScale(particle, 0f);
-                            RAGE.Game.Graphics.StopParticleFxLooped(particle, false);
-                            MapObject obj = RAGE.Elements.Entities.Objects.GetAt(e.Id);
-                            RAGE.Game.Graphics.UseParticleFxAssetNextCall("scr_bike_adversary");
-                            
-                            particle = RAGE.Game.Graphics.StartParticleFxLoopedOnEntity("scr_adversary_ped_light_good", obj.Handle, 0f, 0f, 0.5f, 0f, 0f, 0f, 0.1f, false, false, false);
-                            RAGE.Game.Graphics.SetParticleFxLoopedColour(particle, 0.3f, 0f, 0f, false);
-                            //RAGE.Game.Graphics.SetParticleFxLoopedRange(particle, 5f);
-                            */
+                                /*
+                                //RAGE.Game.Graphics.SetParticleFxLoopedScale(particle, 0f);
+                                RAGE.Game.Graphics.StopParticleFxLooped(particle, false);
+                                MapObject obj = RAGE.Elements.Entities.Objects.GetAt(e.Id);
+                                RAGE.Game.Graphics.UseParticleFxAssetNextCall("scr_bike_adversary");
+
+                                particle = RAGE.Game.Graphics.StartParticleFxLoopedOnEntity("scr_adversary_ped_light_good", obj.Handle, 0f, 0f, 0.5f, 0f, 0f, 0f, 0.1f, false, false, false);
+                                RAGE.Game.Graphics.SetParticleFxLoopedColour(particle, 0.3f, 0f, 0f, false);
+                                //RAGE.Game.Graphics.SetParticleFxLoopedRange(particle, 5f);
+                                */
+                            }
+                        }
+                    }
+                    else//bal klikk -> eldobott item felvétel
+                    {
+                        if (e.Type == RAGE.Elements.Type.Object)
+                        {
+                            if (e.GetSharedData("object:ID") != null)//van object ID, tehát lerakott item
+                            {
+                                if (Vector3.Distance(RAGE.Elements.Player.LocalPlayer.Position, e.Position) < 3f)
+                                {
+                                    uint item_id = Convert.ToUInt32(e.GetSharedData("object:ID"));
+                                    Events.CallRemote("server:PickUpItem", item_id);
+                                }
+
+
+                                /*
+                                //RAGE.Game.Graphics.SetParticleFxLoopedScale(particle, 0f);
+                                RAGE.Game.Graphics.StopParticleFxLooped(particle, false);
+                                MapObject obj = RAGE.Elements.Entities.Objects.GetAt(e.Id);
+                                RAGE.Game.Graphics.UseParticleFxAssetNextCall("scr_bike_adversary");
+
+                                particle = RAGE.Game.Graphics.StartParticleFxLoopedOnEntity("scr_adversary_ped_light_good", obj.Handle, 0f, 0f, 0.5f, 0f, 0f, 0f, 0.1f, false, false, false);
+                                RAGE.Game.Graphics.SetParticleFxLoopedColour(particle, 0.3f, 0f, 0f, false);
+                                //RAGE.Game.Graphics.SetParticleFxLoopedRange(particle, 5f);
+                                */
+                            }
                         }
                     }
                 }
@@ -490,11 +590,21 @@ namespace Client.Inventory
             InventoryCEF.ExecuteJs($"addItemToSlot(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\")");
             //InventoryCEF.ExecuteJs($"addItemToSlot(1,1,\"Kesztyű\",\"\",500,50,\"https://pngimg.com/d/mma_gloves_PNG25.png\",5,0)");
             //addItemToSlot(1,1,"Kesztyű","",500,50,"https://pngimg.com/d/mma_gloves_PNG25.png",5,0)
+            RAGE.Task.Run(() =>
+            {
+                Events.CallRemote("server:RequestInventoryWeight");
+                Events.CallRemote("server:RequestContainerWeight");
+            }, 250);
         }
 
         private void RemoveItem(object[] args)
         {
             InventoryCEF.ExecuteJs($"RemoveItem(\"{Convert.ToUInt32(args[0])}\")");//DB_ID alapján törölje
+            RAGE.Task.Run(() =>
+            {
+                Events.CallRemote("server:RequestInventoryWeight");
+                Events.CallRemote("server:RequestContainerWeight");
+            }, 250);
         }
 
         private void RemoveItem(uint db_id)
@@ -531,9 +641,22 @@ namespace Client.Inventory
             //RAGE.Game.Misc.GetGroundZFor3dCoord(RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z, ref groundZ, false);
 
             int obj = RAGE.Game.Object.CreateObject(RAGE.Util.Joaat.Hash(GetItemObjectById(target_item_itemid)), RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y, RAGE.Elements.Player.LocalPlayer.Position.Z, false, false, false);
-            RAGE.Game.Object.PlaceObjectOnGroundProperly(obj);
+            
 
+
+            RAGE.Game.Object.PlaceObjectOnGroundProperly(obj);
             Vector3 objCoords = RAGE.Game.Entity.GetEntityCoords(obj, true);
+
+            if (target_item_itemid >= 31 && target_item_itemid <= 111)//ha fegyver akkor elforgatjuk oldalra
+            {
+                float groundZ = 0f;
+                Vector3 currentRot = RAGE.Game.Entity.GetEntityRotation(obj, 2);
+                RAGE.Game.Entity.SetEntityRotation(obj, currentRot.X + 90f, currentRot.Y + 90f, 0f, 2, false);
+                RAGE.Game.Misc.GetGroundZFor3dCoord(objCoords.X, objCoords.Y, objCoords.Z, ref groundZ, false);
+                objCoords.Z = groundZ;
+            }
+
+            
             Vector3 objRot = RAGE.Game.Entity.GetEntityRotation(obj, 2);
 
             Events.CallRemote("server:DropItem", target_item_dbid, objCoords.Z, objRot.X,objRot.Y,objRot.Z);
@@ -733,6 +856,16 @@ namespace Client.Inventory
         {
             Item item = RAGE.Util.Json.Deserialize<Item>(args[0].ToString());
             InventoryCEF.ExecuteJs($"addItemToInventory(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\",\"{Convert.ToString(item.InUse)}\",\"{GetItemTypeById(item.ItemID)}\")");
+            RAGE.Task.Run(() =>
+            {
+                Events.CallRemote("server:RequestInventoryWeight");
+                Events.CallRemote("server:RequestContainerWeight");
+            }, 250);
+        }
+
+        public static void HideTooltip()
+        {
+            InventoryCEF.ExecuteJs($"hideToolTip()");//eltüntetni a tooltipet
         }
 
         private void InventoryToCEF(List<Item> inv)
@@ -743,6 +876,10 @@ namespace Client.Inventory
             }
             InventoryCEF.ExecuteJs($"setInventoryName(\"{RAGE.Elements.Player.LocalPlayer.Name}\")");//karakternév
             Events.CallRemote("server:SetWornClothing");
+            RAGE.Task.Run(() =>
+            {
+                Events.CallRemote("server:RequestInventoryWeight");
+            }, 250);
         }
 
 
