@@ -202,6 +202,7 @@ namespace Client.Cameras
         private void Tick(List<Events.TickNametagData> nametags)
         {
             RAGE.Game.Cam.SetUseHiDof();
+            RAGE.Elements.Player.LocalPlayer.ClearSecondaryTask();
             if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.D))
             {
                 RotateCharRight();
