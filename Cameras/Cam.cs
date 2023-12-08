@@ -144,11 +144,12 @@ namespace Client.Cameras
             RAGE.Game.Cam.RenderScriptCams(true, true, 500, true, false, 0);
 
             camStartPositions = new Vector3(nx, ny, pos.Z + 0.3f);
-
+            /*
             RAGE.Game.Cam.SetCamUseShallowDofMode(camera, true);
             RAGE.Game.Cam.SetCamNearDof(camera, 0.3f);
-            RAGE.Game.Cam.SetCamFarDof(camera, 1.7f);
-            RAGE.Game.Cam.SetCamDofStrength(camera, 1);
+            RAGE.Game.Cam.SetCamFarDof(camera, 2f);
+            RAGE.Game.Cam.SetCamDofStrength(camera, 1f);
+            */
             RAGE.Elements.Player.LocalPlayer.TaskLookAtCoord(nx, ny, pos.Z + 0.3f, -1, 0, 2);
             Events.Tick += Tick;
         }
@@ -171,7 +172,7 @@ namespace Client.Cameras
 
             RAGE.Game.Cam.SetCamUseShallowDofMode(camera, true);
             RAGE.Game.Cam.SetCamNearDof(camera, 0.5f);
-            RAGE.Game.Cam.SetCamFarDof(camera, 2.8f);
+            RAGE.Game.Cam.SetCamFarDof(camera, 3f);
             RAGE.Game.Cam.SetCamDofStrength(camera, 1f);
 
             
@@ -201,7 +202,6 @@ namespace Client.Cameras
 
         private void Tick(List<Events.TickNametagData> nametags)
         {
-            RAGE.Game.Cam.SetUseHiDof();
             RAGE.Elements.Player.LocalPlayer.ClearSecondaryTask();
             if (RAGE.Input.IsDown(RAGE.Ui.VirtualKeys.D))
             {

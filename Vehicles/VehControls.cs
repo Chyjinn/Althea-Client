@@ -19,16 +19,219 @@ namespace Client.Vehicles
             Events.Add("client:RadarGun", ToggleRadarGun);
             Events.Add("client:SpeedCam", ToggleSpeedCam);
 
+            Events.Add("client:DamageVehicle", DamageVehicle);
+
             Events.AddDataHandler("vehicle:Siren", VehicleSiren);
             Events.AddDataHandler("vehicle:IndicatorLeft", IndicatorsLeft);
             Events.AddDataHandler("vehicle:IndicatorRight", IndicatorsRight);
             Events.AddDataHandler("vehicle:Doors", SetVehicleDoors);
+
+            Events.AddDataHandler("vehicle:EngineHealth", SetVehicleEngineHealth);
+            Events.AddDataHandler("vehicle:BodyHealth", SetVehicleBodyHealth);
 
 
             int leftbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Left, true, IndicatorLeft);
             int rightbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Right, true, IndicatorRight);
             Events.OnEntityStreamIn += OnEntityStreamIn;
             Events.Add("client:SetHandling", SetTune);
+        }
+
+        private void DamageVehicle(object[] args)
+        {
+            Dictionary<Vector3, float> damages = GetVehicleDeformation(RAGE.Elements.Player.LocalPlayer.Vehicle);
+            RAGE.Elements.Player.LocalPlayer.Vehicle.SetDeformationFixed();
+            SetVehicleDeformation(RAGE.Elements.Player.LocalPlayer.Vehicle, damages);
+            /*
+            Dictionary<Vector3, float> deformations = new Dictionary<Vector3, float>();
+            for (float x = -1f; x <= 1f; x+=0.5f)
+            {
+                for (float y = -1f; y <= 1f; y+=0.5f)
+                {
+                    for (float z = -1f; z <= 1f; z+=0.5f)
+                    {
+                        Vector3 damages = RAGE.Elements.Player.LocalPlayer.Vehicle.GetDeformationAtPos(x, y, z);
+                        deformations[new Vector3(x, y, z)] = damages.X*damages.Y;
+                    }
+                }
+            }
+            RAGE.Elements.Player.LocalPlayer.Vehicle.SetDeformationFixed();
+            foreach (var item in deformations)
+            {
+                RAGE.Elements.Player.LocalPlayer.Vehicle.SetDamage(item.Key.X, item.Key.Y, item.Key.Z, item.Value*100f, 1f, true);
+            }
+            */
+            /*
+            
+            Vector3 offset = new Vector3(Convert.ToSingle(args[0]), Convert.ToSingle(args[1]), Convert.ToSingle(args[2]));
+            float damage = Convert.ToSingle(args[3]);
+            float radius = Convert.ToSingle(args[4]);
+            bool focusonmodel = Convert.ToBoolean(args[5]);
+
+            */
+
+            /*
+            Chat.Output("DAMAGE APPLIED ON PLAYER VEHICLE");
+            Chat.Output("BODY: " + RAGE.Elements.Player.LocalPlayer.Vehicle.GetBodyHealth() + " BODY2: " + RAGE.Elements.Player.LocalPlayer.Vehicle.GetBodyHealth2(0, 0, 0, 0, 0, 0) + " ENGINE: " + RAGE.Elements.Player.LocalPlayer.Vehicle.GetEngineHealth());
+            */
+
+        }
+
+        public float getMaxElement(Vector3 v)
+        {
+            return Math.Max(v.X, v.Y);
+        }
+
+        public Dictionary<Vector3, float> GetVehicleDeformation(RAGE.Elements.Vehicle v)
+        {
+            Dictionary<Vector3, float> deformations = new Dictionary<Vector3, float>();
+            List<Vector3> offsets = GetVehicleOffsets(v);
+            foreach (var item in offsets)
+            {
+                
+                float dmg = getMaxElement(v.GetDeformationAtPos(item.X, item.Y, item.Z) * 1000f) / 1000f;
+                if (dmg > 0.03f)
+                {
+                    deformations[item] = dmg;
+                }
+            }
+
+            foreach (var item in deformations)
+            {
+                Chat.Output(item.Key + " DMG: " + item.Value);
+            }
+            return deformations;
+        }
+
+        public void SetVehicleDeformation(RAGE.Elements.Vehicle v, Dictionary<Vector3, float> deformations)
+        {
+
+            float fDeformationDamageMult = v.GetHandlingFloat("fDeformationDamageMult");
+            float damageMult = 100f;
+            if (fDeformationDamageMult <= 0.55f)
+            {
+                damageMult = 1000f;
+            }
+            else if (fDeformationDamageMult <= 0.65f)
+            {
+                damageMult = 400f;
+            }
+            else if (fDeformationDamageMult <= 0.75f)
+            {
+                damageMult = 200f;
+            }
+
+            bool deform = true;
+            int iteration = 0;
+            foreach (var item in deformations)
+            {
+                while(deform && iteration < 500000)
+                {
+                    if ((getMaxElement(v.GetDeformationAtPos(item.Key.X, item.Key.Y, item.Key.Z) * 1000f) / 1000f) < item.Value)
+                    {
+                        v.SetDamage(item.Key.X * 2, item.Key.Y * 2, item.Key.Z * 2, item.Value * damageMult, 1000f, true);
+                        deform = true;
+                    }
+                    else
+                    {
+                        deform = false;
+                    }
+                    iteration++;
+                }
+
+                
+            }
+
+
+        }
+
+        public List<Vector3> GetVehicleOffsets(RAGE.Elements.Vehicle v)
+        {
+            Vector3 min = new Vector3(0f, 0f, 0f);
+            Vector3 max = new Vector3(0f, 0f, 0f);
+            RAGE.Game.Misc.GetModelDimensions(v.Model, min, max);
+
+            float X = Convert.ToSingle(Math.Round((max.X - min.X) * 0.5, 2));
+            float Y = Convert.ToSingle(Math.Round((max.Y - min.Y) * 0.5, 2));
+            float Z = Convert.ToSingle(Math.Round((max.Z - min.Z) * 0.5, 2));
+            float halfY = Convert.ToSingle(Math.Round(Y * 0.5, 2));
+
+            List<Vector3> offsets = new List<Vector3>
+            {
+                new Vector3(-X, Y, 0f),
+                new Vector3(-X, Y, Z),
+
+                new Vector3(0f,Y, 0f),
+                new Vector3(0f, Z, Z),
+
+                new Vector3(-X, Y,  0.0f),
+                new Vector3(-X, Y,  Z),
+
+                new Vector3(0.0f, Y,  0.0f),
+                new Vector3(0.0f, Y,  Z),
+
+                new Vector3(X, Y,  0.0f),
+                new Vector3(X, Y, Z),
+
+
+                new Vector3(-X, halfY,  0.0f),
+                new Vector3(-X, halfY, Z),
+
+                new Vector3(0.0f, halfY,  0.0f),
+                new Vector3(0.0f, halfY,  Z),
+
+                new Vector3(X, halfY,  0.0f),
+                new Vector3(X, halfY, Z),
+
+
+                new Vector3(-X, 0.0f,  0.0f),
+                new Vector3(-X, 0.0f,  Z),
+
+                new Vector3(0.0f, 0.0f,  0.0f),
+                new Vector3(0.0f, 0.0f,  Z),
+
+                new Vector3(X, 0.0f,  0.0f),
+                new Vector3(X, 0.0f,  Z),
+
+
+                new Vector3(-X, -halfY,  0.0f),
+                new Vector3(-X, -halfY, Z),
+
+                new Vector3(0.0f, -halfY,  0.0f),
+                new Vector3(0.0f, -halfY,  Z),
+
+                new Vector3(X, -halfY,  0.0f),
+                new Vector3(X, -halfY, Z),
+
+
+                new Vector3(-X, -Y,  0.0f),
+                new Vector3(-X, -Y, Z),
+
+                new Vector3(0.0f, -Y,  0.0f),
+                new Vector3(0.0f, -Y,  Z),
+
+                new Vector3(X, -Y,  0.0f),
+                new Vector3(X, -Y, Z)
+            };
+
+            return offsets;
+        }
+
+        private void SetVehicleBodyHealth(RAGE.Elements.Entity entity, object arg, object oldArg)
+        {
+            if (entity.Type == RAGE.Elements.Type.Vehicle)
+            {
+                RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(entity.RemoteId);
+                v.SetBodyHealth(Convert.ToSingle(arg));
+            }
+        }
+
+        private void SetVehicleEngineHealth(RAGE.Elements.Entity entity, object arg, object oldArg)
+        {
+            if (entity.Type == RAGE.Elements.Type.Vehicle)
+            {
+                RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(entity.RemoteId);
+                v.SetEngineHealth(Convert.ToSingle(arg));
+            }
         }
 
         private void ToggleSpeedCam(object[] args)
