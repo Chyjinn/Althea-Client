@@ -29,12 +29,12 @@ namespace Client.Vehicles
             Events.AddDataHandler("vehicle:EngineHealth", SetVehicleEngineHealth);
             Events.AddDataHandler("vehicle:BodyHealth", SetVehicleBodyHealth);
 
-
             int leftbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Left, true, IndicatorLeft);
             int rightbindid = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Right, true, IndicatorRight);
             Events.OnEntityStreamIn += OnEntityStreamIn;
             Events.Add("client:SetHandling", SetTune);
         }
+
 
         private void DamageVehicle(object[] args)
         {
@@ -222,6 +222,7 @@ namespace Client.Vehicles
             {
                 RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(entity.RemoteId);
                 v.SetBodyHealth(Convert.ToSingle(arg));
+                Chat.Output(v.Model + " jármű body hp-ja átállítva!" + Convert.ToSingle(arg));
             }
         }
 
@@ -231,6 +232,7 @@ namespace Client.Vehicles
             {
                 RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(entity.RemoteId);
                 v.SetEngineHealth(Convert.ToSingle(arg));
+                Chat.Output(v.Model + " jármű engine hp-ja átállítva!" + Convert.ToSingle(arg));
             }
         }
 
@@ -598,6 +600,18 @@ namespace Client.Vehicles
             {
                 
                 RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(entity.RemoteId);
+
+                if (v.GetSharedData("vehicle:EngineHealth") != null)
+                {
+                    float hp = (float)v.GetSharedData("vehicle:EngineHealth");
+                    v.SetEngineHealth(hp);
+                }
+
+                if (v.GetSharedData("vehicle:BodyHealth") != null)
+                {
+                    float hp = (float)v.GetSharedData("vehicle:BodyHealth");
+                    v.SetBodyHealth(hp);
+                }
 
                 if (v.GetSharedData("vehicle:IndicatorLeft") != null)
                 {
