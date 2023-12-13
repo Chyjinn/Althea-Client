@@ -3,6 +3,7 @@ using RAGE.Game;
 using RAGE.Ui;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Security.Principal;
 using System.Text;
@@ -24,6 +25,7 @@ namespace Client.ObjectMover
             Events.Add("client:MoveObject", MoveObject);
 
             Events.Add("client:ObjectToGround", ObjectToGround);
+            
         }
 
         private void ObjectToGround(object[] args)
@@ -35,14 +37,7 @@ namespace Client.ObjectMover
 
                 Vector3 newRot = RAGE.Game.Entity.GetEntityRotation(obj, 2);
                 MoverCEF.ExecuteJs($"UpdateObjectPos(\"{newCoords.X}\",\"{newCoords.Y}\",\"{newCoords.Z}\",\"{newRot.X}\",\"{newRot.Y}\",\"{newRot.Z}\")");
-                if (Vector3.Distance(RAGE.Elements.Player.LocalPlayer.Position, newCoords) > 15f)
-                {
-                    //túl messze került, kidobjuk belőle
-                    Chat.Output("Túl messze kerültél az objecttől!");
-                    RAGE.Game.Entity.DeleteEntity(ref obj);
-                    MoverCEF.Active = false;
-                    MoverCEF.Destroy();
-                }
+
                 LastUpdate = DateTime.Now;
             }
 
@@ -83,14 +78,7 @@ namespace Client.ObjectMover
                 
                 Vector3 newRot = RAGE.Game.Entity.GetEntityRotation(obj, 2);
                 MoverCEF.ExecuteJs($"UpdateObjectPos(\"{newCoords.X}\",\"{newCoords.Y}\",\"{newCoords.Z}\",\"{newRot.X}\",\"{newRot.Y}\",\"{newRot.Z}\")");
-                if (Vector3.Distance(RAGE.Elements.Player.LocalPlayer.Position, newCoords) > 15f)
-                {
-                    //túl messze került, kidobjuk belőle
-                    Chat.Output("Túl messze kerültél az objecttől!");
-                    RAGE.Game.Entity.DeleteEntity(ref obj);
-                    MoverCEF.Active = false;
-                    MoverCEF.Destroy();
-                }
+
 
                 LastUpdate = DateTime.Now;
             }
@@ -106,7 +94,9 @@ namespace Client.ObjectMover
         {
 
             string objName = Convert.ToString(args[0]);
-  
+            RAGE.Game.Streaming.RequestModel(RAGE.Game.Misc.GetHashKey(objName));
+           
+
             obj = RAGE.Game.Object.CreateObject(RAGE.Game.Misc.GetHashKey(objName), RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y+1f, RAGE.Elements.Player.LocalPlayer.Position.Z, false, false, false);
             
             RAGE.Game.Object.PlaceObjectOnGroundProperly(obj);
@@ -136,7 +126,14 @@ namespace Client.ObjectMover
         private void Tick(List<Events.TickNametagData> nametags)
         {
             Vector3 objCoords = RAGE.Game.Entity.GetEntityCoords(obj, true);
-
+            if (Vector3.Distance(RAGE.Elements.Player.LocalPlayer.Position, objCoords) > 8f)
+            {
+                //túl messze került, kidobjuk belőle
+                Chat.Output("Túl messze kerültél az objecttől!");
+                RAGE.Game.Entity.DeleteEntity(ref obj);
+                MoverCEF.Active = false;
+                MoverCEF.Destroy();
+            }
 
             float objCenterX = 0;
             float objCenterY = 0;
