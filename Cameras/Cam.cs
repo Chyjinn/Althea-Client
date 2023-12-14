@@ -172,7 +172,7 @@ namespace Client.Cameras
 
             RAGE.Game.Cam.SetCamUseShallowDofMode(camera, true);
             RAGE.Game.Cam.SetCamNearDof(camera, 0.5f);
-            RAGE.Game.Cam.SetCamFarDof(camera, 3f);
+            RAGE.Game.Cam.SetCamFarDof(camera, 3.2f);
             RAGE.Game.Cam.SetCamDofStrength(camera, 1f);
 
             

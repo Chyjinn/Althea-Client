@@ -13,6 +13,8 @@ namespace Client.Binds
         static int recordBind;
         static int crouchBind;
         static int crawlBind;
+
+        static int propertyBind;
         public static void bindKeys()
         {
             mouseBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.M, true, ToggleCursor);
@@ -23,6 +25,23 @@ namespace Client.Binds
             RAGE.Game.Misc.SetFadeOutAfterDeath(false);
             Events.CallRemote("server:SendWind");//lekérjük a szélsebességet a szerverről
         }
+
+        public static void bindEnterPropety()
+        {
+            propertyBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.E, true, Interiors.Properties.EnterProperty);
+        }
+
+        public static void bindExitProperty()
+        {
+            propertyBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.E, true, Interiors.Properties.ExitProperty);
+        }
+
+
+        public static void unbindProperty()
+        {
+            RAGE.Input.Unbind(propertyBind);
+        }
+
 
         public static void unbindKeys()
         {

@@ -27,7 +27,7 @@ namespace Client
             Interior.EnableInteriorProp(166657, "V_Michael_L_Items");
             Interior.RefreshInterior(166657);
             Events.Add("client:YTtest", YoutubeTest);
-            Events.Add("client:LoadIPL", LoadIPL);
+            
             Events.Add("client:SetWind", SetWind);
             Events.Add("client:SetRunning", SetRunning);
             Events.Tick += Tick;
@@ -72,11 +72,6 @@ namespace Client
 
         }
 
-        public void LoadIPL(object[] args)
-        {
-            string name = Convert.ToString(args[0]);
-            RAGE.Game.Streaming.RequestIpl(name);
-            RAGE.Chat.Output(name + " IPL státusz:" + RAGE.Game.Streaming.IsIplActive(name).ToString());
-        }
+
     }
 }
