@@ -491,7 +491,7 @@ namespace Client.Inventory
             if (!up && !InventoryCEF.Active)//jobb klikket lenyomta és zárva van az inventory
             {
                 RAGE.Elements.Entity e = GetEntityFromRaycast(RAGE.Game.Cam.GetGameplayCamCoord(), worldPos, 0, -1);
-
+                
                 if (e != null)//entity-re klikkeltünk
                 {
                     if (right)//jobb klikk -> inventory megnyitás

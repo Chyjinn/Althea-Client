@@ -1,4 +1,5 @@
 ﻿using RAGE;
+using RAGE.Elements;
 using RAGE.Game;
 using RAGE.Ui;
 using System;
@@ -14,6 +15,7 @@ namespace Client.ObjectMover
     {
         static HtmlWindow MoverCEF;
         int obj;
+        string model;
         bool ShowX = true;
         bool ShowY = true;
         bool ShowZ = true;
@@ -23,9 +25,42 @@ namespace Client.ObjectMover
 
             Events.Add("client:PlaceObject", PlaceObject);
             Events.Add("client:MoveObject", MoveObject);
+            Events.Add("client:SetObject", SetObject);
+            Events.Add("client:RotateObject", RotateObject);
+            Events.Add("client:CloseObjectEditor", CloseEditor);
+            Events.Add("client:SaveObject", SaveObject);
 
             Events.Add("client:ObjectToGround", ObjectToGround);
-            
+            Events.Add("client:StreamServerObjects", StreamServerObjects);
+        }
+
+        private void SaveObject(object[] args)
+        {
+            Vector3 objCoords = RAGE.Game.Entity.GetEntityCoords(obj, true);
+            Vector3 objRots = RAGE.Game.Entity.GetEntityRotation(obj, 2);
+
+            Events.CallRemote("server:PlaceObject", model, objCoords.X, objCoords.Y, objCoords.Z, objRots.X, objRots.Y, objRots.Z);
+            RAGE.Game.Entity.DeleteEntity(ref obj);
+            MoverCEF.Active = false;
+            MoverCEF.Destroy();
+            Events.Tick -= Tick;
+        }
+
+        private void CloseEditor(object[] args)
+        {
+            RAGE.Game.Entity.DeleteEntity(ref obj);
+            MoverCEF.Active = false;
+            MoverCEF.Destroy();
+            Events.Tick -= Tick;
+        }
+
+        private void StreamServerObjects(object[] args)
+        {
+            foreach (var item in RAGE.Elements.Entities.Objects.All)
+            {
+                item.NotifyStreaming = true;
+                item.StreamRange = 50f;
+            }
         }
 
         private void ObjectToGround(object[] args)
@@ -45,6 +80,39 @@ namespace Client.ObjectMover
 
         DateTime LastUpdate = DateTime.Now;
         TimeSpan UpdateTime = TimeSpan.FromMilliseconds(500);
+
+        private void SetObject(object[] args)
+        {
+            string axis = Convert.ToString(args[0]);
+            float value = Convert.ToSingle(args[1]);
+            Vector3 objCoords = RAGE.Game.Entity.GetEntityCoords(obj, true);
+            Vector3 objRots = RAGE.Game.Entity.GetEntityRotation(obj, 2);
+
+            switch (axis)
+            {
+                case "px":
+                    RAGE.Game.Entity.SetEntityCoords(obj, value, objCoords.Y, objCoords.Z, true, true, true, false);
+                    break;
+                case "py":
+                    RAGE.Game.Entity.SetEntityCoords(obj, objCoords.X, value, objCoords.Z, true, true, true, false);
+                    break;
+                case "pz":
+                    RAGE.Game.Entity.SetEntityCoords(obj, objCoords.X, objCoords.Y, value, true, true, true, false);
+                    break;
+                case "rx":
+                    RAGE.Game.Entity.SetEntityRotation(obj, value, objRots.Y, objRots.Z, 2, false);
+                    break;
+                case "ry":
+                    RAGE.Game.Entity.SetEntityRotation(obj, objRots.X, value, objRots.Z, 2, false);
+                    break;
+                case "rz":
+                    RAGE.Game.Entity.SetEntityRotation(obj, objRots.X, objRots.Y, value, 2, false);
+                    break;
+                default:
+                    break;
+            }
+        }
+
 
         private void MoveObject(object[] args)
         {
@@ -69,7 +137,7 @@ namespace Client.ObjectMover
             }
 
 
-            
+
 
 
             if (LastUpdate + UpdateTime < DateTime.Now)
@@ -86,16 +154,52 @@ namespace Client.ObjectMover
 
 
             //RAGE.Elements.Entity moveObj = RAGE.Elements.Entities.Objects.GetAtHandle(obj);
-          
+        }
 
+
+        private void RotateObject(object[] args)
+        {
+            int rel = Convert.ToInt32(args[0]);
+            float relative = Convert.ToSingle(rel);
+            string axis = Convert.ToString(args[1]);
+            Vector3 objRots = RAGE.Game.Entity.GetEntityRotation(obj, 2);
+
+            switch (axis)
+            {
+                case "X":
+                    RAGE.Game.Entity.SetEntityRotation(obj, objRots.X + (relative / 25f), objRots.Y, objRots.Z, 2, false);
+                    break;
+                case "Y":
+                    RAGE.Game.Entity.SetEntityRotation(obj, objRots.X, objRots.Y + (relative / 25f), objRots.Z, 2, false);
+                    break;
+                case "Z":
+                    RAGE.Game.Entity.SetEntityRotation(obj, objRots.X, objRots.Y, objRots.Z + (relative / 25f), 2, false);
+                    break;
+                default:
+                    break;
+            }
+
+
+
+
+
+            if (LastUpdate + UpdateTime < DateTime.Now)
+            {
+                Vector3 newCoords = RAGE.Game.Entity.GetEntityCoords(obj, true);
+
+                Vector3 newRot = RAGE.Game.Entity.GetEntityRotation(obj, 2);
+                MoverCEF.ExecuteJs($"UpdateObjectPos(\"{newCoords.X}\",\"{newCoords.Y}\",\"{newCoords.Z}\",\"{newRot.X}\",\"{newRot.Y}\",\"{newRot.Z}\")");
+
+
+                LastUpdate = DateTime.Now;
+            }
         }
 
         private void PlaceObject(object[] args)
         {
-
             string objName = Convert.ToString(args[0]);
             RAGE.Game.Streaming.RequestModel(RAGE.Game.Misc.GetHashKey(objName));
-           
+            model = objName;
 
             obj = RAGE.Game.Object.CreateObject(RAGE.Game.Misc.GetHashKey(objName), RAGE.Elements.Player.LocalPlayer.Position.X, RAGE.Elements.Player.LocalPlayer.Position.Y+1f, RAGE.Elements.Player.LocalPlayer.Position.Z, false, false, false);
             
@@ -126,14 +230,18 @@ namespace Client.ObjectMover
         private void Tick(List<Events.TickNametagData> nametags)
         {
             Vector3 objCoords = RAGE.Game.Entity.GetEntityCoords(obj, true);
-            if (Vector3.Distance(RAGE.Elements.Player.LocalPlayer.Position, objCoords) > 8f)
+
+            /*
+            if (Vector3.Distance(RAGE.Elements.Player.LocalPlayer.Position, objCoords) > 25f)
             {
                 //túl messze került, kidobjuk belőle
                 Chat.Output("Túl messze kerültél az objecttől!");
+                
                 RAGE.Game.Entity.DeleteEntity(ref obj);
                 MoverCEF.Active = false;
                 MoverCEF.Destroy();
-            }
+                Events.Tick -= Tick;
+            }*/
 
             float objCenterX = 0;
             float objCenterY = 0;

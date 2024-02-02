@@ -3,6 +3,7 @@ using RAGE.Elements;
 using RAGE.Game;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 
 namespace Client.Interiors
 {
@@ -103,8 +104,9 @@ namespace Client.Interiors
 
         List<ClientProperty> Props = new List<ClientProperty>();
         List<DisplayMarker> DisplayMarkers = new List<DisplayMarker>();
+        List<string> LoadedIPLs = new List<string>();
         static uint PropID = 0;
-
+        int markerType = 20;
         public Properties()
         {
             Events.Add("client:ReloadProperties", ReloadProperties);
@@ -113,13 +115,23 @@ namespace Client.Interiors
             Events.Add("client:CreateInterior", CreateInterior);
             Events.Add("client:RequestIPL", RequestIPL);
             Events.Add("client:RemoveIPL", RemoveIPL);
+
+            Events.Add("client:ClearIPLs", ClearIPLs);
+
             Events.Add("client:GetGroundZ", GetGroundZ);
+
+            Events.Add("client:SetEntrance", SetEntrance);
+            Events.Add("client:SetExit", SetExit);
 
             Events.OnPlayerEnterColshape += EnterColShape;
             Events.OnPlayerExitColshape += ExitColShape;
-
+            
+            
+            
             Events.Tick += Tick;
         }
+
+
 
         private void GetGroundZ(object[] args)
         {
@@ -132,15 +144,69 @@ namespace Client.Interiors
         private void RemoveIPL(object[] args)
         {
             string name = Convert.ToString(args[0]);
-            RAGE.Game.Streaming.RemoveIpl(name);
-            RAGE.Chat.Output(name + " IPL státusz:" + RAGE.Game.Streaming.IsIplActive(name).ToString());
+            switch (name)
+            {
+                case "franklin":
+                    RAGE.Game.Object.DoorControl(RAGE.Game.Misc.GetHashKey("v_ilev_fa_frontdoor"), -14.25f, -1441.43f, 31.1f, false, 0f, 50f, 0f);
+                    break;
+                case "lester":
+                    RAGE.Game.Object.DoorControl(RAGE.Game.Misc.GetHashKey("v_ilev_lester_doorfront"), 1274.47f, -1720.46f, 54.75f, false, 0f, 50f, 0f);
+                    break;
+                case "bkr_bi_hw1_13_int":
+                    RAGE.Game.Object.DoorControl(RAGE.Game.Misc.GetHashKey("v_ilev_lostdoor"), 981.46f, -102.65f, 74.85f, false, 0f, 50f, 0f);
+                    RAGE.Game.Streaming.RemoveIpl(name);
+                    LoadedIPLs.Remove(name);
+                    break;
+                default:
+                    RAGE.Game.Streaming.RemoveIpl(name);
+                    LoadedIPLs.Remove(name);
+                    break;
+            }
         }
 
-        public void RequestIPL(object[] args)
+        public async void RequestIPL(object[] args)
         {
             string name = Convert.ToString(args[0]);
-            RAGE.Game.Streaming.RequestIpl(name);
-            RAGE.Chat.Output(name + " IPL státusz:" + RAGE.Game.Streaming.IsIplActive(name).ToString());
+
+            switch (name)
+            {
+                case "franklin":
+                    RAGE.Game.Object.DoorControl(RAGE.Game.Misc.GetHashKey("v_ilev_fa_frontdoor"), -14.25f, -1441.43f, 31.1f, true, 0f, 50f, 0f);
+                    break;
+                case "lester":
+                    RAGE.Game.Object.DoorControl(RAGE.Game.Misc.GetHashKey("v_ilev_lester_doorfront"), 1274.47f, -1720.46f, 54.75f, true, 0f, 50f, 0f);
+                    break;
+                case "bkr_bi_hw1_13_int":
+                    RAGE.Game.Streaming.RequestIpl(name);
+                    for (int i = 0; !RAGE.Game.Streaming.IsIplActive(name) && i <= 50; i++)
+                    {
+                        RAGE.Elements.Player.LocalPlayer.FreezePosition(true);
+                        await RAGE.Task.WaitAsync(100);
+                    }
+                    RAGE.Game.Object.DoorControl(RAGE.Game.Misc.GetHashKey("v_ilev_lostdoor"), 981.46f, -102.65f, 74.85f, true, 0f, 50f, 0f);
+                    RAGE.Elements.Player.LocalPlayer.FreezePosition(false);
+                    LoadedIPLs.Add(name);
+                    break;
+                default:
+                    RAGE.Game.Streaming.RequestIpl(name);
+                    for (int i = 0; !RAGE.Game.Streaming.IsIplActive(name) && i <= 50; i++)
+                    {
+                        RAGE.Elements.Player.LocalPlayer.FreezePosition(true);
+                        await RAGE.Task.WaitAsync(100);
+                    }
+                    RAGE.Elements.Player.LocalPlayer.FreezePosition(false);
+                    LoadedIPLs.Add(name);
+                    break;
+            }
+
+        }
+
+        public void ClearIPLs(object[] args)
+        {
+            foreach (var item in LoadedIPLs)
+            {
+                RAGE.Game.Streaming.RemoveIpl(item);
+            }
         }
 
 
@@ -189,39 +255,58 @@ namespace Client.Interiors
 
 
         static DateTime PropertyEntryTime = DateTime.Now;
-        static TimeSpan PropertyCooldown = TimeSpan.FromSeconds(3);
+        static TimeSpan PropertyCooldown = TimeSpan.FromSeconds(5);
         public static void EnterProperty()
         {
-            if (PropID != 0)//egy valid épületbe szeretne belépni
+            if (!RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat)
             {
-                if (PropertyEntryTime+PropertyCooldown < DateTime.Now)
+                if (PropID != 0)//egy valid épületbe szeretne belépni
                 {
-                    Chat.Output("Belépés az interiorba" + PropID);
-                    Events.CallRemote("server:EnterProperty", PropID);
-                    PropertyEntryTime = DateTime.Now;
+                    if (PropertyEntryTime + PropertyCooldown < DateTime.Now)
+                    {
+                        Events.CallRemote("server:EnterProperty", PropID);
+                        PropertyEntryTime = DateTime.Now;
+                    }
                 }
-                else
+            }
+
+        }
+
+
+        static DateTime PropertyLockTime = DateTime.Now;
+        static TimeSpan PropertyLockCooldown = TimeSpan.FromSeconds(3);
+        public static void TogglePropertyLock()
+        {
+            if (!RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat)
+            {
+                if (PropID != 0)//egy valid épületbe szeretne belépni
                 {
-                    Chat.Output("Várj egy kicsit");
+                    if (PropertyLockTime + PropertyLockCooldown < DateTime.Now)
+                    {
+                        Events.CallRemote("server:TogglePropertyLock", PropID);
+                        PropertyLockTime = DateTime.Now;
+                    }
+
                 }
             }
         }
+
+
         public static void ExitProperty()
         {
-            if (PropID != 0)//egy valid épületbe szeretne belépni
+            if (!RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat)
             {
-                if (PropertyEntryTime + PropertyCooldown < DateTime.Now)
+                if (PropID != 0)//egy valid épületbe szeretne belépni
                 {
-                    Chat.Output("Kilépés az interiorból" + PropID);
-                    Events.CallRemote("server:ExitProperty", PropID);
-                    PropertyEntryTime = DateTime.Now;
-                }
-                else
-                {
-                    Chat.Output("Várj egy kicsit");
+                    if (PropertyEntryTime + PropertyCooldown < DateTime.Now)
+                    {
+                        Events.CallRemote("server:ExitProperty", PropID);
+                        PropertyEntryTime = DateTime.Now;
+                    }
                 }
             }
         }
+
         private void EnterColShape(Colshape c, Events.CancelEventArgs cancel)
         {
             if (c.HasData("entrance:ID"))
@@ -230,6 +315,7 @@ namespace Client.Interiors
                 Property p = GetPropertyByID(id);
                 PropID = id;
                 Binds.Binds.bindEnterPropety();
+                Binds.Binds.bindToggleLockProperty();
                 //információ megjelenítése
                 Chat.Output("Belépéshez használd az [E] gombot. Tulajdonos: " + p.OwnerName + " Utca: " + p.StreetName + " Házszám: " + p.StreetNumber);
             }
@@ -249,6 +335,26 @@ namespace Client.Interiors
             Binds.Binds.unbindProperty();
         }
 
+        private byte[] GetMarkerColorByPropType(byte proptype)
+        {
+            switch (proptype)
+            {
+                case 0:
+                    return new byte[3] { 255, 255, 255 };//játékos ház
+                case 1:
+                    return new byte[3] { 50, 155, 168 };//játékos garázs
+                case 2:
+                    return new byte[3] { 51, 171, 57 };//bérelhető ház
+                case 3:
+                    return new byte[3] { 217, 127, 59 };//apartman
+                case 4:
+                    return new byte[3] { 191, 36, 36 };//Biznisz
+                default:
+                    return new byte[3] { 0, 0, 0 };
+                    break;
+            }
+        }
+
         private void ReloadProperties(object[] args)
         {
             foreach (var item in Props)
@@ -256,15 +362,56 @@ namespace Client.Interiors
                 item.Entrance.Destroy();
                 item.Exit.Destroy();
             }
-
-            List<Property> pr = RAGE.Util.Json.Deserialize<List<Property>>(args[0].ToString());
             Props.Clear();
+            List<Property> pr = RAGE.Util.Json.Deserialize<List<Property>>(args[0].ToString());
+            
             foreach (var item in pr)
             {
                 ClientProperty clientProp = new ClientProperty(item.ID, item.PropertyType, item.Name, item.OwnerType, item.OwnerID, item.EntrancePos, item.EntranceHeading, item.EntranceDimension, item.ExitPos, item.ExitHeading, item.ExitDimension, item.IPL, item.Locked, item.Price, item.Postal, item.StreetName, item.StreetNumber);
 
-                DisplayMarker enterMarker = new DisplayMarker(20, clientProp.EntrancePos, 180f, 0.4f, 254, 117, 27, 75);
-                DisplayMarker exitMarker = new DisplayMarker(20, clientProp.ExitPos, 180f, 0.4f, 254, 117, 27, 75);
+                float rotation = 0f;
+                float scale = 1f;
+                byte opacity = 75;
+                float offsetZ = 0f;
+                switch (markerType)
+                {
+                    case 0:
+                        rotation = 0f;
+                        scale = 0.8f;
+                        offsetZ = 1f;
+                        opacity = 50;
+                        break;
+                    case 1:
+                        rotation = 0f;
+                        scale = 1f;
+                        offsetZ = 0f;
+                        opacity = 75;
+                        break;
+                    case 20:
+                        rotation = 180f;
+                        scale = 0.4f;
+                        offsetZ = 1f;
+                        opacity = 75;
+                        break;
+                    case 25:
+                        rotation = 0f;
+                        scale = 1f;
+                        opacity = 125;
+                        offsetZ = 0.05f;
+                        break;
+                    default:
+                        rotation = 0f;
+                        scale = 1f;
+                        opacity = 75;
+                        offsetZ = 0f;
+                        break;
+                }
+
+                Vector3 enterPos = new Vector3(clientProp.EntrancePos.X, clientProp.EntrancePos.Y, clientProp.EntrancePos.Z + offsetZ);
+                Vector3 exitPos = new Vector3(clientProp.ExitPos.X, clientProp.ExitPos.Y, clientProp.ExitPos.Z + offsetZ);
+                byte[] colors = GetMarkerColorByPropType(clientProp.PropertyType);
+                DisplayMarker enterMarker = new DisplayMarker(markerType, enterPos, rotation, scale, colors[0], colors[1], colors[2], opacity);
+                DisplayMarker exitMarker = new DisplayMarker(markerType, exitPos, rotation, scale, colors[0], colors[1], colors[2], opacity);
 
                 clientProp.SetEntranceMarker(enterMarker);
                 clientProp.SetExitMarker(exitMarker);
@@ -278,41 +425,46 @@ namespace Client.Interiors
 
         private void Tick(List<Events.TickNametagData> nametags)
         {
-            if (LastUpdate + UpdateTime < DateTime.Now)
+            if (markerType != -1)
             {
-                DisplayMarkers.Clear();
-                foreach (var item in Props)
-                {
-                    if (RAGE.Elements.Player.LocalPlayer.Dimension == item.EntranceDimension)
-                    {
-                        if (Vector3.Distance(RAGE.Elements.Player.LocalPlayer.Position, item.EntrancePos) < 7f)
-                        {
-                            DisplayMarkers.Add(item.EntranceMarker);
-                        }
-                    }
-                    else if(RAGE.Elements.Player.LocalPlayer.Dimension == item.ExitDimension)
-                    {
-                        if (Vector3.Distance(RAGE.Elements.Player.LocalPlayer.Position, item.ExitPos) < 7f)
-                        {
-                            DisplayMarkers.Add(item.ExitMarker);
-                        }
-                    }
-                }
-                LastUpdate = DateTime.Now;
-            }
 
-            foreach (var item in DisplayMarkers)
-            {
-                if (item.Type != -1)
+
+                if (LastUpdate + UpdateTime < DateTime.Now)
                 {
-                    RAGE.Game.Graphics.DrawMarker(item.Type, item.Position.X, item.Position.Y, item.Position.Z, 0f, 0f, 0f, item.Rotation, 0f, 0f, item.Scale, item.Scale, item.Scale, item.Red, item.Green, item.Blue, item.Alpha, false, true, 2, false, null, null, false);
+                    DisplayMarkers.Clear();
+                    foreach (var item in Props)
+                    {
+                        if (RAGE.Elements.Player.LocalPlayer.Dimension == item.EntranceDimension)
+                        {
+                            if (Vector3.Distance(RAGE.Elements.Player.LocalPlayer.Position, item.EntrancePos) < 7f)
+                            {
+                                DisplayMarkers.Add(item.EntranceMarker);
+                            }
+                        }
+                        else if (RAGE.Elements.Player.LocalPlayer.Dimension == item.ExitDimension)
+                        {
+                            if (Vector3.Distance(RAGE.Elements.Player.LocalPlayer.Position, item.ExitPos) < 7f)
+                            {
+                                DisplayMarkers.Add(item.ExitMarker);
+                            }
+                        }
+                    }
+                    LastUpdate = DateTime.Now;
+                }
+
+                foreach (var item in DisplayMarkers)
+                {
+                    if (item.Type != -1)
+                    {
+                        RAGE.Game.Graphics.DrawMarker(item.Type, item.Position.X, item.Position.Y, item.Position.Z, 0f, 0f, 0f, item.Rotation, 0f, 0f, item.Scale, item.Scale, item.Scale, item.Red, item.Green, item.Blue, item.Alpha, false, true, 2, false, null, null, false);
+                    }
                 }
             }
         }
 
         private void SetMarkerType(object[] args)
         {
-            int markerType = Convert.ToInt32(args[0]);
+            markerType = Convert.ToInt32(args[0]);
             float rotation = 0f;
             float scale = 1f;
             byte opacity = 75;
@@ -355,8 +507,9 @@ namespace Client.Interiors
                 Vector3 enterPos = new Vector3(item.EntrancePos.X, item.EntrancePos.Y, item.EntrancePos.Z + offsetZ);
                 Vector3 exitPos = new Vector3(item.ExitPos.X, item.ExitPos.Y, item.ExitPos.Z + offsetZ);
 
-                DisplayMarker enterMarker = new DisplayMarker(markerType, enterPos, rotation, scale, 254, 117, 27, opacity);
-                DisplayMarker exitMarker = new DisplayMarker(markerType, exitPos, rotation, scale, 254, 117, 27, opacity);
+                byte[] colors = GetMarkerColorByPropType(item.PropertyType);
+                DisplayMarker enterMarker = new DisplayMarker(markerType, enterPos, rotation, scale, colors[0], colors[1], colors[2], opacity);
+                DisplayMarker exitMarker = new DisplayMarker(markerType, exitPos, rotation, scale, colors[0], colors[1], colors[2], opacity);
 
                 item.SetEntranceMarker(enterMarker);
                 item.SetExitMarker(exitMarker);
@@ -366,6 +519,29 @@ namespace Client.Interiors
             LastUpdate = DateTime.Now - TimeSpan.FromSeconds(30);
         }
 
+        public void SetEntrance(object[] args)//lekérjük a GROUNDZ magasságát és visszaadjuk feldolgozásra a szervernek
+        {
+            uint inti_id = Convert.ToUInt32(args[0]);
+            float groundZ = 0f;
+            Vector3 Coords = RAGE.Elements.Player.LocalPlayer.Position;
+            
+
+            RAGE.Game.Misc.GetGroundZFor3dCoord(Coords.X, Coords.Y, Coords.Z, ref groundZ, false);
+
+            Events.CallRemote("server:SetPropEntrance", inti_id, groundZ);
+        }
+
+        private void SetExit(object[] args)
+        {
+            uint inti_id = Convert.ToUInt32(args[0]);
+            float groundZ = 0f;
+            Vector3 Coords = RAGE.Elements.Player.LocalPlayer.Position;
+            
+
+            RAGE.Game.Misc.GetGroundZFor3dCoord(Coords.X, Coords.Y, Coords.Z, ref groundZ, false);
+
+            Events.CallRemote("server:SetPropExit", inti_id, groundZ);
+        }
 
 
         public void CreateInterior(object[] args)//lekérjük a GROUNDZ magasságát és visszaadjuk feldolgozásra a szervernek
