@@ -183,19 +183,11 @@ namespace Client.Hud
 
         private static async void Render(List<Events.TickNametagData> nametags)
         {
-            NametagCEF.ExecuteJs($"clearNametags()");
+            NametagCEF.ExecuteJs($"startRender()");
             Vector3 Cam = RAGE.Game.Cam.GetGameplayCamCoord();
             foreach (var item in streamedPlayers)
             {
-                RAGE.Elements.Entity e;
-                if (item.Vehicle != null)
-                {
-                    e = GetEntityFromRaycast(Cam, item.Position, item.Vehicle.Handle, -1);
-                }
-                else
-                {
-                    e = GetEntityFromRaycast(Cam, item.Position, 0, -1);
-                }
+                RAGE.Elements.Entity e = GetEntityFromRaycast(Cam, item.Position, 0, -1);
                
                 if (e != null)//sikeres raycast
                 {
@@ -205,7 +197,6 @@ namespace Client.Hud
                         int screenY = 1080;
                         float x = 0;
                         float y = 0;
-                        //RAGE.Game.Graphics.GetActiveScreenResolution(ref screenX, ref screenY);
                         RAGE.Game.Graphics.GetActiveScreenResolution(ref screenX, ref screenY);
                         RAGE.Game.Graphics.GetScreenCoordFromWorldCoord(item.Position.X, item.Position.Y, item.Position.Z + 1f, ref x, ref y);
 
@@ -218,78 +209,25 @@ namespace Client.Hud
 
                             if (x > -1f && x < 1f && y > -1f && y < 1f)
                             {
-                                //Chat.Output("render X: " + Convert.ToInt32(screenX * x) + " Y: " + Convert.ToInt32(screenY * y) + " SCALE: " + scale);
-                                NametagCEF.ExecuteJs($"renderNametag(\"{item.Id}\",\"{item.Name}\",\"{Convert.ToInt32(screenX * x)}\",\"{Convert.ToInt32(screenY * y)}\",\"{scale}\")");
-                            }
-                        }
-                    }
-
-
-                    //DrawNametags();
-                    /*
-                    foreach (var item in streamedPlayers)
-                    {
-                        int screenX = 1920;
-                        int screenY = 1080;
-                        float x = 1920;
-                        float y = 1080;
-                        //RAGE.Game.Graphics.GetActiveScreenResolution(ref screenX, ref screenY);
-                        RAGE.Game.Graphics.GetActiveScreenResolution(ref screenX, ref screenY);
-                        RAGE.Game.Graphics.GetScreenCoordFromWorldCoord(item.Position.X, item.Position.Y, item.Position.Z+1f, ref x, ref y);
-
-                        float distance = Vector3.Distance(RAGE.Game.Cam.GetGameplayCamCoord(), item.Position);//megnézzük a távolságot
-                        float scale = 0.6f;
-                        if (distance < 10f)
-                        {
-                            scale = 1f / distance;
-                        }
-                        Chat.Output(distance + " scale: " + scale);
-                        if (x > -1f && x < 1f && y > -1f && y < 1f)
-                        {
-                            NametagCEF.ExecuteJs($"renderNametag(\"{item.RemoteId}\",\"{item.Name}\",\"{Convert.ToInt32(screenX * x)}\",\"{Convert.ToInt32(screenY * y)}\",\"{scale}\")");
-                        }
-                    }
-                    */
-
-
-                    /*
-                    foreach (var item in pedtest)
-                    {
-                        RAGE.Elements.Entity e = GetEntityFromRaycast(Cam, item.Position, 0, -1);
-                        if (e != null)//sikeres raycast
-                        {
-                            if (e.Type == RAGE.Elements.Type.Ped)//ped
-                            {
-                                int screenX = 1920;
-                                int screenY = 1080;
-                                float x = 1920;
-                                float y = 1080;
-                                //RAGE.Game.Graphics.GetActiveScreenResolution(ref screenX, ref screenY);
-                                RAGE.Game.Graphics.GetActiveScreenResolution(ref screenX, ref screenY);
-                                RAGE.Game.Graphics.GetScreenCoordFromWorldCoord(item.Position.X, item.Position.Y, item.Position.Z + 1f, ref x, ref y);
-
-                                float distance = Vector3.Distance(Cam, item.Position);//megnézzük a távolságot
-
-                                if (distance < 10f)
+                                if(e.GetSharedData("player:AdminDuty") != null)
                                 {
-                                    float scale = distance / 10f;
-                                    if (scale < 0.5f) scale = 0.5f;
-
-                                    if (x > -1f && x < 1f && y > -1f && y < 1f)
-                                    {
-                                        NametagCEF.ExecuteJs($"renderNametag(\"{item.Model}\",\"{item.Id}\",\"{Convert.ToInt32(screenX * x)}\",\"{Convert.ToInt32(screenY * y)}\",\"{scale}\")");
-                                    }
+                                    int adminlevel = (int)e.GetSharedData("player:AdminLevel");
+                                    string adminnick = (string)e.GetSharedData("player:AdminNick");
+                                    bool adminduty = (bool)e.GetSharedData("player:AdminDuty");
+                                    NametagCEF.ExecuteJs($"addAdminNameTag(\"{item.RemoteId}\",\"{item.Name}\",\"{Convert.ToInt32(screenX * x)}\",\"{Convert.ToInt32(screenY * y)}\",\"{scale}\",\"{Convert.ToString(adminduty)}\",\"{Convert.ToString(adminnick)}\",\"{Convert.ToString(adminlevel)}\")");
                                 }
+                                else
+                                {
+                                    NametagCEF.ExecuteJs($"addNameTag(\"{item.RemoteId}\",\"{item.Name}\",\"{Convert.ToInt32(screenX * x)}\",\"{Convert.ToInt32(screenY * y)}\",\"{scale}\")");
+                                }
+                                
+                                
                             }
-                    */
-                    //Chat.Output(distance + " scale: " + scale);
-
+                        }
+                    }
                 }
             }
-            
-
-            // InventoryCEF.ExecuteJs($"addItemToSlot(\"{item.DBID}\",\"{item.ItemID}\",\"{GetItemNameById(item.ItemID)}\",\"{GetItemDescriptionById(item.ItemID)}\",\"{GetItemWeightById(item.ItemID)}\",\"{item.ItemAmount}\",\"{GetItemPicture(item.ItemID)}\",\"{item.Priority}\")");
-
+            NametagCEF.ExecuteJs($"endRender()");
         }
     }
 }

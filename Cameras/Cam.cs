@@ -1,4 +1,5 @@
 ﻿using RAGE;
+using RAGE.Game;
 using RAGE.NUI.PauseMenu;
 using System;
 using System.Collections.Generic;
@@ -37,9 +38,21 @@ namespace Client.Cameras
                 idleTime = DateTime.Now;
             }
         }
-
-    private void SetFPSFov(object[] args)
+        RAGE.Elements.Ped p = null;
+        private void SetFPSFov(object[] args)
         {
+            
+            p = new RAGE.Elements.Ped(RAGE.Game.Misc.GetHashKey("mp_m_freemode_01"), RAGE.Elements.Player.LocalPlayer.Position, RAGE.Elements.Player.LocalPlayer.GetHeading(), RAGE.Elements.Player.LocalPlayer.Dimension);
+            RAGE.Elements.Player.LocalPlayer.CloneToTarget(p.Handle);
+
+            p.SetComponentVariation(0, -1, 0, 0);
+            p.SetComponentVariation(1, 0, 0, 0);
+            p.SetComponentVariation(2, 0, 0, 0);
+
+            int ped = 500;
+            RAGE.Elements.Player.LocalPlayer.CloneToTarget(ped);
+            p.CloneToTarget(ped);
+            RAGE.Game.Ped.ClonePedToTarget(ped, RAGE.Elements.Player.LocalPlayer.Handle);
             Vector3 cam = RAGE.Game.Cam.GetGameplayCamCoords();
             Vector3 camrot = RAGE.Game.Cam.GetGameplayCamRot(2);
             fov = Convert.ToSingle(args[0]);
