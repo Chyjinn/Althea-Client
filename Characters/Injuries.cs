@@ -132,6 +132,8 @@ IK_L_Foot	65245
             Events.OnOutgoingDamage += OutgoingDamage;
         }
 
+        static DateTime dt = DateTime.Now;
+        static TimeSpan span = TimeSpan.FromSeconds(1);
         private void OutgoingDamage(Entity sourceEntity, Entity targetEntity, Player sourcePlayer, ulong weaponHash, ulong boneIdx, int damage, Events.CancelEventArgs cancel)
         {
             //itt kell majd menteni a játékosok közti sebzést mert pontosabb
@@ -168,18 +170,25 @@ IK_L_Foot	65245
         public static void EnableInjuredCrawl()
         {
             if (RAGE.Elements.Player.LocalPlayer.Vehicle != null) return;
-            if (Crawling)
+            if (RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat == false)
             {
-                DisableInjuredCrawl();
-            }
-            else
-            {
-                Crawling = true;
-                idleCrawl = true;
-                RAGE.Game.Streaming.RequestAnimDict("anim@scripted@data_leak@fix_bil_ig2_chopper_crawl@prototype@");
-                RAGE.Elements.Player.LocalPlayer.TaskPlayAnim("anim@scripted@data_leak@fix_bil_ig2_chopper_crawl@prototype@", "crawl_idle_ped", 8f, 1000f, -1, 2, 0, false, false, false);
+                if (dt < DateTime.Now)
+                {
+                    if (Crawling)
+                    {
+                        DisableInjuredCrawl();
+                    }
+                    else
+                    {
+                        Crawling = true;
+                        idleCrawl = true;
+                        RAGE.Game.Streaming.RequestAnimDict("anim@scripted@data_leak@fix_bil_ig2_chopper_crawl@prototype@");
+                        RAGE.Elements.Player.LocalPlayer.TaskPlayAnim("anim@scripted@data_leak@fix_bil_ig2_chopper_crawl@prototype@", "crawl_idle_ped", 8f, 1000f, -1, 2, 0, false, false, false);
 
-                Events.Tick += HandleControls;
+                        Events.Tick += HandleControls;
+                    }
+                    dt = DateTime.Now + span;
+                }
             }
         }
 

@@ -15,7 +15,7 @@ namespace Client.Binds
         static int recordBind;
         static int crouchBind;
         static int crawlBind;
-
+        static int injuredCrawl;
         static int propertyBind;
         static int propertyLockBind;
         public static void bindKeys()
@@ -23,9 +23,9 @@ namespace Client.Binds
             mouseBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.M, true, ToggleCursor);
             inventoryBind = RAGE.Input.Bind(73, true, Inventory.Items.ToggleInventory);
             recordBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.F3, true, toggleRecording);
-            crouchBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.X, true, ToggleCrouching);
+            crouchBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.X, true, Controls.ToggleCrouching);
             crawlBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Z, true, Controls.CrawlHandler);
-            int injuries = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.U, true, Characters.Injuries.EnableInjuredCrawl);
+            injuredCrawl = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.U, true, Characters.Injuries.EnableInjuredCrawl);
 
             RAGE.Game.Misc.SetFadeOutAfterDeath(false);
             //Events.CallRemote("server:SendWind");//lekérjük a szélsebességet a szerverről
@@ -106,20 +106,7 @@ namespace Client.Binds
            
         }
 
-        static DateTime dt = DateTime.Now;
-        static TimeSpan span = TimeSpan.FromSeconds(1);
-        public static async void ToggleCrouching()
-        {
-            if (RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat == false)
-            {
-                if (dt < DateTime.Now)
-                {
-                    Events.CallRemote("server:ToggleCrouching");
-                    dt = DateTime.Now + span;
-                }
 
-            }
-        }
 
 
 

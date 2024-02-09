@@ -43,11 +43,11 @@ namespace Client.Characters
 
         public Controls()
         {
-            Events.AddDataHandler("player:Frozen", PlayerFrozen);
-            Events.AddDataHandler("player:Invisible", PlayerInvisible);
-            Events.AddDataHandler("player:Ragdoll", PlayerRagdoll);
-            Events.AddDataHandler("player:WeaponTint", WeaponTint);
-            Events.AddDataHandler("player:Crouching", PlayerCrouch);
+            Events.AddDataHandler("Player:Frozen", PlayerFrozen);
+            Events.AddDataHandler("Player:Invisible", PlayerInvisible);
+            Events.AddDataHandler("Player:Ragdoll", PlayerRagdoll);
+            Events.AddDataHandler("Player:WeaponTint", WeaponTint);
+            Events.AddDataHandler("Player:Crouching", PlayerCrouch);
 
 
             Events.OnEntityStreamIn += OnEntityStreamIn;
@@ -59,6 +59,21 @@ namespace Client.Characters
             RAGE.Game.Streaming.RequestClipSet(strafeClipSet);
         }
 
+        static DateTime dt = DateTime.Now;
+        static TimeSpan span = TimeSpan.FromSeconds(1);
+        public static async void ToggleCrouching()
+        {
+            if (RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat == false)
+            {
+                if (dt < DateTime.Now)
+                {
+                    Events.CallRemote("server:ToggleCrouching");
+                    dt = DateTime.Now + span;
+                }
+
+            }
+        }
+
         private static string CurrentAnim = null;
         private static bool Crawling = false;
         private static string dict = "move_crawl";
@@ -67,22 +82,49 @@ namespace Client.Characters
         {
             if (RAGE.Elements.Player.LocalPlayer.Vehicle != null || RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat) return;
 
-            if (Crawling)
+            if (!RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat)
             {
-                Crawling = false;
-                idleCrawl = true;
-                Events.Tick -= HandleControls;
-                RAGE.Elements.Player.LocalPlayer.ClearTasks();
-            }
-            else
-            {
-                Crawling = true;
-                idleCrawl = true;
-                RAGE.Game.Streaming.RequestAnimDict("move_crawlprone2crawlfront");
-                RAGE.Elements.Player.LocalPlayer.TaskPlayAnim("move_crawlprone2crawlfront", "front", 8f, 1000f, -1, 2, 0, false, false, false);
-               
+                if (dt < DateTime.Now)
+                {
+                    if (Crawling)
+                    {
+                        Crawling = false;
+                        idleCrawl = true;
+                        Events.Tick -= HandleControls;
+                        RAGE.Elements.Player.LocalPlayer.ClearTasks();
+                    }
+                    else
+                    {
+                        Crawling = true;
+                        idleCrawl = true;
 
-                Events.Tick += HandleControls;
+                        if (RAGE.Elements.Player.LocalPlayer.IsRunning())
+                        {
+                            RAGE.Game.Streaming.RequestAnimDict("move_jump");
+                            RAGE.Elements.Player.LocalPlayer.TaskPlayAnim("move_jump", "dive_start_run", 8f, 1000f, -1, 2, 0, false, false, false);
+                            float timer = RAGE.Game.Entity.GetEntityAnimTotalTime(RAGE.Elements.Player.LocalPlayer.Handle, "move_jump", "dive_start_run");
+                            Chat.Output("futásból");
+                            RAGE.Task.Run(() =>
+                            {
+                                Chat.Output("földre");
+                                RAGE.Game.Streaming.RequestAnimDict("move_crawlprone2crawlfront");
+                                RAGE.Elements.Player.LocalPlayer.TaskPlayAnim("move_crawlprone2crawlfront", "front", 512f, 1000f, -1, 2, 0, false, false, false);
+                            }, Convert.ToInt32(timer));
+
+                        }
+                        else
+                        {
+                            RAGE.Game.Streaming.RequestAnimDict("move_crawlprone2crawlfront");
+                            RAGE.Elements.Player.LocalPlayer.TaskPlayAnim("move_crawlprone2crawlfront", "front", 512f, 1000f, -1, 2, 0, false, false, false);
+                        }
+                       
+
+
+                        Events.Tick += HandleControls;
+                    }
+                    dt = DateTime.Now + span;
+                }
+
             }
         }
         private static DateTime LastAnim = DateTime.Now;
@@ -276,15 +318,15 @@ namespace Client.Characters
             if (entity.Type == RAGE.Elements.Type.Player)
             {
                 RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
-                if (p.HasData("player:Frozen"))
+                if (p.HasData("Player:Frozen"))
                 {
-                    bool frozen = (bool)p.GetSharedData("player:Frozen");
+                    bool frozen = (bool)p.GetSharedData("Player:Frozen");
                     p.FreezePosition(frozen);
                 }
 
-                if (p.HasData("player:Ragdoll"))
+                if (p.HasData("Player:Ragdoll"))
                 {
-                    bool state = (bool)p.GetSharedData("player:Ragdoll");
+                    bool state = (bool)p.GetSharedData("Player:Ragdoll");
                     if (state)
                     {
                         p.SetToRagdoll(1000000, 0, 0, true, true, false);
@@ -292,9 +334,9 @@ namespace Client.Characters
                     
                 }
 
-                if (p.HasData("player:Crouching"))
+                if (p.HasData("Player:Crouching"))
                 {
-                    bool crouching = (bool)p.GetSharedData("player:Crouching");
+                    bool crouching = (bool)p.GetSharedData("Player:Crouching");
                     if (crouching)
                     {
                         p.SetMovementClipset(crouchClipset, clipSetSwitchTime);
@@ -302,9 +344,9 @@ namespace Client.Characters
                     }
                 }
 
-                if (p.HasData("player:Invisible"))
+                if (p.HasData("Player:Invisible"))
                 {
-                    bool invisible = (bool)p.GetSharedData("player:Invisible");
+                    bool invisible = (bool)p.GetSharedData("Player:Invisible");
                     if (invisible)
                     {
                         p.SetAlpha(0, true);
