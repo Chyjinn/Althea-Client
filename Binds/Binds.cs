@@ -1,8 +1,10 @@
-﻿using RAGE;
+﻿using Client.Characters;
+using RAGE;
 using RAGE.Game;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace Client.Binds
 {
@@ -22,10 +24,11 @@ namespace Client.Binds
             inventoryBind = RAGE.Input.Bind(73, true, Inventory.Items.ToggleInventory);
             recordBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.F3, true, toggleRecording);
             crouchBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.X, true, ToggleCrouching);
-            crawlBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Z, true, ToggleCrawl);
+            crawlBind = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.Z, true, Controls.CrawlHandler);
+            int injuries = RAGE.Input.Bind(RAGE.Ui.VirtualKeys.U, true, Characters.Injuries.EnableInjuredCrawl);
 
             RAGE.Game.Misc.SetFadeOutAfterDeath(false);
-            Events.CallRemote("server:SendWind");//lekérjük a szélsebességet a szerverről
+            //Events.CallRemote("server:SendWind");//lekérjük a szélsebességet a szerverről
         }
 
         public static void bindEnterPropety()
@@ -56,6 +59,8 @@ namespace Client.Binds
             RAGE.Input.Unbind(mouseBind);
             RAGE.Input.Unbind(inventoryBind);
             RAGE.Input.Unbind(recordBind);
+            RAGE.Input.Unbind(crouchBind);
+            RAGE.Input.Unbind(crawlBind);
         }
 
         public static void toggleRecording()
@@ -115,30 +120,7 @@ namespace Client.Binds
 
             }
         }
-        
-        public static async void ToggleCrawl()
-        {
-            if (dt < DateTime.Now)
-            {
-                if (RAGE.Elements.Player.LocalPlayer.Vehicle == null &&  RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat == false)//nem ír és nincs kocsiban
-                {
-                    if (Characters.Controls.crawling)//ha kúszik
-                    {
-                        Characters.Controls.crawling = false;
-                        RAGE.Elements.Player.LocalPlayer.ClearTasks();
-                        RAGE.Elements.Player.LocalPlayer.ClearSecondaryTask();
-                    }
-                    else//nem kúszik
-                    {
-                        Characters.Controls.crawling = true;
-                        RAGE.Elements.Player.LocalPlayer.TaskPlayAnim("move_crawlprone2crawlfront", "front", 8f, 1000f, -1, 2, 0, false, false, false);
-                    }
-                    dt = DateTime.Now + span;
-                }
-                
-            }
 
-        }
 
 
     }

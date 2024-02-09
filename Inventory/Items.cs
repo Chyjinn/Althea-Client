@@ -89,6 +89,9 @@ namespace Client.Inventory
             
             Events.Add("client:AddItemToClothing", AddItemToClothing);
 
+            Events.Add("client:SetClothingImage", SetClothingImage);
+            Events.Add("client:SetPropImage", SetPropImage);
+
             Events.Add("client:RemoveItem", RemoveItem);//mindenhonnan töröl
             Events.Add("client:AddItemToInventory", AddItemToInventory);
             Events.Add("client:AddItemToContainer", AddItemToContainer);
@@ -125,6 +128,26 @@ namespace Client.Inventory
             ToggleInventory(false);
             RAGE.Game.Streaming.RequestNamedPtfxAsset("scr_bike_adversary");
             ObjectGlows();
+        }
+
+        private void SetClothingImage(object[] args)
+        {
+            uint dbid = Convert.ToUInt32(args[0]);
+            bool gender = Convert.ToBoolean(args[1]);
+            int clothing_id = Convert.ToInt32(args[2]);
+            int drawable = Convert.ToInt32(args[3]);
+            int texture = Convert.ToInt32(args[4]);
+            InventoryCEF.ExecuteJs($"setClothingPicture(\"{dbid}\",\"{gender.ToString()}\",\"{clothing_id}\",\"{drawable}\",\"{texture}\")");
+        }
+
+        private void SetPropImage(object[] args)
+        {
+            uint dbid = Convert.ToUInt32(args[0]);
+            bool gender = Convert.ToBoolean(args[1]);
+            int clothing_id = Convert.ToInt32(args[2]);
+            int drawable = Convert.ToInt32(args[3]);
+            int texture = Convert.ToInt32(args[4]);
+            InventoryCEF.ExecuteJs($"setClothingPicture(\"{dbid}\",\"{gender.ToString()}\",\"{clothing_id}\",\"{drawable}\",\"{texture}\")");
         }
 
         private void SetInventoryWeights(object[] args)
@@ -329,7 +352,7 @@ namespace Client.Inventory
                         {
                             case 1://maszk
                                 component = -1;
-                                InfrontCamera(0.675f, 15f);
+                                InfrontCamera(0.675f, 14f);
                                 break;
                             case 2:
                                 continue;
@@ -340,40 +363,145 @@ namespace Client.Inventory
                                 InfrontCamera(-0.45f, 35f);
                                 break;
                             case 5://táska
-                                InfrontCamera(0.2f, 20f);
+                                InfrontCamera(0.35f, 24f);
                                 component = 5;
                                 break;
                             case 6://cipő
-                                InfrontCamera(-0.85f, 17f);
+                                InfrontCamera(-0.8f, 15f);
                                 component = 6;
                                 break;
-                            case 7://kiegészítő (mint felső)
-                                component = -1;
-                                InfrontCamera(0.2f, 25f);
-                                break;
+                            case 7://kiegészítő - sok minden lehet ezért inkább nem kell
+                                continue;
                             case 8:
                                 continue;
-                            case 9:
-                                continue;
+                            case 9://páncél
+                                component = -1;
+                                InfrontCamera(0.2f, 35f);//female
+                                break;
                             case 10:
                                 continue;
                             case 11://felső
                                 component = -1;
-                                InfrontCamera(0.2f, 40f);//female
+                                InfrontCamera(0.2f, 35f);//female
                                 break;
                         }
                         await RAGE.Task.WaitAsync(2000);
                         Events.Tick += Tick;
                         for (int j = 0; j < numofdrawables; j++)//összes drawable
                         {
-                            p.SetComponentVariation(i, j, 0, 0);
-                            await RAGE.Task.WaitAsync(200);
-                            RAGE.Input.TakeScreenshot(gender + "_" + i + "_" + j + ".png", 1, 100, 0);
-                            //Chat.Output("Screenshot létrehozva! " + gender + "_" + i + "_" + j + ".png");
-                            await RAGE.Task.WaitAsync(400);
+                            int numoftextures = RAGE.Elements.Player.LocalPlayer.GetNumberOfTextureVariations(i, j);
+                            for (int z = 0; z < numoftextures; z++)
+                            {
+                                p.SetComponentVariation(i, j, z, 0);
+                                await RAGE.Task.WaitAsync(200);
+                                RAGE.Input.TakeScreenshot("clothing_" + gender + "_" + i + "_" + j + "_"+ z + ".png", 1, 100, 0);
+                                //"clothing_male_11_1_0" - komponens_drawable_texture
+                                //Chat.Output("Screenshot létrehozva! " + gender + "_" + i + "_" + j + ".png");
+                                await RAGE.Task.WaitAsync(300);
+                            }
+
                         }
                         Events.Tick -= Tick;
                         RAGE.Elements.Player.LocalPlayer.SetHeading(0f);
+                    }
+
+                    //PROP-ok
+
+                    for (int i = 1; i <= 2; i++)//összes komponensen végigmegyünk
+                    {
+                        RAGE.Task.WaitAsync(1000);
+                        string gender = "semmi";
+                        if (p.Model == RAGE.Game.Misc.GetHashKey("mp_f_freemode_01"))//nő
+                        {
+                            p.ClearAllProps();
+                            gender = "female";
+                        }
+                        else if (p.Model == RAGE.Game.Misc.GetHashKey("mp_m_freemode_01"))//férfi
+                        {
+                            p.ClearAllProps();
+                            gender = "male";
+                        }
+                        int numofdrawables = RAGE.Elements.Player.LocalPlayer.GetNumberOfPropDrawableVariations(i);
+
+                        switch (i)
+                        {
+                            case 0://kalap
+                                component = 1;
+                                InfrontCamera(0.75f, 15f);
+                                break;
+                            case 1://szemüveg
+                                component = 1;
+                                InfrontCamera(0.75f, 15f);
+                                break;
+                            case 2://fülbevaló
+                                component = 2;
+                                InfrontCamera(0.675f, 12f);
+                                break;
+                        }
+                        await RAGE.Task.WaitAsync(2000);
+                        Events.Tick += Tick;
+                        for (int j = 0; j < numofdrawables; j++)//összes drawable
+                        {
+                            int numoftextures = RAGE.Elements.Player.LocalPlayer.GetNumberOfPropTextureVariations(i, j);
+                            for (int z = 0; z < numoftextures; z++)
+                            {
+                                p.SetPropIndex(i, j, z, true);
+                                await RAGE.Task.WaitAsync(200);
+                                RAGE.Input.TakeScreenshot("prop_" + gender + "_" + i + "_" + j + "_" + z + ".png", 1, 100, 0);
+                                //Chat.Output("Screenshot létrehozva! " + gender + "_" + i + "_" + j + ".png");
+                                await RAGE.Task.WaitAsync(400);
+                            }
+                        }
+                        Events.Tick -= Tick;
+                        RAGE.Elements.Player.LocalPlayer.SetHeading(0f);
+                    }
+
+                    //6-7 óra és karkötő
+                    for (int i = 6; i <= 7; i++)//összes komponensen végigmegyünk
+                    {
+                        RAGE.Task.WaitAsync(1000);
+                        string gender = "semmi";
+                        if (p.Model == RAGE.Game.Misc.GetHashKey("mp_f_freemode_01"))//nő
+                        {
+                            p.ClearAllProps();
+                            gender = "female";
+                        }
+                        else if (p.Model == RAGE.Game.Misc.GetHashKey("mp_m_freemode_01"))//férfi
+                        {
+                            p.ClearAllProps();
+                            gender = "male";
+                        }
+                        int numofdrawables = RAGE.Elements.Player.LocalPlayer.GetNumberOfPropDrawableVariations(i);
+
+                        switch (i)
+                        {
+                            case 6://óra
+                                component = 6;
+                                InfrontCamera(0.2f, 20f);
+                                break;
+                            case 7://karkötő
+                                InfrontCamera(0.2f, 20f);
+                                component = 7;
+                                break;
+                        }
+                        await RAGE.Task.WaitAsync(2000);
+                        Events.Tick += Tick;
+                        for (int j = 0; j < numofdrawables; j++)//összes drawable
+                        {
+                            int numoftextures = RAGE.Elements.Player.LocalPlayer.GetNumberOfPropTextureVariations(i, j);
+                            for (int z = 0; z < numoftextures; z++)
+                            {
+                                p.SetPropIndex(i, j, z, true);
+                                await RAGE.Task.WaitAsync(200);
+                                RAGE.Input.TakeScreenshot("prop_" + gender + "_" + i + "_" + j + "_" + z + ".png", 1, 100, 0);
+                                //Chat.Output("Screenshot létrehozva! " + gender + "_" + i + "_" + j + ".png");
+                                await RAGE.Task.WaitAsync(300);
+                            }
+                        }
+                        Events.Tick -= Tick;
+                        RAGE.Elements.Player.LocalPlayer.SetHeading(0f);
+
+                        DeleteCamera();
                     }
 
 
@@ -388,7 +516,23 @@ namespace Client.Inventory
         private void Tick(List<Events.TickNametagData> nametags)
         {
             p.ClearTasksImmediately();
-            if (component == 5)
+            if (component == 1)
+            {
+                p.SetHeading(0f);
+            }
+            else if (component == 2)
+            {
+                p.SetHeading(90f);
+            }
+            else if (component == 3)
+            {
+                p.SetHeading(0f);
+            }
+            else if (component == 4)
+            {
+                p.SetHeading(0f);
+            }
+            else if (component == 5)
             {
                 p.SetHeading(0f);
             }
@@ -396,11 +540,16 @@ namespace Client.Inventory
             {
                 p.SetHeading(90f);
             }
+            else if (component == 7)
+            {
+                p.SetHeading(-90f);
+            }
             else
             {
                 p.SetHeading(180f);
             }
-            
+
+           
         }
 
         int camera = 2;
@@ -454,9 +603,7 @@ namespace Client.Inventory
                 Events.CallRemote("server:RequestContainerWeight");
             }, 250);
             InventoryCEF.ExecuteJs($"ShowContainer()");
-
             ToggleInventory(true);
-            
         }
 
         private void SetContainerName(object[] args)

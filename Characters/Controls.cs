@@ -2,9 +2,6 @@
 using RAGE;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Runtime.CompilerServices;
-using System.Security.Principal;
 
 namespace Client.Characters
 {
@@ -55,15 +52,103 @@ namespace Client.Characters
 
             Events.OnEntityStreamIn += OnEntityStreamIn;
             Events.OnPlayerWeaponShot += WeaponShot;
-            Events.OnIncomingDamage += Damage;
-            Events.OnOutgoingDamage += OutDamage;
             Events.Tick += Tick;
+
 
             RAGE.Game.Streaming.RequestClipSet(crouchClipset);
             RAGE.Game.Streaming.RequestClipSet(strafeClipSet);
-            RAGE.Game.Streaming.RequestAnimDict("move_crawlprone2crawlfront");
-            RAGE.Game.Streaming.RequestAnimDict("move_crawl");
         }
+
+        private static string CurrentAnim = null;
+        private static bool Crawling = false;
+        private static string dict = "move_crawl";
+
+        public static void CrawlHandler()
+        {
+            if (RAGE.Elements.Player.LocalPlayer.Vehicle != null || RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat) return;
+
+            if (Crawling)
+            {
+                Crawling = false;
+                idleCrawl = true;
+                Events.Tick -= HandleControls;
+                RAGE.Elements.Player.LocalPlayer.ClearTasks();
+            }
+            else
+            {
+                Crawling = true;
+                idleCrawl = true;
+                RAGE.Game.Streaming.RequestAnimDict("move_crawlprone2crawlfront");
+                RAGE.Elements.Player.LocalPlayer.TaskPlayAnim("move_crawlprone2crawlfront", "front", 8f, 1000f, -1, 2, 0, false, false, false);
+               
+
+                Events.Tick += HandleControls;
+            }
+        }
+        private static DateTime LastAnim = DateTime.Now;
+        private static bool idleCrawl = false;
+        private static void HandleControls(List<Events.TickNametagData> nametags)
+        {
+            if (!Crawling)
+            {
+                RAGE.Elements.Player.LocalPlayer.ClearTasks();
+                return;
+            }
+
+            RAGE.Game.Pad.DisableControlAction(0, 32, true);
+            RAGE.Game.Pad.DisableControlAction(0, 33, true);
+            RAGE.Game.Pad.DisableControlAction(0, 34, true);
+            RAGE.Game.Pad.DisableControlAction(0, 35, true);
+            
+            float rotation = RAGE.Elements.Player.LocalPlayer.GetHeading();
+
+            if (RAGE.Game.Pad.IsDisabledControlPressed(0, 32))
+            {
+                idleCrawl = false;
+                CurrentAnim = "onfront_fwd";
+                RAGE.Game.Streaming.RequestAnimDict(dict);
+                float timer = RAGE.Game.Entity.GetEntityAnimTotalTime(RAGE.Elements.Player.LocalPlayer.Handle, dict, CurrentAnim);
+                if (LastAnim + TimeSpan.FromMilliseconds(timer) <= DateTime.Now)
+                {
+                    RAGE.Elements.Player.LocalPlayer.TaskPlayAnim(dict, CurrentAnim, 8f, 256f, -1, 1, 0f, false, false, false);
+                    LastAnim = DateTime.Now;
+                }
+                
+            }
+            else if (RAGE.Game.Pad.IsDisabledControlPressed(0, 33))
+            {
+                idleCrawl = false;
+                CurrentAnim = "onfront_bwd";
+                RAGE.Game.Streaming.RequestAnimDict(dict);
+                float timer = RAGE.Game.Entity.GetEntityAnimTotalTime(RAGE.Elements.Player.LocalPlayer.Handle, dict, CurrentAnim);
+
+                if (LastAnim + TimeSpan.FromMilliseconds(timer) <= DateTime.Now)
+                {
+                    RAGE.Elements.Player.LocalPlayer.TaskPlayAnim(dict, CurrentAnim, 8f, 256f, -1, 1, 0f, false, false, false);
+                    LastAnim = DateTime.Now;
+                }
+            }
+            else
+            {
+                if (idleCrawl == false)
+                {
+                    RAGE.Elements.Player.LocalPlayer.TaskPlayAnim(dict, CurrentAnim, 8f, 256f, -1, 2, 0, false, false, false);
+                    idleCrawl = true;
+                }
+            }
+
+            if (RAGE.Game.Pad.IsDisabledControlPressed(0, 34))
+            {
+                rotation += 0.8f;
+                RAGE.Elements.Player.LocalPlayer.SetRotation(0f, 0f, rotation, 2, false);
+            }
+            else if (RAGE.Game.Pad.IsDisabledControlPressed(0, 35))
+            {
+                rotation -= 0.8f;
+                RAGE.Elements.Player.LocalPlayer.SetRotation(0f, 0f, rotation, 2, false);
+            }
+        }
+    
 
 
         string crouchClipset = "move_ped_crouched";
@@ -88,7 +173,7 @@ namespace Client.Characters
                 }
             }
         }
-        string crawlAnim = "";
+
         private void Tick(List<Events.TickNametagData> nametags)
         {
             if (RAGE.Game.Ped.IsPedInCover(RAGE.Elements.Player.LocalPlayer.Handle,false) && !RAGE.Game.Ped.IsPedAimingFromCover(RAGE.Elements.Player.LocalPlayer.Handle))//fedezékben van és nem céloz
@@ -97,47 +182,6 @@ namespace Client.Characters
                 Pad.DisableControlAction(2, 142, true);
                 Pad.DisableControlAction(2, 257, true);
                 //kikapcsoljuk hogy ne tudjon lőni
-            }
-            /*
-            if (crawling)//ha be van kapcsolva a kúszás
-            {
-                Vector3 rot = RAGE.Elements.Player.LocalPlayer.GetRotation(2);
-                Pad.DisableControlAction(0, 32, true);
-                Pad.DisableControlAction(0, 33, true);
-                Pad.DisableControlAction(0, 34, true);
-                Pad.DisableControlAction(0, 35, true);
-                if (Pad.IsDisabledControlPressed(0,34))
-                {
-                    RAGE.Elements.Player.LocalPlayer.SetRotation(rot.X, rot.Y, rot.Z + 0.2f, 2, true);
-                }
-                if (Pad.IsDisabledControlPressed(0, 354))
-                {
-                    RAGE.Elements.Player.LocalPlayer.SetRotation(rot.X, rot.Y, rot.Z - 0.2f, 2, true);
-                }
-
-                if (Pad.IsDisabledControlPressed(0, 32))
-                {
-                    if (crawlAnim == "onfront_fwd" || crawlAnim == "onfront_bwd")
-                    {
-                        return;
-                    }
-                    crawlAnim = "onfront_fwd";
-
-
-                    RAGE.Elements.Player.LocalPlayer.SetRotation(rot.X, rot.Y, rot.Z + 0.2f, 2, true);
-                }
-
-            }
-            */
-        }
-
-
-
-        private void OutDamage(RAGE.Elements.Entity sourceEntity, RAGE.Elements.Entity targetEntity, RAGE.Elements.Player sourcePlayer, ulong weaponHash, ulong boneIdx, int damage, Events.CancelEventArgs cancel)
-        {
-            if (weaponHash == RAGE.Util.Joaat.Hash("weapon_beanbag"))//ha beanbag talált el
-            {
-                RAGE.Game.Graphics.StartParticleFxNonLoopedOnEntity("water_boat_wash", targetEntity.Id, 0f, 0f, 0f, 0f, 0f, 0f, 2f, true, true, true);
             }
         }
 
@@ -150,28 +194,7 @@ namespace Client.Characters
             }
         }
 
-        private void Damage(RAGE.Elements.Player sourcePlayer, RAGE.Elements.Entity sourceEntity, RAGE.Elements.Entity targetEntity, ulong weaponHash, ulong boneIdx, int damage, Events.CancelEventArgs cancel)
-        {
-            Chat.Output("Damage: " + damage);
-            
-            if (sourcePlayer != null)
-            {
-                if (weaponHash == RAGE.Util.Joaat.Hash("weapon_beanbag"))//ha beanbag talált el
-                {
-                    RAGE.Elements.Player.LocalPlayer.SetToRagdoll(5000, 10000, 0, false, false, false);
-                    Events.CallRemote("server:BeanBagHit");
-                }
-                
-                //Chat.Output(sourcePlayer.Name + " megsebzett " + damage + " (" + boneIdx + ")");
-                /*
-                if (boneIdx == 12844 || boneIdx == 31086)//fejbe lőttek
-                {
-                    RAGE.Elements.Player.LocalPlayer.SetToRagdoll(500, 1000, 2, false, false, false);
-                }
-                */
 
-            }
-        }
 
         private void WeaponShot(Vector3 targetPos, RAGE.Elements.Player target, Events.CancelEventArgs cancel)
         {

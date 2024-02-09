@@ -222,7 +222,6 @@ namespace Client.Vehicles
             {
                 RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(entity.RemoteId);
                 v.SetBodyHealth(Convert.ToSingle(arg));
-                Chat.Output(v.Model + " jármű body hp-ja átállítva!" + Convert.ToSingle(arg));
             }
         }
 
@@ -232,7 +231,6 @@ namespace Client.Vehicles
             {
                 RAGE.Elements.Vehicle v = RAGE.Elements.Entities.Vehicles.GetAtRemote(entity.RemoteId);
                 v.SetEngineHealth(Convert.ToSingle(arg));
-                Chat.Output(v.Model + " jármű engine hp-ja átállítva!" + Convert.ToSingle(arg));
             }
         }
 

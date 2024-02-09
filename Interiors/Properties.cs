@@ -138,7 +138,6 @@ namespace Client.Interiors
             float groundZ = 0f;
             Vector3 Coords = RAGE.Elements.Player.LocalPlayer.Position;
             RAGE.Game.Misc.GetGroundZFor3dCoord(Coords.X, Coords.Y, Coords.Z, ref groundZ, false);
-            Chat.Output("A föld pozíciója: " + groundZ);
         }
 
         private void RemoveIPL(object[] args)

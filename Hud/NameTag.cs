@@ -193,22 +193,24 @@ namespace Client.Hud
                 {
                     if (e.Type == RAGE.Elements.Type.Player)//ped
                     {
-                        int screenX = 1920;
-                        int screenY = 1080;
-                        float x = 0;
-                        float y = 0;
-                        RAGE.Game.Graphics.GetActiveScreenResolution(ref screenX, ref screenY);
-                        RAGE.Game.Graphics.GetScreenCoordFromWorldCoord(item.Position.X, item.Position.Y, item.Position.Z + 1f, ref x, ref y);
-
                         float distance = Vector3.Distance(Cam, item.Position);//megnézzük a távolságot
-
                         if (distance < 10f)
                         {
+                            int screenX = 1920;
+                            int screenY = 1080;
+                            float x = 0;
+                            float y = 0;
+                            RAGE.Game.Graphics.GetActiveScreenResolution(ref screenX, ref screenY);
+                            RAGE.Game.Graphics.GetScreenCoordFromWorldCoord(item.Position.X, item.Position.Y, item.Position.Z + 1f, ref x, ref y);
+
                             float scale = distance / 10f;
+
                             if (scale < 0.3f) scale = 0.5f;
 
                             if (x > -1f && x < 1f && y > -1f && y < 1f)
                             {
+
+
                                 if(e.GetSharedData("player:AdminDuty") != null)
                                 {
                                     int adminlevel = (int)e.GetSharedData("player:AdminLevel");
@@ -220,9 +222,8 @@ namespace Client.Hud
                                 {
                                     NametagCEF.ExecuteJs($"addNameTag(\"{item.RemoteId}\",\"{item.Name}\",\"{Convert.ToInt32(screenX * x)}\",\"{Convert.ToInt32(screenY * y)}\",\"{scale}\")");
                                 }
-                                
-                                
                             }
+
                         }
                     }
                 }
