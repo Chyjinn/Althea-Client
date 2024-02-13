@@ -1,5 +1,6 @@
 ﻿using RAGE;
 using RAGE.Elements;
+using RAGE.Game;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -131,14 +132,19 @@ IK_L_Foot	65245
             Events.OnIncomingDamage += IncomingDamage;
             Events.OnOutgoingDamage += OutgoingDamage;
             Events.OnPlayerDeath += PlayerDeath;
+            
         }
 
-        private void PlayerDeath(Player player, uint reason, Player killer, Events.CancelEventArgs cancel)
+        private void PlayerDeath(RAGE.Elements.Player player, uint reason, RAGE.Elements.Player killer, Events.CancelEventArgs cancel)
         {
             if (player == RAGE.Elements.Player.LocalPlayer)
             {
                 Chat.Output("Meghaltál.");
                 RAGE.Game.Graphics.StartScreenEffect("DeathFailMPIn", 10000, false);
+                if (killer != null)
+                {
+                    Chat.Output(killer.Name + " ölt meg téged. Indok:" + reason);
+                }
             }
             else
             {
@@ -148,21 +154,27 @@ IK_L_Foot	65245
 
         static DateTime dt = DateTime.Now;
         static TimeSpan span = TimeSpan.FromSeconds(1);
-        private void OutgoingDamage(Entity sourceEntity, Entity targetEntity, Player sourcePlayer, ulong weaponHash, ulong boneIdx, int damage, Events.CancelEventArgs cancel)
+        private void OutgoingDamage(RAGE.Elements.Entity sourceEntity, RAGE.Elements.Entity targetEntity, RAGE.Elements.Player sourcePlayer, ulong weaponHash, ulong boneIdx, int damage, Events.CancelEventArgs cancel)
         {
             //itt kell majd menteni a játékosok közti sebzést mert pontosabb
             //ha egy játékos megsérül pl. esésben azzal még nem tudom mi legyen
+            if (targetEntity.Type == RAGE.Elements.Type.Player)
+            {
+                RAGE.Elements.Player p = targetEntity as RAGE.Elements.Player;
+                int bone = -1;
+                p.GetLastDamageBone(ref bone);
+                
+                p.ClearLastDamageBone();
 
-            Player p = targetEntity as Player;
-            
-            int bone = -1;
-            p.GetLastDamageBone(ref bone);
+                Events.CallRemote("server:AddDamageToPlayer", p.RemoteId, damage, bone);
+            }
+
            // Events.CallRemote("server:Log", "Kimenő sebzés. Célpont: " + p.Name + " DMG: " + damage + " BONE: " + bone + " ALTERNATÍV BONE: " + boneIdx);
         }
 
-        private void IncomingDamage(Player sourcePlayer, Entity sourceEntity, Entity targetEntity, ulong weaponHash, ulong boneIdx, int damage, Events.CancelEventArgs cancel)
+        private void IncomingDamage(RAGE.Elements.Player sourcePlayer, RAGE.Elements.Entity sourceEntity, RAGE.Elements.Entity targetEntity, ulong weaponHash, ulong boneIdx, int damage, Events.CancelEventArgs cancel)
         {
-            Player p = sourceEntity as Player;
+            RAGE.Elements.Player p = targetEntity as RAGE.Elements.Player;
             if (sourcePlayer != null)
             {
                 if (weaponHash == RAGE.Util.Joaat.Hash("weapon_beanbag"))//ha beanbag talált el

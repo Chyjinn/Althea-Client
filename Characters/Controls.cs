@@ -98,7 +98,7 @@ namespace Client.Characters
                         Crawling = true;
                         idleCrawl = true;
 
-                        if (RAGE.Elements.Player.LocalPlayer.IsRunning())
+                        if (RAGE.Elements.Player.LocalPlayer.IsRunning() ||RAGE.Elements.Player.LocalPlayer.IsSprinting())
                         {
                             RAGE.Game.Streaming.RequestAnimDict("move_jump");
                             RAGE.Elements.Player.LocalPlayer.TaskPlayAnim("move_jump", "dive_start_run", 8f, 1000f, -1, 2, 0, false, false, false);

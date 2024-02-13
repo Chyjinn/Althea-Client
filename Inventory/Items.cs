@@ -80,6 +80,10 @@ namespace Client.Inventory
         public Items() { 
             InventoryCEF = new RAGE.Ui.HtmlWindow("package://frontend/inventory/inventory.html");
             InventoryCEF.Active = false;
+            if (RAGE.Ui.Windows.Focused)//meg tudjuk nézni hogy focused-e az ablak
+            {
+                
+            }
             Events.Add("client:InventoryFromServer", ReloadInventory);
             Events.Add("client:ContainerFromServer", ReloadContainer);
 
