@@ -495,11 +495,11 @@ namespace Client.Inventory
                                 break;
                             case 1://szemüveg
                                 component = -1;
-                                InfrontCamera(0.75f, 6f);
+                                InfrontCamera(0.725f, 5f);
                                 break;
                             case 2://fülbevaló
                                 component = 7;
-                                InfrontCamera(0.6f, 5f);
+                                InfrontCamera(0.65f, 5f);
                                 break;
                         }
                         await RAGE.Task.WaitAsync(2000);
@@ -565,10 +565,10 @@ namespace Client.Inventory
                         {
                             case 6://óra
                                 component = 6;
-                                InfrontCamera(0.1f, 6f);
+                                InfrontCamera(0f, 6f);
                                 break;
                             case 7://karkötő
-                                InfrontCamera(0.15f, 6f);
+                                InfrontCamera(0f, 6f);
                                 component = 7;
                                 break;
                         }
@@ -610,7 +610,7 @@ namespace Client.Inventory
             }
             else if (component == 2)
             {
-                p.SetHeading(92f);
+                p.SetHeading(88f);
             }
             else if (component == 3)
             {
@@ -626,7 +626,7 @@ namespace Client.Inventory
             }
             else if(component == 14 || component == 6)
             {
-                p.SetHeading(92f);
+                p.SetHeading(88f);
             }
             else if (component == 7)
             {

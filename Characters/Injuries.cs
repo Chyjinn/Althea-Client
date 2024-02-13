@@ -130,6 +130,20 @@ IK_L_Foot	65245
         {
             Events.OnIncomingDamage += IncomingDamage;
             Events.OnOutgoingDamage += OutgoingDamage;
+            Events.OnPlayerDeath += PlayerDeath;
+        }
+
+        private void PlayerDeath(Player player, uint reason, Player killer, Events.CancelEventArgs cancel)
+        {
+            if (player == RAGE.Elements.Player.LocalPlayer)
+            {
+                Chat.Output("Meghaltál.");
+                RAGE.Game.Graphics.StartScreenEffect("DeathFailMPIn", 10000, false);
+            }
+            else
+            {
+                Chat.Output(player.Name + " meghalt.");
+            }
         }
 
         static DateTime dt = DateTime.Now;
@@ -159,8 +173,10 @@ IK_L_Foot	65245
             }
             int bone = -1;
             RAGE.Elements.Player.LocalPlayer.GetLastDamageBone(ref bone);
+            RAGE.Elements.Player.LocalPlayer.GetLastDamageBone(ref bone);
 
-            //Events.CallRemote("server:Log", "Bejövő sebzés. Forrás: " + p.Name + " DMG: " + damage + " BONE: " + bone + " ALTERNATÍV BONE: " + boneIdx);
+            
+            Events.CallRemote("server:Log", "Bejövő sebzés. Forrás: " + p.Name + " DMG: " + damage + " BONE: " + bone + " ALTERNATÍV BONE: " + boneIdx);
         }
 
         private static string CurrentAnim = null;
