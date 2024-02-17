@@ -950,7 +950,7 @@ namespace Client.Inventory
 
         static int hashClone = -1;
         static DateTime timeout = DateTime.Now;
-        static TimeSpan span = TimeSpan.FromMilliseconds(500);
+        static TimeSpan span = TimeSpan.FromMilliseconds(200);
         public static void ToggleInventory()
         {
             if(DateTime.Now > timeout+span)
@@ -960,7 +960,7 @@ namespace Client.Inventory
                     float heading = RAGE.Elements.Player.LocalPlayer.GetHeading();
 
                     hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
-                    RAGE.Game.Graphics.TransitionToBlurred(300);
+                    RAGE.Game.Graphics.TransitionToBlurred(150);
                     RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, 2170f, 715f, 240f, true, true, false, false);
                     RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityVisible, hashClone, false, false);
                     RAGE.Task.Run(() =>
@@ -992,7 +992,7 @@ namespace Client.Inventory
                 else
                 {
                     InventoryCEF.ExecuteJs($"HideContainer()");
-                    RAGE.Game.Graphics.TransitionFromBlurred(300);
+                    RAGE.Game.Graphics.TransitionFromBlurred(150);
                    
                     RAGE.Game.Ui.SetFrontendActive(false);
                     
@@ -1019,7 +1019,7 @@ namespace Client.Inventory
                     float heading = RAGE.Elements.Player.LocalPlayer.GetHeading();
 
                     hashClone = RAGE.Elements.Player.LocalPlayer.Clone(heading, true, true);
-                    RAGE.Game.Graphics.TransitionToBlurred(300);
+                    RAGE.Game.Graphics.TransitionToBlurred(150);
                     RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityCoords, hashClone, 2170f, 715f, 240f, true, true, false, false);
                     RAGE.Game.Invoker.Invoke(RAGE.Game.Natives.SetEntityVisible, hashClone, false, false);
                     RAGE.Task.Run(() =>
@@ -1054,7 +1054,7 @@ namespace Client.Inventory
                     {
                         InventoryCEF.ExecuteJs($"HideContainer()");
 
-                        RAGE.Game.Graphics.TransitionFromBlurred(300);
+                        RAGE.Game.Graphics.TransitionFromBlurred(150);
                    
                         RAGE.Game.Ui.SetFrontendActive(false);
                     

@@ -7,7 +7,7 @@ namespace Client.Characters
 {
     internal class Controls : Events.Script
     {
-        int[] disabledControls = new int[32]{ 
+        public static int[] disabledControls = new int[32]{ 
             30, // A & D
             31, // W & S
             21, // Left Shift
@@ -61,7 +61,7 @@ namespace Client.Characters
 
         static DateTime dt = DateTime.Now;
         static TimeSpan span = TimeSpan.FromSeconds(1);
-        public static async void ToggleCrouching()
+        public static void ToggleCrouching()
         {
             if (RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat == false)
             {
@@ -101,6 +101,7 @@ namespace Client.Characters
                         if (RAGE.Elements.Player.LocalPlayer.IsRunning() ||RAGE.Elements.Player.LocalPlayer.IsSprinting())
                         {
                             RAGE.Game.Streaming.RequestAnimDict("move_jump");
+ 
                             RAGE.Elements.Player.LocalPlayer.TaskPlayAnim("move_jump", "dive_start_run", 8f, 1000f, -1, 2, 0, false, false, false);
                             float timer = RAGE.Game.Entity.GetEntityAnimTotalTime(RAGE.Elements.Player.LocalPlayer.Handle, "move_jump", "dive_start_run");
                             Chat.Output("futásból");
@@ -117,16 +118,14 @@ namespace Client.Characters
                             RAGE.Game.Streaming.RequestAnimDict("move_crawlprone2crawlfront");
                             RAGE.Elements.Player.LocalPlayer.TaskPlayAnim("move_crawlprone2crawlfront", "front", 512f, 1000f, -1, 2, 0, false, false, false);
                         }
-                       
-
 
                         Events.Tick += HandleControls;
                     }
                     dt = DateTime.Now + span;
                 }
-
             }
         }
+
         private static DateTime LastAnim = DateTime.Now;
         private static bool idleCrawl = false;
         private static void HandleControls(List<Events.TickNametagData> nametags)
@@ -181,21 +180,21 @@ namespace Client.Characters
 
             if (RAGE.Game.Pad.IsDisabledControlPressed(0, 34))
             {
-                rotation += 0.8f;
+                rotation += 0.4f;
                 RAGE.Elements.Player.LocalPlayer.SetRotation(0f, 0f, rotation, 2, false);
             }
             else if (RAGE.Game.Pad.IsDisabledControlPressed(0, 35))
             {
-                rotation -= 0.8f;
+                rotation -= 0.4f;
                 RAGE.Elements.Player.LocalPlayer.SetRotation(0f, 0f, rotation, 2, false);
             }
         }
-    
+
 
 
         string crouchClipset = "move_ped_crouched";
         string strafeClipSet = "move_ped_crouched_strafing";
-        float clipSetSwitchTime = 0.25f;
+        float clipSetSwitchTime = 0.5f;
         public static bool crawling = false;
 
         private void PlayerCrouch(RAGE.Elements.Entity entity, object arg, object oldArg)
@@ -210,8 +209,19 @@ namespace Client.Characters
                 }
                 else//kiszállni
                 {
-                    p.ResetMovementClipset(clipSetSwitchTime);
-                    p.ResetStrafeClipset();
+                    if (p.HasData("Player:Injured"))//kicsit sérült
+                    {
+                        Chat.Output("hasdata");
+                        int hp = (int)p.GetSharedData("Player:Injured");
+                        Characters.Injuries.HandlePlayerInjury(p, hp);
+                    }
+                    else
+                    {
+                        Chat.Output("nodata");
+                        p.ResetMovementClipset(clipSetSwitchTime);
+                        p.ResetStrafeClipset();
+                    }
+
                 }
             }
         }
@@ -324,6 +334,12 @@ namespace Client.Characters
                     p.FreezePosition(frozen);
                 }
 
+                if (p.HasData("Player:Injured"))
+                {
+                    int hp = (int)p.GetSharedData("Player:Injured");
+                    Characters.Injuries.HandlePlayerInjury(p, hp);
+                }
+
                 if (p.HasData("Player:Ragdoll"))
                 {
                     bool state = (bool)p.GetSharedData("Player:Ragdoll");
@@ -360,7 +376,7 @@ namespace Client.Characters
         }
 
         
-        private void KeepControlsDisabled(List<Events.TickNametagData> nametags)
+        private static void KeepControlsDisabled(List<Events.TickNametagData> nametags)
         {
             for (int i = 0; i < disabledControls.Length; i++)
             {

@@ -3,7 +3,8 @@ using RAGE.Elements;
 using RAGE.Game;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.ComponentModel;
+using System.Linq;
 
 namespace Client.Characters
 {
@@ -126,55 +127,275 @@ IK_L_Foot	65245
                 return "Nem található.";
             }
         }
+        RAGE.Elements.Player LocalPlayer = RAGE.Elements.Player.LocalPlayer;
+        int hp = 0;
 
         public Injuries()
         {
             Events.OnIncomingDamage += IncomingDamage;
-            Events.OnOutgoingDamage += OutgoingDamage;
-            Events.OnPlayerDeath += PlayerDeath;
-            
+            hp = RAGE.Elements.Player.LocalPlayer.GetHealth();
+            Events.Tick += Tick;
+            Events.AddDataHandler("Player:Injured", PlayerInjured);
+            Events.Add("client:EnableAnim", EnableAnim);
+            Events.Add("client:DisableAnim", DisableAnim);
+            Events.Add("client:EnableInjuredCrawl", EnableInjuredCrawl);
+            Events.Add("client:DisableInjuredCrawl", DisableInjuredCrawl);
+            RAGE.Game.Graphics.ClearTimecycleModifier();
+            RAGE.Game.Graphics.StopAllScreenEffects();
+            RAGE.Game.Misc.SetFadeOutAfterDeath(true);
+            RAGE.Game.Misc.SetFadeInAfterDeathArrest(true);
+            RAGE.Elements.Player.LocalPlayer.SetSuffersCriticalHits(false);
         }
 
-        private void PlayerDeath(RAGE.Elements.Player player, uint reason, RAGE.Elements.Player killer, Events.CancelEventArgs cancel)
+
+        public static void HandlePlayerInjury(RAGE.Elements.Player player, int hp)
         {
-            if (player == RAGE.Elements.Player.LocalPlayer)
+            if (hp <= 10)
             {
-                Chat.Output("Meghaltál.");
-                RAGE.Game.Graphics.StartScreenEffect("DeathFailMPIn", 10000, false);
-                if (killer != null)
+                RAGE.Game.Streaming.RequestClipSet("move_m@drunk@verydrunk");
+                player.SetMovementClipset("move_m@drunk@verydrunk", clipSetSwitchTime);
+                player.SetStrafeClipset("move_strafe@injured");
+
+                if (player == RAGE.Elements.Player.LocalPlayer)
                 {
-                    Chat.Output(killer.Name + " ölt meg téged. Indok:" + reason);
+                    RAGE.Game.Graphics.StartScreenEffect("PPFilter", 1, true);
+                    RAGE.Game.Graphics.ClearTimecycleModifier();
+                    RAGE.Game.Graphics.SetTimecycleModifier("drug_wobbly");
+                    RAGE.Game.Graphics.SetTimecycleModifierStrength(1f);
                 }
             }
-            else
+            else if (hp <= 20)//nagyon sérült
             {
-                Chat.Output(player.Name + " meghalt.");
-            }
-        }
+                RAGE.Game.Streaming.RequestClipSet("move_injured_generic");
+                player.SetMovementClipset("move_injured_generic", clipSetSwitchTime);
+                player.SetStrafeClipset("move_strafe@injured");
 
-        static DateTime dt = DateTime.Now;
-        static TimeSpan span = TimeSpan.FromSeconds(1);
-        private void OutgoingDamage(RAGE.Elements.Entity sourceEntity, RAGE.Elements.Entity targetEntity, RAGE.Elements.Player sourcePlayer, ulong weaponHash, ulong boneIdx, int damage, Events.CancelEventArgs cancel)
-        {
-            //itt kell majd menteni a játékosok közti sebzést mert pontosabb
-            //ha egy játékos megsérül pl. esésben azzal még nem tudom mi legyen
-            if (targetEntity.Type == RAGE.Elements.Type.Player)
+                if (player == RAGE.Elements.Player.LocalPlayer)
+                {
+                    RAGE.Game.Graphics.ClearTimecycleModifier();
+                    RAGE.Game.Graphics.SetTimecycleModifier("drug_wobbly");
+                    RAGE.Game.Graphics.SetTimecycleModifierStrength(0.5f);
+                    RAGE.Game.Graphics.StopAllScreenEffects();
+                }
+            }
+            else if (hp <= 30)//jobban megsérült, elkezdődik az émelygés
             {
-                RAGE.Elements.Player p = targetEntity as RAGE.Elements.Player;
-                int bone = -1;
-                p.GetLastDamageBone(ref bone);
+                RAGE.Game.Streaming.RequestClipSet("move_injured_generic");
+                player.SetMovementClipset("move_injured_generic", clipSetSwitchTime);
+                player.SetStrafeClipset("move_strafe@injured");
+
+                if (player == RAGE.Elements.Player.LocalPlayer)
+                {
+                    RAGE.Game.Graphics.SetTimecycleModifier("Drunk");
+                    RAGE.Game.Graphics.SetTimecycleModifierStrength(0.5f);
+                    RAGE.Game.Graphics.StopAllScreenEffects();
+                }
+
+            }
+            else if (hp <= 40)//kicsit sérült
+            {
+                if ((bool)player.GetSharedData("Player:Gender"))//férfi
+                {
+                    RAGE.Game.Streaming.RequestClipSet("move_m@injured");
+                    player.SetMovementClipset("move_m@injured", clipSetSwitchTime);
+                    player.SetStrafeClipset("move_strafe@injured");
+                }
+                else
+                {
+                    RAGE.Game.Streaming.RequestClipSet("move_f@injured");
+                    player.SetMovementClipset("move_f@injured", clipSetSwitchTime);
+                    player.SetStrafeClipset("move_strafe@injured");
+                }
+
+                if (player == RAGE.Elements.Player.LocalPlayer)
+                {
+                    RAGE.Game.Graphics.ClearTimecycleModifier();
+                    RAGE.Game.Graphics.StopAllScreenEffects();
+                }
+            }
+            else//sok hp
+            {
+                player.ResetMovementClipset(clipSetSwitchTime);
+                player.ResetStrafeClipset();
+                if (player == RAGE.Elements.Player.LocalPlayer)
+                {
+                    RAGE.Game.Graphics.ClearTimecycleModifier();
+                    RAGE.Game.Graphics.StopAllScreenEffects();
+                }
                 
-                p.ClearLastDamageBone();
+            }
+        }
 
-                Events.CallRemote("server:AddDamageToPlayer", p.RemoteId, damage, bone);
+        public static void PlayerInjured(RAGE.Elements.Entity entity, object arg, object oldArg)
+        {
+            if (entity.Type == RAGE.Elements.Type.Player)
+            {
+                RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
+                int hp = Convert.ToInt32(arg);
+                HandlePlayerInjury(p, hp);
             }
 
-           // Events.CallRemote("server:Log", "Kimenő sebzés. Célpont: " + p.Name + " DMG: " + damage + " BONE: " + bone + " ALTERNATÍV BONE: " + boneIdx);
         }
+
+        private void EnableAnim(object[] args)
+        {
+            RAGE.Elements.Player.LocalPlayer.ClearTasksImmediately();
+            LocalPlayer.SetToRagdoll(2000, 4000, 0, true, true, true);
+            Events.Tick += HandleAnim;
+        }
+
+        private void DisableAnim(object[] args)
+        {
+            Events.Tick -= HandleAnim;
+        }
+
+        private void HandleAnim(List<Events.TickNametagData> nametags)
+        {
+            for (int i = 0; i < Characters.Controls.disabledControls.Length; i++)
+            {
+                Pad.DisableControlAction(0, Characters.Controls.disabledControls[i], true);
+            }
+            LocalPlayer.ResetRagdollTimer();
+        }
+
+        private void Tick(List<Events.TickNametagData> nametags)
+        {
+            int hploss = 0;
+            if (hp != LocalPlayer.GetHealth())
+            {
+                hploss = hp - LocalPlayer.GetHealth();
+                hp = LocalPlayer.GetHealth();
+            }
+            if (hploss > 0)
+            {
+                int bone = -1;
+                var streamedPlayers = RAGE.Elements.Entities.Players.All.Where((RAGE.Elements.Player player) => player.Exists);
+                var streamedVehicles = RAGE.Elements.Entities.Vehicles.All.Where((RAGE.Elements.Vehicle vehicle) => vehicle.Exists);
+                if (LocalPlayer.HasBeenDamagedByAnyPed() && LocalPlayer.HasBeenDamagedByAnyVehicle())//elütötte egy autó
+                {
+                    bool foundAccident = false;
+                    if (LocalPlayer.Vehicle != null)//autóbaleset
+                    {
+                        if (LocalPlayer.GetLastDamageBone(ref bone))
+                        {
+                            foreach (var item in streamedPlayers)
+                            {
+                                if (RAGE.Game.Entity.HasEntityBeenDamagedByEntity(LocalPlayer.Handle, item.Handle, true))
+                                {
+                                    Events.CallRemote("server:PlayerCrashedPlayer", item.RemoteId, hploss, bone);
+                                    foundAccident = true;
+                                    continue;
+                                }
+                            }
+
+                            if (foundAccident == false)
+                            {
+                                Events.CallRemote("server:PlayerCrashed", hploss, bone);
+                            }
+                        }
+                        else
+                        {
+                            foreach (var item in streamedPlayers)
+                            {
+                                if (RAGE.Game.Entity.HasEntityBeenDamagedByEntity(LocalPlayer.Handle, item.Handle, true))
+                                {
+                                    Events.CallRemote("server:PlayerCrashedPlayer", item.RemoteId, hploss, 0);
+                                    foundAccident = true;
+                                    continue;
+                                }
+                            }
+
+                            if (foundAccident == false)
+                            {
+                                Events.CallRemote("server:PlayerCrashed", hploss, bone);
+                            }
+                        }
+                    }
+                    else//elütés
+                    {
+                        if (LocalPlayer.GetLastDamageBone(ref bone))
+                        {
+                            Events.CallRemote("server:PlayerRammed", hploss, bone);
+                        }
+                        else
+                        {
+                            Events.CallRemote("server:PlayerRammed", hploss, 0);
+                        }
+                    }
+                }
+                else if (LocalPlayer.HasBeenDamagedByAnyPed())//játékos sértette meg - ez működik
+                {
+                    if (LocalPlayer.GetLastDamageBone(ref bone))
+                    {
+                        foreach (var item in streamedPlayers)
+                        {
+                            if (RAGE.Game.Entity.HasEntityBeenDamagedByEntity(LocalPlayer.Handle,item.Handle,true))
+                            {
+                                Events.CallRemote("server:PlayerHitPlayer", item.RemoteId, hploss, bone);
+                                continue;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (var item in streamedPlayers)
+                        {
+                            if (RAGE.Game.Entity.HasEntityBeenDamagedByEntity(LocalPlayer.Handle, item.Handle, true))
+                            {
+                                Events.CallRemote("server:PlayerHitPlayer", item.RemoteId, hploss, 0);
+                                continue;
+                            }
+                        }
+                    }
+                }
+                else if (LocalPlayer.HasBeenDamagedByAnyVehicle())//jármű sértette meg magában - ez működik
+                {
+                    if (LocalPlayer.GetLastDamageBone(ref bone))
+                    {
+                        Events.CallRemote("server:PlayerDamagedByVehicle", hploss, bone);
+                    }
+                    else
+                    {
+                        Events.CallRemote("server:PlayerDamagedByVehicle", hploss, 0);
+                    }
+                }
+                else if (LocalPlayer.HasBeenDamagedByAnyObject())//object sértette meg
+                {
+                    if (LocalPlayer.GetLastDamageBone(ref bone))
+                    {
+                        Events.CallRemote("server:PlayerDamagedByObject", hploss, bone);
+                    }
+                    else
+                    {
+                        Events.CallRemote("server:PlayerDamagedByObject", hploss, 0);
+                    }
+                }
+                else//más miatt sérült meg, pl elesett
+                {
+                    if (LocalPlayer.GetLastDamageBone(ref bone))
+                    {
+                        Events.CallRemote("server:PlayerDamaged", hploss, bone);
+                    }
+                    else
+                    {
+                        Events.CallRemote("server:PlayerDamaged", hploss, 0);
+                    }
+                }
+
+
+
+
+                LocalPlayer.ClearLastDamageEntity();
+            }
+
+
+        }
+
+
+        static float clipSetSwitchTime = 0.75f;
 
         private void IncomingDamage(RAGE.Elements.Player sourcePlayer, RAGE.Elements.Entity sourceEntity, RAGE.Elements.Entity targetEntity, ulong weaponHash, ulong boneIdx, int damage, Events.CancelEventArgs cancel)
         {
-            RAGE.Elements.Player p = targetEntity as RAGE.Elements.Player;
             if (sourcePlayer != null)
             {
                 if (weaponHash == RAGE.Util.Joaat.Hash("weapon_beanbag"))//ha beanbag talált el
@@ -183,44 +404,26 @@ IK_L_Foot	65245
                     Events.CallRemote("server:BeanBagHit");
                 }
             }
-            int bone = -1;
-            RAGE.Elements.Player.LocalPlayer.GetLastDamageBone(ref bone);
-            RAGE.Elements.Player.LocalPlayer.GetLastDamageBone(ref bone);
-
-            
-            Events.CallRemote("server:Log", "Bejövő sebzés. Forrás: " + p.Name + " DMG: " + damage + " BONE: " + bone + " ALTERNATÍV BONE: " + boneIdx);
         }
+
+
 
         private static string CurrentAnim = null;
         private static bool Crawling = false;
         private static string dict = "anim@scripted@data_leak@fix_bil_ig2_chopper_crawl@prototype@";
 
-        public static void EnableInjuredCrawl()
+        public static void EnableInjuredCrawl(object[] args)
         {
-            if (RAGE.Elements.Player.LocalPlayer.Vehicle != null) return;
-            if (RAGE.Elements.Player.LocalPlayer.IsTypingInTextChat == false)
-            {
-                if (dt < DateTime.Now)
-                {
-                    if (Crawling)
-                    {
-                        DisableInjuredCrawl();
-                    }
-                    else
-                    {
-                        Crawling = true;
-                        idleCrawl = true;
-                        RAGE.Game.Streaming.RequestAnimDict("anim@scripted@data_leak@fix_bil_ig2_chopper_crawl@prototype@");
-                        RAGE.Elements.Player.LocalPlayer.TaskPlayAnim("anim@scripted@data_leak@fix_bil_ig2_chopper_crawl@prototype@", "crawl_idle_ped", 8f, 1000f, -1, 2, 0, false, false, false);
+            RAGE.Elements.Player.LocalPlayer.ClearTasksImmediately();
+            Crawling = true;
+            idleCrawl = true;
+            RAGE.Game.Streaming.RequestAnimDict("anim@scripted@data_leak@fix_bil_ig2_chopper_crawl@prototype@");
+            RAGE.Elements.Player.LocalPlayer.TaskPlayAnim("anim@scripted@data_leak@fix_bil_ig2_chopper_crawl@prototype@", "crawl_idle_ped", 32f, 1f, -1, 2, 0, false, false, false);
 
-                        Events.Tick += HandleControls;
-                    }
-                    dt = DateTime.Now + span;
-                }
-            }
+            Events.Tick += HandleControls;
         }
 
-        public static void DisableInjuredCrawl()
+        public static void DisableInjuredCrawl(object[] args)
         {
             Crawling = false;
             idleCrawl = true;
@@ -255,7 +458,7 @@ IK_L_Foot	65245
                 float timer = RAGE.Game.Entity.GetEntityAnimTotalTime(RAGE.Elements.Player.LocalPlayer.Handle, dict, CurrentAnim)-700f;
                 if (LastAnim + TimeSpan.FromMilliseconds(timer) <= DateTime.Now)
                 {
-                    RAGE.Elements.Player.LocalPlayer.TaskPlayAnim(dict, CurrentAnim, 8f, 256f, -1, 1, 0f, false, false, false);
+                    RAGE.Elements.Player.LocalPlayer.TaskPlayAnim(dict, CurrentAnim, 4f, 8f, -1, 1, 0f, false, false, false);
                     LastAnim = DateTime.Now;
                 }
             }
@@ -263,7 +466,7 @@ IK_L_Foot	65245
             {
                 if (idleCrawl == false)
                 {
-                    RAGE.Elements.Player.LocalPlayer.TaskPlayAnim(dict, CurrentAnim, 8f, 256f, -1, 2, 0, false, false, false);
+                    RAGE.Elements.Player.LocalPlayer.TaskPlayAnim(dict, CurrentAnim, 4f, 8f, -1, 2, 0, false, false, false);
                     idleCrawl = true;
                 }
             }

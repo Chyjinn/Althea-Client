@@ -183,6 +183,7 @@ namespace Client.Hud
 
         private static async void Render(List<Events.TickNametagData> nametags)
         {
+            /*
             NametagCEF.ExecuteJs($"startRender()");
             Vector3 Cam = RAGE.Game.Cam.GetGameplayCamCoord();
             foreach (var item in streamedPlayers)
@@ -229,6 +230,7 @@ namespace Client.Hud
                 }
             }
             NametagCEF.ExecuteJs($"endRender()");
+            */
         }
     }
 }
