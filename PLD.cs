@@ -16,13 +16,13 @@ namespace RageBibopClient
 
         public PLD()
         {
-            CEF = new HtmlWindow("package://PLD//index.html");
-            Events.Tick += Update;
+            //CEF = new HtmlWindow("package://PLD//index.html");
+            //Events.Tick += Update;
         }
 
         public void Update(List<Events.TickNametagData> tick)
         {
-
+            /*
             var position = RAGE.Elements.Player.LocalPlayer.Position;
             var tempStreet = 0;
             var tempCrossing = 0;
@@ -70,6 +70,7 @@ namespace RageBibopClient
             }
 
             CEF.ExecuteJs($"Update(\"{Street}\", \"{Crossing}\", \"{Zone}\", \"{Direction}\")");
+            */
         }
     }
 }

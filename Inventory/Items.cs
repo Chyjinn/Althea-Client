@@ -80,10 +80,7 @@ namespace Client.Inventory
         public Items() { 
             InventoryCEF = new RAGE.Ui.HtmlWindow("package://frontend/inventory/inventory.html");
             InventoryCEF.Active = false;
-            if (RAGE.Ui.Windows.Focused)//meg tudjuk nézni hogy focused-e az ablak
-            {
-                
-            }
+
             Events.Add("client:InventoryFromServer", ReloadInventory);
             Events.Add("client:ContainerFromServer", ReloadContainer);
 
@@ -123,7 +120,6 @@ namespace Client.Inventory
 
             Events.Add("client:SetInventoryWeights", SetInventoryWeights);
             Events.Add("client:SetContainerWeights", SetContainerWeights);
-
 
             Events.OnPlayerQuit += Quit;
 
@@ -765,18 +761,6 @@ namespace Client.Inventory
                                     //eldobott object megnyitását meghívni
                                     Events.CallRemote("server:OpenGroundItem", item_id);
                                 }
-
-
-                                /*
-                                //RAGE.Game.Graphics.SetParticleFxLoopedScale(particle, 0f);
-                                RAGE.Game.Graphics.StopParticleFxLooped(particle, false);
-                                MapObject obj = RAGE.Elements.Entities.Objects.GetAt(e.Id);
-                                RAGE.Game.Graphics.UseParticleFxAssetNextCall("scr_bike_adversary");
-
-                                particle = RAGE.Game.Graphics.StartParticleFxLoopedOnEntity("scr_adversary_ped_light_good", obj.Handle, 0f, 0f, 0.5f, 0f, 0f, 0f, 0.1f, false, false, false);
-                                RAGE.Game.Graphics.SetParticleFxLoopedColour(particle, 0.3f, 0f, 0f, false);
-                                //RAGE.Game.Graphics.SetParticleFxLoopedRange(particle, 5f);
-                                */
                             }
                         }
                     }
@@ -791,24 +775,11 @@ namespace Client.Inventory
                                     uint item_id = Convert.ToUInt32(e.GetSharedData("object:ID"));
                                     Events.CallRemote("server:PickUpItem", item_id);
                                 }
-
-
-                                /*
-                                //RAGE.Game.Graphics.SetParticleFxLoopedScale(particle, 0f);
-                                RAGE.Game.Graphics.StopParticleFxLooped(particle, false);
-                                MapObject obj = RAGE.Elements.Entities.Objects.GetAt(e.Id);
-                                RAGE.Game.Graphics.UseParticleFxAssetNextCall("scr_bike_adversary");
-
-                                particle = RAGE.Game.Graphics.StartParticleFxLoopedOnEntity("scr_adversary_ped_light_good", obj.Handle, 0f, 0f, 0.5f, 0f, 0f, 0f, 0.1f, false, false, false);
-                                RAGE.Game.Graphics.SetParticleFxLoopedColour(particle, 0.3f, 0f, 0f, false);
-                                //RAGE.Game.Graphics.SetParticleFxLoopedRange(particle, 5f);
-                                */
                             }
                         }
                     }
                 }
             }
-            
         }
 
 

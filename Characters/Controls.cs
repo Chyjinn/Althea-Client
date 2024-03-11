@@ -209,15 +209,13 @@ namespace Client.Characters
                 }
                 else//kiszállni
                 {
-                    if (p.HasData("Player:Injured"))//kicsit sérült
+                    if (p.GetSharedData("Player:Injured") != null)//kicsit sérült
                     {
-                        Chat.Output("hasdata");
                         int hp = (int)p.GetSharedData("Player:Injured");
                         Characters.Injuries.HandlePlayerInjury(p, hp);
                     }
                     else
                     {
-                        Chat.Output("nodata");
                         p.ResetMovementClipset(clipSetSwitchTime);
                         p.ResetStrafeClipset();
                     }
@@ -328,19 +326,19 @@ namespace Client.Characters
             if (entity.Type == RAGE.Elements.Type.Player)
             {
                 RAGE.Elements.Player p = RAGE.Elements.Entities.Players.GetAtRemote(entity.RemoteId);
-                if (p.HasData("Player:Frozen"))
+                if (p.GetSharedData("Player:Frozen") != null)
                 {
                     bool frozen = (bool)p.GetSharedData("Player:Frozen");
                     p.FreezePosition(frozen);
                 }
 
-                if (p.HasData("Player:Injured"))
+                if (p.GetSharedData("Player:Injured") != null)
                 {
                     int hp = (int)p.GetSharedData("Player:Injured");
                     Characters.Injuries.HandlePlayerInjury(p, hp);
                 }
 
-                if (p.HasData("Player:Ragdoll"))
+                if (p.GetSharedData("Player:Ragdoll") != null)
                 {
                     bool state = (bool)p.GetSharedData("Player:Ragdoll");
                     if (state)
@@ -350,7 +348,7 @@ namespace Client.Characters
                     
                 }
 
-                if (p.HasData("Player:Crouching"))
+                if (p.GetSharedData("Player:Crouching") != null)
                 {
                     bool crouching = (bool)p.GetSharedData("Player:Crouching");
                     if (crouching)
@@ -360,7 +358,7 @@ namespace Client.Characters
                     }
                 }
 
-                if (p.HasData("Player:Invisible"))
+                if (p.GetSharedData("Player:Invisible") != null)
                 {
                     bool invisible = (bool)p.GetSharedData("Player:Invisible");
                     if (invisible)
